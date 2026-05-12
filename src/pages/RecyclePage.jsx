@@ -1,10 +1,13 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-const RecyclePage = ({ setPage }) => {
+const RecyclePage = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="bg-[#F2EDE4] font-sans">
-      {/* SECTION 1: VISI & STATISTIK (Satu Layar Penuh) */}
-      <section className="min-h-[calc(100vh-80px)] flex flex-col justify-center px-10 py-8">
+    <div className="bg-[#F2EDE4] font-sans text-[#1e2b19]">
+      {/* SECTION 1: VISI & STATISTIK */}
+      <section className="min-h-[calc(100vh-64px)] flex flex-col justify-center px-10 py-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
           {/* Sisi Kiri: Teks */}
           <div>
@@ -60,7 +63,7 @@ const RecyclePage = ({ setPage }) => {
         </div>
       </section>
 
-      {/* SECTION 2: AJAKAN BERGABUNG & MENU (Satu Layar Penuh) */}
+      {/* SECTION 2: AJAKAN BERGABUNG & MENU (NAVIGASI) */}
       <section className="min-h-screen flex flex-col justify-center px-10 py-10 bg-[#E9E4D9]">
         <div className="max-w-5xl mx-auto w-full bg-[#E1E6DC] p-16 rounded-[60px] shadow-sm flex flex-col md:flex-row items-center gap-12">
           <div className="flex-1">
@@ -75,8 +78,9 @@ const RecyclePage = ({ setPage }) => {
           </div>
 
           <div className="flex-1 flex flex-col gap-4 w-full">
+            {/* Navigasi ke /daur-ulang/simpan */}
             <button
-              onClick={() => setPage("Recycle Save")}
+              onClick={() => navigate("/daur-ulang/simpan")}
               className="bg-[#3D5532] text-white p-8 rounded-[30px] flex justify-between items-center group hover:scale-105 transition-transform shadow-xl"
             >
               <div className="text-left">
@@ -88,8 +92,9 @@ const RecyclePage = ({ setPage }) => {
               <span className="text-2xl">♻️</span>
             </button>
 
+            {/* Navigasi ke /riwayat */}
             <button
-              onClick={() => setPage("Riwayat")}
+              onClick={() => navigate("/riwayat")}
               className="bg-white text-[#3D5532] p-8 rounded-[30px] flex justify-between items-center group hover:scale-105 transition-transform shadow-md border border-gray-100"
             >
               <div className="text-left">
@@ -104,7 +109,7 @@ const RecyclePage = ({ setPage }) => {
         </div>
       </section>
 
-      {/* SECTION 3: SOLUSI KAMI (Satu Layar Penuh) */}
+      {/* SECTION 3: SOLUSI KAMI */}
       <section className="min-h-screen flex flex-col justify-center px-10 py-10">
         <div className="max-w-7xl mx-auto w-full text-center mb-16">
           <h2 className="text-4xl font-serif text-[#1e2b19] mb-4">
@@ -131,7 +136,7 @@ const RecyclePage = ({ setPage }) => {
           </div>
 
           {/* Card Solusi */}
-          <div className="bg-[#F0F4EE] p-10 rounded-[45px] border border-[#3D5532]/10 flex flex-col">
+          <div className="bg-[#F0F4EE] p-10 rounded-[45px] border border-[#3D5532]/10 flex flex-col shadow-lg shadow-green-900/5">
             <span className="text-2xl mb-6">🌱</span>
             <h4 className="text-2xl font-bold text-[#1e2b19] mb-4">
               Solusi Kami

@@ -1,6 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const AboutPage = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-[#F2EDE4] font-sans text-[#1e2b19]">
       {/* SECTION 1: HERO - VISI UTAMA (Full Screen) */}
@@ -23,7 +26,10 @@ const AboutPage = () => {
             merusak skin barrier, bahkan meninggalkan sampah plastik yang abadi.
             Di sini kami membantumu memahami apa yang kulitmu butuhkan.
           </p>
-          <button className="bg-[#3D5532] text-white px-10 py-4 rounded-full font-bold text-sm shadow-xl hover:scale-105 transition">
+          <button
+            onClick={() => navigate("/")}
+            className="bg-[#3D5532] text-white px-10 py-4 rounded-full font-bold text-sm shadow-xl hover:scale-105 transition"
+          >
             Mulai Hidup Mempesona
           </button>
         </div>
@@ -109,21 +115,32 @@ const AboutPage = () => {
               title: "Ensiklopedia",
               icon: "🔬",
               desc: "Lupakan istilah kimia yang rumit. Kami bedah setiap kandungan skincare dengan bahasa manusia.",
+              path: "/ensiklopedia",
             },
             {
               title: "Daur Ulang",
               icon: "♾️",
               desc: "Sistem daur ulang kami dirancang agar kamu tidak merasa repot. Kirim sampahmu, dapatkan poin.",
+              path: "/daur-ulang",
             },
             {
               title: "Forum",
               icon: "👥",
               desc: "Tanya apa saja tentang kesehatan kulit dan bahaya bahan kimia. Belajar bareng ribuan orang lainnya.",
+              path: "/forum",
             },
           ].map((pilar) => (
-            <div key={pilar.title} className="flex flex-col items-center">
-              <span className="text-5xl mb-6">{pilar.icon}</span>
-              <h5 className="text-2xl font-serif mb-4">{pilar.title}</h5>
+            <div
+              key={pilar.title}
+              className="flex flex-col items-center cursor-pointer group"
+              onClick={() => navigate(pilar.path)}
+            >
+              <span className="text-5xl mb-6 group-hover:scale-110 transition-transform">
+                {pilar.icon}
+              </span>
+              <h5 className="text-2xl font-serif mb-4 group-hover:text-[#3D5532] transition-colors">
+                {pilar.title}
+              </h5>
               <p className="text-sm text-gray-400 leading-relaxed px-6">
                 {pilar.desc}
               </p>
@@ -219,7 +236,7 @@ const AboutPage = () => {
           </div>
 
           <div className="bg-white p-12 rounded-[50px] shadow-2xl border border-gray-50">
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
               <div>
                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">
                   Nama Lengkap
@@ -250,7 +267,11 @@ const AboutPage = () => {
                   placeholder="Apa yang bisa kami bantu?"
                 ></textarea>
               </div>
-              <button className="w-full bg-[#3D5532] text-white py-4 rounded-2xl font-bold text-sm shadow-xl hover:bg-[#2d4025] transition-all">
+              <button
+                type="submit"
+                onClick={() => alert("Pesan berhasil dikirim!")}
+                className="w-full bg-[#3D5532] text-white py-4 rounded-2xl font-bold text-sm shadow-xl hover:bg-[#2d4025] transition-all"
+              >
                 Kirim Pesan
               </button>
             </form>

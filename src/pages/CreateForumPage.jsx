@@ -1,16 +1,102 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const CreateForumPage = ({ setPage }) => {
+const CreateForumPage = ({ user }) => {
+  const navigate = useNavigate();
+
+  // 1. STATE UNTUK FORM DATA
+  const [forumData, setForumData] = useState({
+    judul_posting: "",
+    isi_posting: "",
+    kategori: "Pilih Kategori...", // Default value untuk validasi
+    anonim: false,
+    media_url: null,
+  });
+
+  // DAFTAR 5 KATEGORI YANG DISESUAIKAN DENGAN HALAMAN FORUM
+  const categories = [
+    "Rekomendasi",
+    "Daur Ulang",
+    "Bahan Alami",
+    "Tips & Trik",
+    "Produk Baru",
+  ];
+
   const [tags, setTags] = useState([
     "#SkincareHack",
-    "Recycle",
+    "#Recycle",
     "#SustainableBeauty",
   ]);
+  const [newTag, setNewTag] = useState("");
+
+  // 2. FUNGSI HANDLE SUBMIT
+  const handlePublish = async () => {
+    // Validasi input wajib
+    if (
+      forumData.kategori === "Pilih Kategori..." ||
+      !forumData.judul_posting.trim() ||
+      !forumData.isi_posting.trim()
+    ) {
+      alert("Mohon lengkapi Kategori, Judul, dan Deskripsi diskusi Anda.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) return alert("Sesi berakhir, silakan login kembali.");
+
+    const payload = {
+      ...forumData,
+      tags: tags.join(","),
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/api/forum", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("🚀 Diskusi Anda telah berhasil dipublikasikan!");
+        return navigate("/forum");
+      }
+
+      alert("Gagal mempublikasikan: " + result.message);
+    } catch (error) {
+      console.error("Error publishing forum:", error);
+      alert("Gagal terhubung ke server. Pastikan backend menyala.");
+    }
+  };
+
+  // 3. FUNGSI MANAJEMEN TAG
+  const addTag = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (newTag.trim() !== "" && tags.length < 5) {
+        // Otomatis tambah '#' jika belum ada
+        const formattedTag = newTag.startsWith("#")
+          ? newTag.trim()
+          : `#${newTag.trim()}`;
+        if (!tags.includes(formattedTag)) {
+          setTags([...tags, formattedTag]);
+        }
+        setNewTag("");
+      }
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setTags(tags.filter((t) => t !== tagToRemove));
+  };
 
   return (
     <div className="bg-[#F2EDE4] font-sans min-h-screen pb-10">
       <div className="max-w-7xl mx-auto px-10 pt-8">
-        {/* Header Section */}
         <header className="mb-8">
           <div className="flex items-center gap-4 mb-2">
             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
@@ -21,76 +107,69 @@ const CreateForumPage = ({ setPage }) => {
             </h1>
           </div>
           <p className="text-gray-500 text-xs ml-14">
-            Bagikan kontribusi ramah lingkunganmu, pertanyaan, atau ulasan
-            produk berkelanjutan.
+            Bagikan kontribusi ramah lingkunganmu di sini.
           </p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* SISI KIRI: Formulir Postingan */}
           <div className="lg:col-span-8 space-y-6">
             <div className="bg-white p-8 rounded-[40px] shadow-sm border border-white space-y-6">
-              {/* Kategori */}
+              {/* Dropdown Kategori Baru */}
               <div>
                 <label className="block text-[10px] font-black text-[#3D5532] uppercase tracking-widest mb-3 italic">
                   Pilih Kategori *
                 </label>
-                <select className="w-full bg-[#F9F9F7] rounded-2xl p-4 text-xs text-gray-600 outline-none border border-transparent focus:border-[#3D5532]/20 appearance-none cursor-pointer">
-                  <option>Pilih Kategori...</option>
-                  <option>Tips & Trik</option>
-                  <option>Ulasan Produk</option>
-                  <option>Keberlanjutan</option>
-                </select>
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {[
-                    "Tips & Trik",
-                    "Ulasan Produk",
-                    "Keberlanjutan",
-                    "Pertanyaan",
-                  ].map((cat) => (
-                    <span
-                      key={cat}
-                      className="px-4 py-1.5 bg-[#EDF1EC] text-[#3D5532] rounded-full text-[9px] font-bold cursor-pointer hover:bg-[#3D5532] hover:text-white transition-all"
-                    >
-                      {cat}
-                    </span>
+                <select
+                  value={forumData.kategori}
+                  onChange={(e) =>
+                    setForumData({ ...forumData, kategori: e.target.value })
+                  }
+                  className="w-full bg-[#F9F9F7] rounded-2xl p-4 text-xs text-[#3D5532] font-bold outline-none border border-transparent focus:border-[#3D5532]/20 appearance-none cursor-pointer"
+                >
+                  <option disabled>Pilih Kategori...</option>
+                  {categories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
 
-              {/* Judul Diskusi */}
+              {/* Judul */}
               <div>
                 <label className="block text-[10px] font-black text-[#3D5532] uppercase tracking-widest mb-3 italic">
                   Judul Diskusi *
                 </label>
                 <input
                   type="text"
+                  value={forumData.judul_posting}
+                  onChange={(e) =>
+                    setForumData({
+                      ...forumData,
+                      judul_posting: e.target.value,
+                    })
+                  }
                   className="w-full bg-[#F9F9F7] rounded-2xl p-4 text-xs text-gray-600 outline-none border border-transparent focus:border-[#3D5532]/20"
-                  placeholder="Contoh: Perbedaan wajah kering dan kusam saat musim dingin"
+                  placeholder="Apa topik diskusi Anda?"
                 />
               </div>
 
-              {/* Deskripsi / Editor */}
+              {/* Deskripsi */}
               <div>
                 <label className="block text-[10px] font-black text-[#3D5532] uppercase tracking-widest mb-3 italic">
                   Deskripsi *
                 </label>
-                <div className="bg-[#F9F9F7] rounded-2xl border border-transparent focus-within:border-[#3D5532]/20">
-                  <div className="flex gap-4 p-3 border-b border-gray-100 text-gray-400">
-                    {["B", "I", "U", "🔗", "📋", "🔢"].map((tool) => (
-                      <button key={tool} className="hover:text-[#3D5532]">
-                        {tool}
-                      </button>
-                    ))}
-                  </div>
-                  <textarea
-                    className="w-full bg-transparent p-4 text-xs text-gray-600 outline-none resize-none h-48"
-                    placeholder="Bagikan pengalaman, masalah kulit, atau pertanyaanmu di sini..."
-                  ></textarea>
-                </div>
+                <textarea
+                  value={forumData.isi_posting}
+                  onChange={(e) =>
+                    setForumData({ ...forumData, isi_posting: e.target.value })
+                  }
+                  className="w-full bg-[#F9F9F7] rounded-2xl p-4 text-xs text-gray-600 outline-none border border-transparent focus:border-[#3D5532]/20 resize-none h-48"
+                  placeholder="Tulis detail pemikiran atau pertanyaan Anda di sini..."
+                />
               </div>
 
-              {/* Tag */}
+              {/* Tag Management */}
               <div>
                 <label className="block text-[10px] font-black text-[#3D5532] uppercase tracking-widest mb-3 italic">
                   Tag (Maks. 5)
@@ -101,149 +180,90 @@ const CreateForumPage = ({ setPage }) => {
                       key={tag}
                       className="px-3 py-1 bg-white text-[#3D5532] rounded-lg text-[10px] font-bold border border-gray-100 flex items-center gap-2"
                     >
-                      {tag}{" "}
-                      <button className="text-gray-300 hover:text-red-400">
+                      {tag}
+                      <button
+                        onClick={() => removeTag(tag)}
+                        className="text-gray-300 hover:text-red-400 transition-colors"
+                      >
                         ×
                       </button>
                     </span>
                   ))}
                   <input
                     type="text"
-                    className="bg-transparent outline-none text-[10px] flex-grow"
-                    placeholder="Tambah tag..."
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyDown={addTag}
+                    className="bg-transparent outline-none text-[10px] flex-grow min-w-[120px]"
+                    placeholder={
+                      tags.length < 5
+                        ? "Ketik tag lalu Enter..."
+                        : "Maksimal 5 tag"
+                    }
+                    disabled={tags.length >= 5}
                   />
                 </div>
               </div>
+            </div>
 
-              {/* Media Upload */}
-              <div>
-                <label className="block text-[10px] font-black text-[#3D5532] uppercase tracking-widest mb-3 italic">
-                  Media (Opsional)
-                </label>
-                <div className="border-2 border-dashed border-gray-100 rounded-[30px] p-10 flex flex-col items-center justify-center text-gray-300 hover:border-[#3D5532] hover:text-[#3D5532] transition-all cursor-pointer">
-                  <span className="text-4xl mb-2">🖼️</span>
-                  <p className="text-[10px] font-bold">
-                    Klik untuk mengunggah atau seret & lepas
+            {/* Anonim Toggle */}
+            <div className="bg-white p-6 rounded-[35px] shadow-sm border border-white">
+              <div className="flex items-center justify-between p-4 bg-[#F9F9F7] rounded-2xl">
+                <div>
+                  <h5 className="text-[11px] font-bold">
+                    Posting secara Anonim
+                  </h5>
+                  <p className="text-[9px] text-gray-400">
+                    Nama asli Anda tidak akan dipublikasikan.
                   </p>
-                  <p className="text-[8px] mt-1">PNG, JPG, GIF up to 10MB</p>
+                </div>
+                <div
+                  onClick={() =>
+                    setForumData({ ...forumData, anonim: !forumData.anonim })
+                  }
+                  className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors duration-300 ${forumData.anonim ? "bg-[#3D5532]" : "bg-gray-200"}`}
+                >
+                  <div
+                    className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 ${forumData.anonim ? "right-1" : "left-1"}`}
+                  ></div>
                 </div>
               </div>
             </div>
 
-            {/* Pengaturan Privasi */}
-            <div className="bg-white p-6 rounded-[35px] shadow-sm border border-white space-y-4">
-              {[
-                {
-                  t: "Posting secara Anonim",
-                  d: "Nama Anda tidak akan ditampilkan pada diskusi ini.",
-                  icon: "👤",
-                },
-                {
-                  t: "Notifikasi Email",
-                  d: "Dapatkan pemberitahuan saat seseorang menanggapi diskusi ini.",
-                  icon: "📧",
-                },
-                {
-                  t: "Izinkan Komentar",
-                  d: "Orang lain dapat memberikan tanggapan pada diskusi Anda.",
-                  icon: "💬",
-                },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-4 bg-[#F9F9F7] rounded-2xl"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="text-lg opacity-60">{item.icon}</span>
-                    <div>
-                      <h5 className="text-[11px] font-bold text-[#1e2b19]">
-                        {item.t}
-                      </h5>
-                      <p className="text-[9px] text-gray-400">{item.d}</p>
-                    </div>
-                  </div>
-                  <div className="w-10 h-5 bg-[#3D5532] rounded-full relative cursor-pointer">
-                    <div className="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Tombol Aksi */}
+            {/* Action Buttons */}
             <div className="flex justify-end gap-4">
               <button
-                onClick={() => setPage("Forum Diskusi")}
-                className="px-8 py-3 rounded-full text-[11px] font-bold text-gray-400 hover:text-[#1e2b19]"
+                onClick={() => navigate("/forum")}
+                className="px-8 py-3 rounded-full text-[11px] font-bold text-gray-400 hover:text-[#1e2b19] transition-colors"
               >
                 Batal
               </button>
-              <button className="px-8 py-3 rounded-full text-[11px] font-bold border border-[#3D5532] text-[#3D5532] hover:bg-[#3D5532] hover:text-white transition-all">
-                Simpan Draft
-              </button>
-              <button className="px-8 py-3 rounded-full text-[11px] font-bold bg-[#3D5532] text-white shadow-lg hover:bg-[#2d4025]">
+              <button
+                onClick={handlePublish}
+                className="px-10 py-3 rounded-full text-[11px] font-black uppercase tracking-widest bg-[#3D5532] text-white shadow-lg active:scale-95 transition-all"
+              >
                 🚀 Publikasikan Diskusi
               </button>
             </div>
           </div>
 
-          {/* SISI KANAN: Sidebar Panduan */}
+          {/* Sisi Kanan - Info User */}
           <div className="lg:col-span-4 space-y-6">
-            {/* Profil Ringkas */}
             <div className="bg-white p-6 rounded-[40px] shadow-sm border border-white flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#3D5532] rounded-2xl flex items-center justify-center text-white font-bold">
-                RAY
+              <div className="w-12 h-12 bg-[#3D5532] rounded-2xl flex items-center justify-center text-white font-bold uppercase shadow-inner">
+                {user?.username?.substring(0, 2) || "U"}
               </div>
               <div>
-                <h4 className="text-xs font-black text-[#1e2b19] uppercase tracking-wider">
-                  Muhammad Rayhan
+                <h4 className="text-xs font-black text-[#1e2b19] uppercase tracking-tight">
+                  {user?.username || "Guest User"}
                 </h4>
-                <p className="text-[9px] text-gray-400">
-                  Level 2 - Green Contributor
-                </p>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-[#3D5532]">📍</span>
+                  <p className="text-[9px] text-gray-400 font-medium">
+                    Kabupaten Bekasi
+                  </p>
+                </div>
               </div>
-            </div>
-
-            {/* Tips Menulis */}
-            <div className="bg-[#EDF1EC] p-8 rounded-[40px] border border-[#3D5532]/10">
-              <h4 className="text-[10px] font-black text-[#3D5532] uppercase tracking-[0.2em] mb-6 italic">
-                💡 Tips Menulis
-              </h4>
-              <ul className="space-y-4">
-                {[
-                  "Gunakan judul yang spesifik agar mudah ditemukan.",
-                  "Berikan detail pengalamanmu secara jujur.",
-                  "Tambahkan tag yang relevan dengan topik.",
-                  "Sertakan foto jika membahas ulasan produk.",
-                ].map((tip, i) => (
-                  <li
-                    key={i}
-                    className="flex gap-3 text-[10px] text-[#3D5532]/70 leading-relaxed font-medium"
-                  >
-                    <span>•</span> {tip}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Panduan Komunitas */}
-            <div className="bg-white p-8 rounded-[40px] shadow-sm border border-white">
-              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 italic">
-                ⚖️ Panduan Komunitas
-              </h4>
-              <ul className="space-y-3">
-                {[
-                  "Bersikaplah sopan dan saling menghargai.",
-                  "Dilarang menyebarkan berita bohong (hoax).",
-                  "Hindari konten promosi atau spam.",
-                ].map((rule, i) => (
-                  <li
-                    key={i}
-                    className="text-[9px] text-gray-500 flex items-center gap-2"
-                  >
-                    <span className="text-green-500">✔</span> {rule}
-                  </li>
-                ))}
-              </ul>
             </div>
           </div>
         </div>

@@ -1,10 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
-const RecycleDropPage = ({ setPage }) => {
+const RecycleDropPage = () => {
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+
+  // --- STATE MANAGEMENT ---
+  const [address, setAddress] = useState("");
+  const [selectedSize, setSelectedSize] = useState("3-5 kg");
+  const [detailTrash, setDetailTrash] = useState("");
+  const [images, setImages] = useState([]); // Menyimpan file/preview gambar
   const [estimatedPoints] = useState(75);
 
+  // --- HANDLER FUNGSI ---
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length + images.length > 3) {
+      alert("Maksimal 3 foto dokumentasi.");
+      return;
+    }
+
+    // Membuat preview URL untuk ditampilkan di kotak abu-abu
+    const newImages = files.map((file) => URL.createObjectURL(file));
+    setImages([...images, ...newImages]);
+  };
+
+  const handleConfirm = () => {
+    if (!address.trim()) return alert("Mohon masukkan lokasi penjemputan.");
+
+    // Simulasi pengiriman data ke backend
+    console.log({
+      alamat: address,
+      kategori_berat: selectedSize,
+      detail: detailTrash,
+      foto_count: images.length,
+    });
+
+    alert(
+      "🚀 Permintaan penjemputan berhasil dikirim! Kurir akan segera menghubungi Anda.",
+    );
+    navigate("/"); // Redirect ke beranda sesuai instruksi React Router
+  };
+
   return (
-    /* Frame utama tetap dikunci pada tinggi layar dikurangi navbar */
     <div className="bg-[#F2EDE4] font-sans h-[calc(100vh-64px)] overflow-hidden">
       <div className="max-w-7xl mx-auto px-10 h-full flex flex-col justify-center py-2">
         <header className="mb-4">
@@ -17,7 +59,7 @@ const RecycleDropPage = ({ setPage }) => {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          {/* SISI KIRI: Formulir Input (Teks Besar, Padding Rapat) */}
+          {/* SISI KIRI: Formulir Input */}
           <div className="lg:col-span-8 space-y-3">
             {/* Input Lokasi */}
             <div className="bg-white p-4 rounded-[30px] shadow-sm border border-white">
@@ -25,11 +67,20 @@ const RecycleDropPage = ({ setPage }) => {
                 📍 Lokasi Penjemputan
               </label>
               <textarea
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
                 className="w-full bg-[#F9F9F7] rounded-xl p-3 text-sm text-gray-700 outline-none border border-transparent focus:border-[#3D5532]/20 resize-none h-16"
                 placeholder="Masukkan alamat lengkap di Bekasi Regency..."
               ></textarea>
               <div className="mt-2">
-                <button className="bg-[#EDD9C1] text-[#3D5532] px-4 py-1.5 rounded-full text-[10px] font-black uppercase hover:bg-[#e6ccad] transition-all">
+                <button
+                  onClick={() =>
+                    setAddress(
+                      "Cikarang Utara, Kabupaten Bekasi (Lokasi Terdeteksi)",
+                    )
+                  }
+                  className="bg-[#EDD9C1] text-[#3D5532] px-4 py-1.5 rounded-full text-[10px] font-black uppercase hover:bg-[#e6ccad] transition-all"
+                >
                   Deteksi Lokasi
                 </button>
               </div>
@@ -44,10 +95,11 @@ const RecycleDropPage = ({ setPage }) => {
                 {["1-2 kg", "3-5 kg", "5-10 kg", "10+ kg"].map((size) => (
                   <button
                     key={size}
+                    onClick={() => setSelectedSize(size)}
                     className={`px-4 py-1.5 rounded-full text-[10px] font-black border transition-all ${
-                      size === "3-5 kg"
+                      selectedSize === size
                         ? "bg-[#3D5532] text-white border-[#3D5532]"
-                        : "text-gray-400 border-gray-200"
+                        : "text-gray-400 border-gray-200 hover:border-[#3D5532]/30"
                     }`}
                   >
                     {size}
@@ -56,8 +108,10 @@ const RecycleDropPage = ({ setPage }) => {
               </div>
               <input
                 type="text"
-                className="w-full bg-[#F9F9F7] rounded-lg p-3 text-sm text-gray-700 outline-none"
-                placeholder="Detail kemasan (Contoh: 10 botol)..."
+                value={detailTrash}
+                onChange={(e) => setDetailTrash(e.target.value)}
+                className="w-full bg-[#F9F9F7] rounded-lg p-3 text-sm text-gray-700 outline-none border border-transparent focus:border-[#3D5532]/20"
+                placeholder="Detail kemasan (Contoh: 10 botol plastik, 2 kardus)..."
               />
             </div>
 
@@ -67,16 +121,47 @@ const RecycleDropPage = ({ setPage }) => {
                 📸 Dokumentasi Paket
               </label>
               <div className="flex gap-3">
-                <div className="w-14 h-14 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-300">
+                {/* Input File Tersembunyi */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  multiple
+                  accept="image/*"
+                />
+
+                <div
+                  onClick={handleUploadClick}
+                  className="w-14 h-14 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-300 cursor-pointer hover:border-[#3D5532] hover:text-[#3D5532] transition-all"
+                >
                   <span className="text-xl">📷</span>
                 </div>
-                <div className="w-14 h-14 rounded-xl bg-gray-100"></div>
-                <div className="w-14 h-14 rounded-xl bg-gray-100"></div>
+
+                {/* Slot Preview Gambar */}
+                {[0, 1].map((idx) => (
+                  <div
+                    key={idx}
+                    className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden border border-gray-50 flex items-center justify-center"
+                  >
+                    {images[idx] ? (
+                      <img
+                        src={images[idx]}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-[8px] text-gray-300 uppercase font-bold text-center px-1">
+                        Pratinjau {idx + 1}
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* SISI KANAN: Ringkasan Reward (Dominan & Besar) */}
+          {/* SISI KANAN: Ringkasan Reward */}
           <div className="lg:col-span-4 flex flex-col gap-3">
             <div className="bg-[#3D5532] p-6 rounded-[40px] shadow-xl text-center relative overflow-hidden flex-grow flex flex-col justify-center">
               <p className="text-white/60 text-xs font-black uppercase tracking-[0.2em] mb-4">
@@ -100,17 +185,14 @@ const RecycleDropPage = ({ setPage }) => {
 
             <div className="space-y-2">
               <button
-                onClick={() => {
-                  alert("Permintaan berhasil dikirim!");
-                  setPage("Beranda");
-                }}
-                className="w-full bg-[#3D5532] text-white py-4 rounded-[20px] font-black text-xs uppercase tracking-[0.3em] shadow-lg hover:bg-[#2d4025] transition-all"
+                onClick={handleConfirm}
+                className="w-full bg-[#3D5532] text-white py-4 rounded-[20px] font-black text-xs uppercase tracking-[0.3em] shadow-lg hover:bg-[#2d4025] transition-all active:scale-95"
               >
                 KONFIRMASI & KIRIM
               </button>
               <button
-                onClick={() => setPage("Recycle Save")}
-                className="w-full bg-white text-[#3D5532] py-4 rounded-[20px] font-black text-xs uppercase tracking-[0.3em] border border-gray-100 hover:bg-gray-50 transition-all"
+                onClick={() => navigate("/daur-ulang/simpan")}
+                className="w-full bg-white text-[#3D5532] py-4 rounded-[20px] font-black text-xs uppercase tracking-[0.3em] border border-gray-100 hover:bg-gray-50 transition-all active:scale-95"
               >
                 KEMBALI KE KARUNG
               </button>

@@ -1,6 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const EnsiklopediaPage = ({ setPage }) => {
+const EnsiklopediaPage = () => {
+  // Hook untuk navigasi antar route
+  const navigate = useNavigate();
+
   // State untuk mengontrol visibilitas Popup dan data yang terpilih
   const [showPopup, setShowPopup] = useState(false);
   const [selectedType, setSelectedType] = useState(null);
@@ -13,7 +17,7 @@ const EnsiklopediaPage = ({ setPage }) => {
       details: {
         char: [
           "Pori-pori hampir tidak terlihat",
-          "Permukaan kasar dan kusam",
+          "Permukaan kasar and kusam",
           "Kurang elastisitas",
         ],
         tips: [
@@ -119,7 +123,6 @@ const EnsiklopediaPage = ({ setPage }) => {
                 key={item.name}
                 className="bg-white p-6 rounded-[35px] text-center shadow-sm border border-gray-100 flex flex-col items-center group transition-all hover:shadow-xl"
               >
-                {/* Klik Gambar untuk Popup */}
                 <div
                   onClick={() => handleOpenPopup(item)}
                   className="w-full h-32 bg-[#EBEBE6] rounded-[25px] mb-4 flex items-center justify-center text-4xl shadow-inner cursor-pointer hover:bg-gray-200 transition-colors"
@@ -132,7 +135,6 @@ const EnsiklopediaPage = ({ setPage }) => {
                 <p className="text-[12px] text-gray-500 mb-4 leading-relaxed line-clamp-3">
                   {item.desc}
                 </p>
-                {/* Klik Tombol untuk Popup */}
                 <button
                   onClick={() => handleOpenPopup(item)}
                   className="bg-[#3D5532] text-white w-full py-3 rounded-xl text-xs font-bold mt-auto hover:bg-[#2d4025] transition-colors"
@@ -154,7 +156,6 @@ const EnsiklopediaPage = ({ setPage }) => {
           ></div>
 
           <div className="relative bg-white w-full max-w-4xl rounded-[40px] overflow-hidden shadow-2xl flex flex-col md:flex-row animate-in fade-in zoom-in duration-300">
-            {/* Kiri: Visual Banner */}
             <div className="md:w-2/5 bg-gradient-to-br from-[#A3B18A] to-[#3D5532] p-10 flex flex-col justify-end text-white">
               <span className="text-6xl mb-6">{selectedType.img}</span>
               <p className="text-xs font-bold uppercase tracking-widest opacity-70 mb-2">
@@ -165,7 +166,6 @@ const EnsiklopediaPage = ({ setPage }) => {
               </h3>
             </div>
 
-            {/* Kanan: Konten Edukasi */}
             <div className="md:w-3/5 p-10 max-h-[85vh] overflow-y-auto">
               <button
                 className="absolute top-6 right-8 text-2xl text-gray-400 hover:text-black transition-colors"
@@ -237,7 +237,7 @@ const EnsiklopediaPage = ({ setPage }) => {
               Artikel Edukasi
             </h2>
             <span
-              onClick={() => setPage("Kumpulan Artikel")}
+              onClick={() => navigate("/ensiklopedia/kumpulan")}
               className="text-xs font-bold text-[#3D5532] uppercase tracking-widest cursor-pointer hover:underline"
             >
               Lihat Semua
@@ -245,7 +245,7 @@ const EnsiklopediaPage = ({ setPage }) => {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[550px]">
             <div
-              onClick={() => setPage("Detail Artikel")}
+              onClick={() => navigate("/ensiklopedia/detail/1")}
               className="lg:col-span-8 relative rounded-[40px] overflow-hidden group shadow-2xl h-full cursor-pointer"
             >
               <img
@@ -278,6 +278,7 @@ const EnsiklopediaPage = ({ setPage }) => {
               ].map((item) => (
                 <div
                   key={item.cat}
+                  onClick={() => navigate("/ensiklopedia/detail/1")}
                   className="bg-[#EDD9C1] p-6 rounded-[30px] border border-[#3D5532]/10 hover:bg-[#e6ccad] transition-all flex-1 flex flex-col justify-center cursor-pointer"
                 >
                   <h5 className="text-[10px] font-bold uppercase tracking-widest text-[#3D5532] mb-2">
@@ -293,7 +294,7 @@ const EnsiklopediaPage = ({ setPage }) => {
         </div>
       </section>
 
-      {/* SECTION 3: KANDUNGAN BAHAN (Sama Seperti Sebelumnya) */}
+      {/* SECTION 3: KANDUNGAN BAHAN */}
       <section className="min-h-screen flex flex-col justify-center px-10 py-10">
         <div className="max-w-7xl mx-auto w-full bg-white p-12 rounded-[50px] shadow-sm border border-gray-100">
           <div className="text-center mb-10">
