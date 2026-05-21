@@ -4,8 +4,9 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation, // Ditambahkan untuk fitur Scroll to Top
+  useLocation,
 } from "react-router-dom";
+import "leaflet/dist/leaflet.css";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -28,11 +29,18 @@ import HistoryPage from "./pages/HistoryPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CreateForumPage from "./pages/CreateForumPage";
 import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
 import ProfilePage from "./pages/ProfilePage";
 import EditProfilePage from "./pages/EditProfilePage";
+import KandunganPage from "./pages/KandunganPage"; // <-- 1. IMPORT KANDUNGANPAGE DI SINI
 
-// --- FITUR 1: SCROLL TO TOP ---
-// Komponen ini akan memaksa browser kembali ke atas setiap kali URL berubah
+// Admin Pages
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminProductManagement from "./pages/AdminProductManagement";
+import AdminRecycleReport from "./pages/AdminRecycleReport";
+import AdminKandunganManagement from "./pages/AdminKandunganManagement";
+
+// Fitur: Scroll To Top saat berpindah halaman
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -43,50 +51,65 @@ function ScrollToTop() {
 
 function App() {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // --- FITUR 2: LOADING STATE ---
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Persistence: Cek session user saat web di-refresh
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    // Set loading false setelah pengecekan localStorage selesai
-    setIsLoading(false);
+    const checkAuth = () => {
+      try {
+        const savedUser = localStorage.getItem("user");
+        const token = localStorage.getItem("token");
+
+        if (savedUser && !token) {
+          localStorage.removeItem("user");
+          setUser(null);
+        } else if (savedUser) {
+          setUser(JSON.parse(savedUser));
+        }
+      } catch (e) {
+        localStorage.clear();
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    alert("Anda telah berhasil keluar dari SkinCycle. Sampai jumpa!");
     setUser(null);
-    window.location.href = "/"; // Redirect ke beranda
+    window.location.href = "/";
   };
 
-  // --- PERBAIKAN PROTECTED ROUTE ---
-  const ProtectedRoute = ({ children }) => {
-    // Jika masih mengecek localStorage, tampilkan blank agar tidak memicu alert "Harus Login"
+  const ProtectedRoute = ({ children, adminOnly = false }) => {
     if (isLoading) return null;
-
     if (!user) {
-      // Alert hanya muncul jika user benar-benar tidak ada setelah loading selesai
-      alert("Silakan masuk terlebih dahulu untuk mengakses fitur ini!");
       return <Navigate to="/masuk" replace />;
+    }
+    if (adminOnly && user.role !== "admin") {
+      alert("Akses Ditolak! Anda bukan Administrator.");
+      return <Navigate to="/" replace />;
     }
     return children;
   };
 
-  // Cegah render konten jika aplikasi belum siap (mencegah kedipan halaman login)
-  if (isLoading) return <div className="min-h-screen bg-[#F2EDE4]" />;
+  if (isLoading)
+    return (
+      <div className="min-h-screen bg-[#F2EDE4] flex items-center justify-center text-[#3D5532] font-bold">
+        Memuat SkinCycle...
+      </div>
+    );
 
   return (
     <Router>
-      {/* Panggil ScrollToTop di dalam Router agar berfungsi */}
       <ScrollToTop />
-
-      <div className="min-h-screen bg-[#F2EDE4]">
+      <div className="min-h-screen bg-[#F2EDE4] flex flex-col">
         <Navbar user={user} onLogout={handleLogout} />
 
-        <main>
+        <main className="flex-grow">
           <Routes>
             {/* PUBLIC ROUTES */}
             <Route path="/" element={<Home />} />
@@ -99,8 +122,15 @@ function App() {
               path="/ensiklopedia/detail/:id"
               element={<ArtikelDetailPage />}
             />
-            <Route path="/produk" element={<ProductPage />} />
-            <Route path="/produk/detail/:id" element={<ProductDetailPage />} />
+
+            {/* 2. REGISTRASI ROUTE PUBLIC KANDUNGAN_PAGE USER DI SINI */}
+            <Route path="/ensiklopedia/kandungan" element={<KandunganPage />} />
+
+            <Route path="/produk" element={<ProductPage user={user} />} />
+            <Route
+              path="/produk/detail/:id"
+              element={<ProductDetailPage user={user} />}
+            />
             <Route path="/tentang-kami" element={<AboutPage />} />
             <Route path="/daur-ulang" element={<RecyclePage user={user} />} />
 
@@ -108,7 +138,7 @@ function App() {
             <Route path="/masuk" element={<LoginPage setUser={setUser} />} />
             <Route path="/daftar" element={<RegisterPage />} />
 
-            {/* PROTECTED ROUTES (HANYA UNTUK USER LOGIN) */}
+            {/* PROTECTED ROUTES USER */}
             <Route
               path="/daur-ulang/simpan"
               element={
@@ -170,6 +200,48 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CartPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute>
+                  <CheckoutPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* ADMIN ROUTES */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute adminOnly={true}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/manajemen-produk"
+              element={
+                <ProtectedRoute adminOnly={true}>
+                  <AdminProductManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/laporan-daur-ulang"
+              element={
+                <ProtectedRoute adminOnly={true}>
+                  <AdminRecycleReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/manajemen-kandungan"
+              element={
+                <ProtectedRoute adminOnly={true}>
+                  <AdminKandunganManagement />
                 </ProtectedRoute>
               }
             />

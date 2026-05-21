@@ -1,98 +1,138 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Leaf,
+  Mountain,
+  Microscope,
+  Infinity,
+  Users,
+  Mail,
+  MapPin,
+  Send,
+} from "lucide-react"; // Menggunakan lucide-react agar ikon seragam dengan design system
 
 const AboutPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-[#F2EDE4] font-sans text-[#1e2b19]">
-      {/* SECTION 1: HERO - VISI UTAMA (Full Screen) */}
-      <section className="relative min-h-[calc(100vh-64px)] flex items-center px-10 overflow-hidden">
+    <div className="bg-brand-secondary-100 font-sans text-brand-dark-500 min-h-screen">
+      {/* SECTION 1: HERO - VISI UTAMA (Full Screen & Safe Layout Bounds) */}
+      <section className="relative min-h-[calc(100vh-64px)] flex items-center px-6 md:px-10 lg:px-20 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=2000"
             className="w-full h-full object-cover opacity-80"
             alt="Nature background"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#F2EDE4] via-[#F2EDE4]/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-secondary-100 via-brand-secondary-100/40 to-transparent"></div>
         </div>
 
-        <div className="relative z-10 max-w-2xl bg-white/30 backdrop-blur-md p-12 rounded-[50px] border border-white/50 shadow-2xl">
-          <h1 className="text-6xl font-serif mb-6 leading-tight">
-            Kulit Glowing Tanpa Harus Merusak Bumi.
-          </h1>
-          <p className="text-lg text-gray-700 mb-8 leading-relaxed">
-            Banyak skincare di luar sana yang menjanjikan hasil instan tapi
-            merusak skin barrier, bahkan meninggalkan sampah plastik yang abadi.
-            Di sini kami membantumu memahami apa yang kulitmu butuhkan.
-          </p>
-          <button
-            onClick={() => navigate("/")}
-            className="bg-[#3D5532] text-white px-10 py-4 rounded-full font-bold text-sm shadow-xl hover:scale-105 transition"
-          >
-            Mulai Hidup Mempesona
-          </button>
+        {/* Pembungkus Kontainer Utama untuk Menjaga dari Batas Tepi Layar */}
+        <div className="relative z-10 max-w-7xl mx-auto w-full flex justify-start items-center">
+          {/* PERBAIKAN 1: 
+    - Mengurangi lebar maksimal boks dari 'max-w-2xl' menjadi 'max-w-xl'
+    - Mengurangi padding boks dari 'p-12' menjadi 'p-6 md:p-10' agar tinggi boks menyusut
+    - Mengubah rounded-[50px] menjadi rounded-[40px] agar lebih seimbang dengan ukuran boks baru
+  */}
+          <div className="max-w-xl bg-neutral-default/30 backdrop-blur-md p-6 md:p-10 rounded-[40px] border border-neutral-default/50 shadow-2xl">
+            {/* PERBAIKAN 2: 
+      - Menurunkan ukuran font judul dari 'text-6xl' menjadi 'text-3xl md:text-4xl lg:text-5xl'
+      - Mengurangi margin bawah dari 'mb-6' menjadi 'mb-4'
+    */}
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-marcellus mb-4 leading-tight text-brand-dark-500 uppercase tracking-tight">
+              Kulit Glowing Tanpa Harus Merusak Bumi.
+            </h1>
+
+            {/* PERBAIKAN 3: 
+      - Menyesuaikan ukuran font deskripsi menjadi 'text-xs md:text-sm lg:text-base'
+      - Mengurangi margin bawah dari 'mb-8' menjadi 'mb-6'
+    */}
+            <p className="text-xs md:text-sm lg:text-base text-neutral-700 mb-6 leading-relaxed font-medium">
+              Banyak skincare di luar sana yang menjanjikan hasil instan tapi
+              merusak skin barrier, bahkan meninggalkan sampah plastik yang
+              abadi. Di sini kami membantumu memahami apa yang kulitmu butuhkan.
+            </p>
+
+            {/* PERBAIKAN 4: 
+      - Menyesuaikan padding tombol menjadi 'px-8 py-3.5' dan ukuran font 'text-xs' 
+        agar serasi dengan boks yang lebih ringkas
+    */}
+            <button
+              type="button"
+              onClick={() => navigate("/produk")}
+              className="bg-brand-primary-300 text-neutral-default px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl hover:bg-brand-primary-500 transition transform hover:scale-105 outline-none active:scale-98"
+            >
+              Mulai Hidup Mempesona
+            </button>
+          </div>
         </div>
       </section>
 
       {/* SECTION 2: FILOSOFI (Full Screen) */}
-      <section className="min-h-screen flex flex-col justify-center px-10 py-20">
+      <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-20 bg-neutral-default/10">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center w-full">
           <div>
-            <span className="text-xs font-bold text-[#3D5532] uppercase tracking-[0.3em] mb-6 block">
+            <span className="text-xs font-black text-brand-primary-300 uppercase tracking-[0.3em] mb-6 block">
               MENGAPA SKINCYCLE ADA?
             </span>
-            <h2 className="text-5xl font-serif mb-8 leading-tight">
+            <h2 className="text-4xl md:text-5xl font-marcellus mb-8 leading-tight text-brand-dark-500">
               Berhenti Membeli Botol, Mulailah Berinvestasi pada Kulit & Bumi.
             </h2>
-            <h3 className="text-2xl italic text-gray-500 mb-8 font-serif">
+            <h3 className="text-xl md:text-2xl italic text-neutral-500 mb-8 font-serif leading-relaxed">
               Mengedukasi bahwa "Cantik" dan "Sampah" adalah dua masalah yang
-              harus selesai bersamaan.
+              harust selesai bersamaan.
             </h3>
-            <p className="text-sm text-gray-500 leading-relaxed mb-6">
+            <p className="text-sm text-neutral-500 leading-relaxed mb-6 font-medium font-sans">
               Kami memahami kenyataan pahit bahwa orang salah menggunakan bahan
               aktif yang justru merusak wajah, sementara miliaran botol bekasnya
               menumpuk di lautan. SkinCycle hadir sebagai jembatan ilmu.
             </p>
           </div>
-          <div className="relative">
-            <div className="rounded-[40px] overflow-hidden shadow-2xl h-[550px]">
-              <img
-                src="https://images.unsplash.com/photo-1556228578-0d85b1a4d520?auto=format&fit=crop&q=80&w=800"
-                className="w-full h-full object-cover"
-                alt="Product"
-              />
-            </div>
-            <div className="absolute -bottom-6 -left-6 bg-[#EDD9C1] p-8 rounded-3xl max-w-xs shadow-xl">
-              <p className="text-xs italic font-bold">
-                "Nothing is the ultimate form of luxury."
-              </p>
+          <div className="relative w-full flex justify-center lg:justify-end">
+            {/* Membatasi max-w-xl agar ukuran frame gambar seimbang dengan boks kiri */}
+            <div className="w-full max-w-xl relative">
+              <div className="rounded-[40px] overflow-hidden shadow-2xl h-[400px] md:h-[500px] border border-neutral-100 bg-neutral-default">
+                <img
+                  src="https://images.unsplash.com/photo-1556228578-0d85b1a4d520?auto=format&fit=crop&q=80&w=800"
+                  className="w-full h-full object-cover"
+                  alt="Product"
+                />
+              </div>
+              <div className="absolute -bottom-6 -left-6 bg-brand-secondary-300 p-6 rounded-3xl max-w-xs shadow-xl border border-neutral-100/50">
+                <p className="text-xs italic font-black text-brand-primary-500 tracking-wide">
+                  "Nothing is the ultimate form of luxury."
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* SECTION 3: VISI & MISI (Full Screen) */}
-      <section className="min-h-screen flex flex-col justify-center px-10 bg-white/30">
+      <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-12 bg-neutral-default/20">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-          <div className="bg-white p-16 rounded-[50px] shadow-sm border border-gray-100">
-            <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center mb-8 text-2xl">
-              🌿
+          <div className="bg-neutral-default p-10 md:p-16 rounded-[50px] shadow-sm border border-neutral-100">
+            <div className="w-12 h-12 bg-feedback-info-100 text-brand-primary-300 rounded-2xl flex items-center justify-center mb-8">
+              <Leaf className="w-6 h-6" />
             </div>
-            <h4 className="text-4xl font-serif mb-6">Misi Kami</h4>
-            <p className="text-lg text-gray-500 leading-relaxed">
+            <h4 className="text-3xl md:text-4xl font-marcellus mb-6 text-brand-dark-500">
+              Misi Kami
+            </h4>
+            <p className="text-sm md:text-base text-neutral-500 leading-relaxed font-medium font-sans">
               Memberikan transparansi penuh. Kami mengedukasi masyarakat tentang
               bahan berbahaya (seperti paraben atau alkohol yang keras) dan
               menyediakan sistem daur ulang yang memudahkan siapa saja untuk
               tidak menyampah.
             </p>
           </div>
-          <div className="bg-[#3D5532] p-16 rounded-[50px] shadow-xl text-white">
-            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-8 text-2xl">
-              ⛰️
+          <div className="bg-brand-primary-300 p-10 md:p-16 rounded-[50px] shadow-xl text-neutral-default border border-brand-primary-400">
+            <div className="w-12 h-12 bg-neutral-default/20 text-neutral-default rounded-2xl flex items-center justify-center mb-8">
+              <Mountain className="w-6 h-6" />
             </div>
-            <h4 className="text-4xl font-serif mb-6 text-white">Visi Kami</h4>
-            <p className="text-lg text-white/80 leading-relaxed">
+            <h4 className="text-3xl md:text-4xl font-marcellus mb-6 text-neutral-default">
+              Visi Kami
+            </h4>
+            <p className="text-sm md:text-base text-neutral-default/80 leading-relaxed font-medium font-sans">
               Menciptakan masyarakat Indonesia yang paham kesehatan kulit jangka
               panjang dan menjadikan daur ulang sebagai gaya hidup harian, bukan
               sekadar tren sesaat.
@@ -102,62 +142,68 @@ const AboutPage = () => {
       </section>
 
       {/* SECTION 4: PILAR UTAMA (Full Screen) */}
-      <section className="min-h-screen flex flex-col justify-center px-10 py-20 text-center">
-        <h2 className="text-5xl font-serif mb-4">Pilar Utama SkinCycle</h2>
-        <p className="text-xl text-gray-500 mb-20">
-          Edukasi untukmu, Kesehatan untuk kulitmu, dan Keberlanjutan untuk bumi
-          kita.
-        </p>
+      <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-20 text-center">
+        <div className="max-w-7xl mx-auto w-full">
+          <h2 className="text-4xl md:text-5xl font-marcellus mb-4 text-brand-dark-500">
+            Pilar Utama SkinCycle
+          </h2>
+          <p className="text-base md:text-xl text-neutral-500 mb-20 max-w-3xl mx-auto font-medium font-sans">
+            Edukasi untukmu, Kesehatan untuk kulitmu, dan Keberlanjutan untuk
+            bumi kita.
+          </p>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 w-full">
-          {[
-            {
-              title: "Ensiklopedia",
-              icon: "🔬",
-              desc: "Lupakan istilah kimia yang rumit. Kami bedah setiap kandungan skincare dengan bahasa manusia.",
-              path: "/ensiklopedia",
-            },
-            {
-              title: "Daur Ulang",
-              icon: "♾️",
-              desc: "Sistem daur ulang kami dirancang agar kamu tidak merasa repot. Kirim sampahmu, dapatkan poin.",
-              path: "/daur-ulang",
-            },
-            {
-              title: "Forum",
-              icon: "👥",
-              desc: "Tanya apa saja tentang kesehatan kulit dan bahaya bahan kimia. Belajar bareng ribuan orang lainnya.",
-              path: "/forum",
-            },
-          ].map((pilar) => (
-            <div
-              key={pilar.title}
-              className="flex flex-col items-center cursor-pointer group"
-              onClick={() => navigate(pilar.path)}
-            >
-              <span className="text-5xl mb-6 group-hover:scale-110 transition-transform">
-                {pilar.icon}
-              </span>
-              <h5 className="text-2xl font-serif mb-4 group-hover:text-[#3D5532] transition-colors">
-                {pilar.title}
-              </h5>
-              <p className="text-sm text-gray-400 leading-relaxed px-6">
-                {pilar.desc}
-              </p>
-            </div>
-          ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 w-full">
+            {[
+              {
+                title: "Ensiklopedia",
+                icon: <Microscope className="w-8 h-8 text-brand-primary-300" />,
+                desc: "Lupakan istilah kimia yang rumit. Kami bedah setiap kandungan skincare dengan bahasa manusia.",
+                path: "/ensiklopedia",
+              },
+              {
+                title: "Daur Ulang",
+                icon: <Infinity className="w-8 h-8 text-brand-primary-300" />,
+                desc: "Sistem daur ulang kami dirancang agar kamu tidak merasa repot. Kirim sampahmu, dapatkan poin.",
+                path: "/daur-ulang",
+              },
+              {
+                title: "Forum",
+                icon: <Users className="w-8 h-8 text-brand-primary-300" />,
+                desc: "Tanya apa saja tentang kesehatan kulit dan bahaya bahan kimia. Belajar bareng ribuan orang lainnya.",
+                path: "/forum",
+              },
+            ].map((pilar) => (
+              <div
+                key={pilar.title}
+                className="flex flex-col items-center cursor-pointer group"
+                onClick={() => navigate(pilar.path)}
+              >
+                <div className="w-16 h-16 bg-neutral-default rounded-3xl border border-neutral-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm group-hover:border-brand-primary-100">
+                  {pilar.icon}
+                </div>
+                <h5 className="text-2xl font-marcellus mb-4 text-brand-dark-500 group-hover:text-brand-primary-300 transition-colors">
+                  {pilar.title}
+                </h5>
+                <p className="text-sm text-neutral-400 leading-relaxed px-6 font-medium font-sans">
+                  {pilar.desc}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* SECTION 5: TIM KAMI (Full Screen) */}
-      <section className="min-h-screen flex flex-col justify-center px-10 py-20 bg-[#EBEBE6]">
+      <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-20 bg-neutral-100 border-y border-neutral-200/50">
         <div className="max-w-7xl mx-auto w-full">
-          <span className="text-xs font-bold text-[#3D5532] uppercase tracking-widest mb-4 block">
+          <span className="text-xs font-black text-brand-primary-300 uppercase tracking-widest mb-4 block">
             SOSOK DI BALIK LAYAR
           </span>
-          <h2 className="text-5xl font-serif mb-16">Tim Kami</h2>
+          <h2 className="text-4xl md:text-5xl font-marcellus mb-16 text-brand-dark-500">
+            Tim Kami
+          </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             {[
               {
                 name: "Elena Yates",
@@ -181,20 +227,22 @@ const AboutPage = () => {
               },
             ].map((member) => (
               <div key={member.name} className="group">
-                <div className="rounded-[30px] overflow-hidden h-80 mb-6 grayscale group-hover:grayscale-0 transition-all duration-500 shadow-lg">
+                <div className="rounded-[30px] overflow-hidden h-80 mb-6 grayscale group-hover:grayscale-0 transition-all duration-500 shadow-lg border border-neutral-100 bg-neutral-default">
                   <img
                     src={member.img}
                     className="w-full h-full object-cover"
                     alt={member.name}
                   />
                 </div>
-                <h5 className="text-lg font-bold mb-1">{member.name}</h5>
-                <p className="text-[10px] font-bold text-[#3D5532] tracking-widest uppercase mb-4">
+                <h5 className="text-lg font-bold mb-1 text-brand-dark-500 font-marcellus">
+                  {member.name}
+                </h5>
+                <p className="text-[10px] font-black text-brand-primary-300 tracking-widest uppercase mb-4">
                   {member.role}
                 </p>
-                <p className="text-[11px] text-gray-400 leading-relaxed">
+                <p className="text-[11px] text-neutral-400 leading-relaxed font-medium font-sans">
                   Berdedikasi untuk menciptakan masa depan kecantikan yang lebih
-                  hijau.
+                  hijau dan sirkular.
                 </p>
               </div>
             ))}
@@ -203,14 +251,16 @@ const AboutPage = () => {
       </section>
 
       {/* SECTION 6: CONTACT (Full Screen) */}
-      <section className="min-h-screen flex flex-col justify-center px-10 py-20">
+      <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-20 bg-brand-secondary-100">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 w-full items-start">
           <div>
-            <span className="text-xs font-bold text-[#3D5532] uppercase tracking-widest mb-6 block">
+            <span className="text-xs font-black text-brand-primary-300 uppercase tracking-widest mb-6 block">
               KONTAK KAMI
             </span>
-            <h2 className="text-5xl font-serif mb-8">Sapa SkinCycle</h2>
-            <p className="text-lg text-gray-500 mb-12 leading-relaxed">
+            <h2 className="text-4xl md:text-5xl font-marcellus mb-8 text-brand-dark-500">
+              Sapa SkinCycle
+            </h2>
+            <p className="text-sm md:text-lg text-neutral-500 mb-12 leading-relaxed font-medium font-sans">
               Punya pertanyaan tentang kandungan produk, pengiriman sampahmu,
               atau ingin tahu lebih lanjut tentang cara kerja sistem daur ulang
               kami? Kami siap membantumu memulai perjalanan menuju kulit sehat
@@ -218,61 +268,73 @@ const AboutPage = () => {
             </p>
 
             <div className="space-y-8">
-              <div>
-                <p className="text-[10px] font-bold text-[#3D5532] uppercase mb-2">
-                  Email
-                </p>
-                <p className="text-xl font-medium">hello@skincycle.com</p>
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-neutral-default border border-neutral-100 text-brand-primary-300 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-brand-primary-300 uppercase mb-1">
+                    Email Support
+                  </p>
+                  <p className="text-lg md:text-xl font-medium text-brand-dark-500 font-marcellus">
+                    hello@skincycle.id
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] font-bold text-[#3D5532] uppercase mb-2">
-                  Alamat
-                </p>
-                <p className="text-xl font-medium">
-                  Cikarang Utara, Bekasi Regency
-                </p>
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-neutral-default border border-neutral-100 text-brand-primary-300 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-brand-primary-300 uppercase mb-1">
+                    Kantor Operasional
+                  </p>
+                  <p className="text-lg md:text-xl font-medium text-brand-dark-500 font-marcellus">
+                    Cikarang Utara, Bekasi Regency
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-12 rounded-[50px] shadow-2xl border border-gray-50">
+          <div className="bg-neutral-default p-8 md:p-12 rounded-[50px] shadow-2xl border border-neutral-100 w-full">
             <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">
+                <label className="text-[10px] font-black text-neutral-400 uppercase mb-2 block tracking-widest">
                   Nama Lengkap
                 </label>
                 <input
                   type="text"
-                  className="w-full bg-[#F9F9F7] border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-[#3D5532] outline-none"
+                  className="w-full bg-neutral-50 border border-neutral-100 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-primary-300 text-brand-dark-500 outline-none font-medium placeholder-neutral-300 transition-all"
                   placeholder="Masukkan namamu..."
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">
+                <label className="text-[10px] font-black text-neutral-400 uppercase mb-2 block tracking-widest">
                   Alamat Email
                 </label>
                 <input
                   type="email"
-                  className="w-full bg-[#F9F9F7] border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-[#3D5532] outline-none"
+                  className="w-full bg-neutral-50 border border-neutral-100 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-primary-300 text-brand-dark-500 outline-none font-medium placeholder-neutral-300 transition-all"
                   placeholder="email@contoh.com"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-2 block tracking-widest">
+                <label className="text-[10px] font-black text-neutral-400 uppercase mb-2 block tracking-widest">
                   Pesan Anda
                 </label>
                 <textarea
                   rows="4"
-                  className="w-full bg-[#F9F9F7] border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-[#3D5532] outline-none"
+                  className="w-full bg-neutral-50 border border-neutral-100 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-primary-300 text-brand-dark-500 outline-none font-medium placeholder-neutral-300 resize-none leading-relaxed transition-all"
                   placeholder="Apa yang bisa kami bantu?"
                 ></textarea>
               </div>
               <button
                 type="submit"
                 onClick={() => alert("Pesan berhasil dikirim!")}
-                className="w-full bg-[#3D5532] text-white py-4 rounded-2xl font-bold text-sm shadow-xl hover:bg-[#2d4025] transition-all"
+                className="w-full bg-brand-primary-300 text-neutral-default py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-brand-primary-500 transition-all flex items-center justify-center gap-2 outline-none active:scale-98"
               >
-                Kirim Pesan
+                <Send className="w-4 h-4" /> Kirim Pesan
               </button>
             </form>
           </div>

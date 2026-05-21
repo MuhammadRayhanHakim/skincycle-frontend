@@ -1,1 +1,58 @@
 @import "tailwindcss";
+
+/* 1. Import Font Family dari Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Marcellus+SC&display=swap");
+
+/* 2. Registrasi Variabel Design System ke Utility Class Tailwind */
+@theme {
+  /* Tipografi */
+  --font-sans: "DM Sans", sans-serif;
+  --font-marcellus: "Marcellus SC", serif;
+
+  /* Palette Warna: Primary & Primary Dark */
+  --color-brand-primary-100: #a8bdac;
+  --color-brand-primary-200: #8cac93;
+  --color-brand-primary-300: #4e635a;
+  --color-brand-primary-400: #53835d;
+  --color-brand-primary-500: #2b5837;
+
+  --color-brand-dark-200: #3a5b22;
+  --color-brand-dark-100: #4f6e39;
+  --color-brand-dark-300: #2d5113;
+  --color-brand-dark-400: #24410f;
+  --color-brand-dark-500: #193505;
+
+  /* Palette Warna: Secondary & Neutral */
+  --color-brand-secondary-100: #f7f3ed;
+  --color-brand-secondary-200: #fff5e6;
+  --color-brand-secondary-300: #ffeacb;
+
+  --color-neutral-default: #ffffff;
+  --color-neutral-50: #fbfbf6;
+  --color-neutral-100: #ecebe7;
+  --color-neutral-200: #e8ede7;
+  --color-neutral-300: #cfc8be;
+  --color-neutral-400: #b7b0a5;
+  --color-neutral-500: #9a9488;
+  --color-neutral-600: #7c776d;
+  --color-neutral-700: #5f5c54;
+  --color-neutral-800: #4a5a3e;
+  --color-neutral-900: #3a5b22;
+
+  /* Status Feedback: Info, Success, Warning, Error */
+  --color-feedback-info-100: #def0d0;
+  --color-feedback-info-200: #d4e4c8;
+  --color-feedback-info-300: #9bb786;
+
+  --color-feedback-success-100: #65d06c;
+  --color-feedback-success-200: #3db945;
+  --color-feedback-success-300: #21a72a;
+
+  --color-feedback-warning-100: #ffe69c;
+  --color-feedback-warning-200: #ffd34e;
+  --color-feedback-warning-300: #ffc107;
+
+  --color-feedback-error-100: #ff8383;
+  --color-feedback-error-200: #ff4040;
+  --color-feedback-error-300: #ff0000;
+}
