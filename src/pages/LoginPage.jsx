@@ -173,7 +173,7 @@ const LoginPage = ({ setUser }) => {
         {/* SISI KIRI: INPUT FORM LOGIN */}
         <div className="flex-1 px-8 lg:px-16 py-8 flex flex-col justify-center bg-neutral-default">
           <div className="mb-6">
-            <h1 className="text-3xl lg:text-4xl font-marcellus text-brand-dark-500 mb-2 leading-tight">
+            <h1 className="text-3xl lg:text-4xl font-sans text-brand-dark-500 mb-2 leading-tight">
               Selamat datang kembali
             </h1>
             <p className="text-neutral-400 text-xs font-medium">

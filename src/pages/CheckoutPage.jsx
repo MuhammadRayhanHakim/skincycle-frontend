@@ -814,9 +814,9 @@ const CheckoutPage = () => {
           Kembali
         </button>
 
-        {/* JUDUL HALAMAN - MENGGUNAKAN MARCELLUS SC */}
+        {/* JUDUL HALAMAN */}
         <div className="mb-10">
-          <h1 className="text-3xl font-marcellus text-brand-dark-500 tracking-tight">
+          <h1 className="text-3xl font-sans text-brand-dark-500 tracking-tight">
             Formulir Checkout
           </h1>
           <p className="text-neutral-500 text-sm mt-1 font-medium">
@@ -863,7 +863,7 @@ const CheckoutPage = () => {
 
             {/* INFORMASI PENGIRIMAN */}
             <div className="bg-neutral-default p-8 rounded-[32px] border border-neutral-100 shadow-sm space-y-5">
-              <h3 className="text-base font-bold text-brand-dark-500 mb-2 font-marcellus">
+              <h3 className="text-base font-bold text-brand-dark-500 mb-2 font-sans">
                 Informasi Pengiriman
               </h3>
 
@@ -1080,7 +1080,7 @@ const CheckoutPage = () => {
                   <span className="text-xs font-black uppercase tracking-wider text-brand-dark-500">
                     Total Pembayaran
                   </span>
-                  <span className="text-2xl font-marcellus font-black text-brand-primary-300">
+                  <span className="text-2xl font-sans font-black text-brand-primary-300">
                     Rp {totalPembayaran.toLocaleString("id-ID")}
                   </span>
                 </div>

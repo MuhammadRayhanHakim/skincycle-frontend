@@ -390,7 +390,7 @@ const CreateForumPage = ({ user }) => {
             <div className="w-10 h-10 bg-neutral-default rounded-xl flex items-center justify-center shadow-sm border border-neutral-100 text-brand-primary-300">
               <PenTool className="w-5 h-5" />
             </div>
-            <h1 className="text-3xl font-marcellus text-brand-dark-500 tracking-tight">
+            <h1 className="text-3xl font-sans text-brand-dark-500 tracking-tight">
               Buat Diskusi Baru
             </h1>
           </div>
@@ -555,11 +555,11 @@ const CreateForumPage = ({ user }) => {
           {/* SISI KANAN: PREVIEW INFO USER CARD */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-neutral-default p-6 rounded-[40px] shadow-sm border border-neutral-100 flex items-center gap-4">
-              <div className="w-12 h-12 bg-brand-primary-300 rounded-2xl flex items-center justify-center text-neutral-default font-marcellus font-black uppercase shadow-md">
+              <div className="w-12 h-12 bg-brand-primary-300 rounded-2xl flex items-center justify-center text-neutral-default font-sans font-black uppercase shadow-md">
                 {user?.username?.substring(0, 2) || "U"}
               </div>
               <div>
-                <h4 className="text-xs font-black text-brand-dark-500 uppercase tracking-tight font-marcellus">
+                <h4 className="text-xs font-black text-brand-dark-500 uppercase tracking-tight font-sans">
                   {user?.username || "Guest User"}
                 </h4>
                 <div className="flex items-center gap-1 mt-0.5">

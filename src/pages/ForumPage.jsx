@@ -172,7 +172,7 @@ const ForumPage = ({ user }) => {
           ></div>
           <div className="relative bg-brand-secondary-100 w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden z-[1001]">
             <div className="p-6 border-b border-neutral-100 flex justify-between items-center bg-neutral-default/50">
-              <h3 className="font-marcellus text-xl font-bold">
+              <h3 className="font-sans text-xl font-bold">
                 Edit Diskusi Anda
               </h3>
               <button
@@ -235,7 +235,7 @@ const ForumPage = ({ user }) => {
           ></div>
           <div className="relative bg-brand-secondary-100 w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
             <div className="p-6 border-b border-neutral-100 flex justify-between items-center bg-neutral-default/50">
-              <h3 className="font-marcellus text-xl font-bold">Berikan Balasan</h3>
+              <h3 className="font-sans text-xl font-bold">Berikan Balasan</h3>
               <button
                 onClick={() => setShowReplyModal(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-neutral-100 font-bold"
@@ -288,7 +288,7 @@ const ForumPage = ({ user }) => {
           <div className="bg-brand-primary-300 text-neutral-default text-[9px] font-black px-4 py-1.5 rounded-full w-fit mx-auto mb-6 tracking-[0.3em]">
             COMMUNITY HUB
           </div>
-          <h1 className="text-5xl font-marcellus mb-4 text-brand-dark-500">
+          <h1 className="text-5xl font-sans mb-4 text-brand-dark-500">
             Selamat Datang di Forum Diskusi{" "}
             <span className="text-brand-primary-300">SkinCycle</span>
           </h1>
@@ -436,7 +436,7 @@ const ForumPage = ({ user }) => {
                   </p>
                 </div>
               </div>
-              <h3 className="text-2xl font-marcellus mb-4 leading-tight group-hover:text-brand-primary-300 transition-colors">
+              <h3 className="text-2xl font-sans mb-4 leading-tight group-hover:text-brand-primary-300 transition-colors">
                 {post.judul_posting}
               </h3>
               <p className="text-sm text-neutral-500 mb-4 leading-relaxed line-clamp-3">
@@ -580,7 +580,7 @@ const ForumPage = ({ user }) => {
                   className="flex gap-4 group cursor-pointer"
                   onClick={() => navigate(`/forum?search=${topic.t}`)}
                 >
-                  <span className="text-lg font-marcellus font-black text-neutral-300 group-hover:text-brand-primary-300 transition-colors">
+                  <span className="text-lg font-sans font-black text-neutral-300 group-hover:text-brand-primary-300 transition-colors">
                     {topic.id}
                   </span>
                   <div>

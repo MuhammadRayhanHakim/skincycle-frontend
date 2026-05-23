@@ -364,7 +364,7 @@ const ProductPage = () => {
     <div className="bg-brand-secondary-100 font-sans text-brand-dark-500">
       <section className="min-h-[calc(100vh-64px)] flex flex-col px-10 py-10">
         <header className="mb-12">
-          <h1 className="text-5xl font-marcellus mb-4 tracking-tighter text-brand-dark-500">
+          <h1 className="text-5xl font-sans mb-4 tracking-wide text-brand-dark-500">
             Galeri Produk
           </h1>
           <p className="text-neutral-500 text-lg max-w-3xl leading-relaxed">
@@ -479,7 +479,7 @@ const ProductPage = () => {
 
                   {/* ACTION FOOTER SECTION: STRUKTUR HARGA & DUAL BUTTONS */}
                   <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-neutral-50">
-                    <span className="text-xl font-marcellus text-brand-primary-300">
+                    <span className="text-xl font-sans text-brand-primary-300">
                       Rp {p.harga_asli?.toLocaleString("id-ID")}
                     </span>
 

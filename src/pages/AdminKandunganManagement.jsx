@@ -379,7 +379,7 @@ const AdminKandunganManagement = () => {
       <main className="flex-1 ml-64 p-10">
         <header className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-3xl font-marcellus text-brand-dark-500">
+            <h1 className="text-3xl font-sans text-brand-dark-500">
               Manajemen Bahan Skincare
             </h1>
             <p className="text-xs text-neutral-400 mt-1 font-medium">
@@ -403,7 +403,7 @@ const AdminKandunganManagement = () => {
               <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
                 Total Bahan
               </p>
-              <p className="text-3xl font-marcellus font-black text-brand-dark-500 mt-1">
+              <p className="text-3xl font-sans font-black text-brand-dark-500 mt-1">
                 {ingredients.length}
               </p>
             </div>
@@ -415,7 +415,7 @@ const AdminKandunganManagement = () => {
               <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
                 Bahan Aktif Aman
               </p>
-              <p className="text-3xl font-marcellus font-black text-feedback-success-300 mt-1">
+              <p className="text-3xl font-sans font-black text-feedback-success-300 mt-1">
                 {
                   ingredients.filter((i) => i.status_publikasi === "Published")
                     .length
@@ -474,7 +474,7 @@ const AdminKandunganManagement = () => {
           <div className="bg-neutral-default w-full max-w-xl rounded-3xl p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto border border-neutral-100">
             <div className="flex justify-between items-start">
               <div>
-                <h2 className="text-lg font-marcellus font-bold text-brand-dark-500">
+                <h2 className="text-lg font-sans font-bold text-brand-dark-500">
                   Tambah Kandungan Baru
                 </h2>
                 <p className="text-xs text-neutral-400 mt-0.5">

@@ -564,7 +564,7 @@ const EnsiklopediaPage = () => {
     {
       name: "Kering",
       desc: "Kulit terasa kencang, kasar, dan tampak bersisik atau mudah mengelupas.",
-      img: "🧪",
+      img: "/kulit-kering.jpg",
       details: {
         char: [
           "Pori-pori hampir tidak terlihat",
@@ -583,7 +583,7 @@ const EnsiklopediaPage = () => {
     {
       name: "Berminyak",
       desc: "Tampak mengkilap karena produksi sebum berlebih, pori-pori besar, dan rentan komedo.",
-      img: "🌿",
+      img: "/kulit-berminyak.jpg",
       details: {
         char: [
           "Pori-pori besar and terbuka",
@@ -602,7 +602,7 @@ const EnsiklopediaPage = () => {
     {
       name: "Kombinasi",
       desc: "Area T-zone berminyak, namun area pipi tetap normal atau kering.",
-      img: "✨",
+      img: "/kulit-kombinasi.jpg",
       details: {
         char: [
           "T-Zone (dahi, hidung, dagu) berminyak",
@@ -621,7 +621,7 @@ const EnsiklopediaPage = () => {
     {
       name: "Sensitif",
       desc: "Mudah mengalami iritasi, kemerahan, atau perih terhadap produk tertentu.",
-      img: "🌸",
+      img: "/kulit-sensitif.jpg",
       details: {
         char: [
           "Mudah merah/gatal",
@@ -676,7 +676,7 @@ const EnsiklopediaPage = () => {
       {/* SECTION 1: HEADER & JENIS KULIT */}
       <section className="min-h-[calc(100vh-80px)] flex flex-col justify-center px-10 py-4">
         <header className="text-center mb-8">
-          <h1 className="text-5xl font-marcellus text-brand-dark-500 mb-3 leading-tight">
+          <h1 className="text-5xl font-sans text-brand-dark-500 mb-3 leading-tight">
             Ensiklopedia Jenis Kulit
           </h1>
           <p className="text-neutral-500 max-w-2xl mx-auto text-lg leading-relaxed">
@@ -703,9 +703,14 @@ const EnsiklopediaPage = () => {
               >
                 <div
                   onClick={() => handleOpenPopup(item)}
-                  className="w-full h-32 bg-neutral-100 rounded-[25px] mb-4 flex items-center justify-center text-4xl shadow-inner cursor-pointer hover:bg-neutral-200 transition-colors"
+                  className="w-full h-36 rounded-[25px] mb-4 overflow-hidden cursor-pointer shadow-sm group-hover:shadow-md transition-all bg-brand-primary-100/20"
                 >
-                  {item.img}
+                  <img
+                    src={item.img}
+                    alt={`Kulit ${item.name}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.style.background = '#a8bdac'; }}
+                  />
                 </div>
                 <h4 className="text-xl font-bold text-brand-dark-500 mb-2">
                   {item.name}
@@ -735,14 +740,22 @@ const EnsiklopediaPage = () => {
           ></div>
 
           <div className="relative bg-neutral-default w-full max-w-4xl rounded-[40px] overflow-hidden shadow-2xl flex flex-col md:flex-row animate-in fade-in zoom-in duration-300">
-            <div className="md:w-2/5 bg-gradient-to-br from-brand-primary-100 to-brand-primary-300 p-10 flex flex-col justify-end text-neutral-default">
-              <span className="text-6xl mb-6">{selectedType.img}</span>
-              <p className="text-xs font-bold uppercase tracking-widest opacity-70 mb-2">
-                Skin Report
-              </p>
-              <h3 className="text-4xl font-marcellus leading-tight">
-                Detail Tipe Kulit <br /> {selectedType.name}
-              </h3>
+            <div className="md:w-2/5 relative flex flex-col justify-end text-neutral-default overflow-hidden">
+              <img
+                src={selectedType.img}
+                alt={`Kulit ${selectedType.name}`}
+                className="absolute inset-0 w-full h-full object-cover"
+                onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.style.background = 'linear-gradient(135deg, #a8bdac, #4e635a)'; }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-primary-500/90 via-brand-primary-400/40 to-transparent"></div>
+              <div className="relative z-10 p-10">
+                <p className="text-xs font-bold uppercase tracking-widest opacity-70 mb-2">
+                  Skin Report
+                </p>
+                <h3 className="text-4xl font-sans leading-tight">
+                  Detail Tipe Kulit <br /> {selectedType.name}
+                </h3>
+              </div>
             </div>
 
             <div className="md:w-3/5 p-10 max-h-[85vh] overflow-y-auto">
@@ -836,7 +849,7 @@ const EnsiklopediaPage = () => {
                 <span className="bg-brand-primary-300 text-neutral-default px-4 py-1 rounded-full text-[10px] font-bold w-fit mb-4">
                   PANDUAN
                 </span>
-                <h3 className="text-neutral-default text-4xl font-marcellus mb-4 leading-tight">
+                <h3 className="text-neutral-default text-4xl font-sans mb-4 leading-tight">
                   Seni Rutinitas Skincare Berkelanjutan
                 </h3>
                 <p className="text-neutral-default/80 text-base max-w-xl mb-6">
@@ -880,7 +893,7 @@ const EnsiklopediaPage = () => {
       <section className="min-h-screen flex flex-col justify-center px-10 py-10">
         <div className="max-w-7xl mx-auto w-full bg-neutral-default p-12 rounded-[50px] shadow-sm border border-neutral-100">
           <div className="text-center mb-10">
-            <h2 className="text-4xl font-marcellus text-brand-dark-500 mb-4">
+            <h2 className="text-4xl font-sans text-brand-dark-500 mb-4">
               Kandungan Bahan Skincare
             </h2>
             <p className="text-neutral-500 text-lg max-w-2xl mx-auto">
@@ -973,7 +986,7 @@ const EnsiklopediaPage = () => {
                 <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">
                   Profil Kandungan
                 </span>
-                <h2 className="text-2xl font-marcellus text-brand-dark-500 mb-6 uppercase tracking-tight">
+                <h2 className="text-2xl font-sans text-brand-dark-500 mb-6 uppercase tracking-tight">
                   {selectedIngredient.nama_kandungan}
                 </h2>
                 <div className="w-full aspect-square rounded-2xl overflow-hidden mb-6 bg-neutral-default border p-2 flex items-center justify-center text-5xl shadow-sm border-neutral-100">

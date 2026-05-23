@@ -22,8 +22,8 @@ const ArtikelDetailPage = () => {
           </span>
         </div>
 
-        {/* TITLE HEADLINE - MENGGUNAKAN MARCELLUS SC */}
-        <h1 className="text-5xl font-marcellus text-brand-dark-500 mb-4 leading-tight">
+        {/* TITLE HEADLINE */}
+        <h1 className="text-5xl font-sans text-brand-dark-500 mb-4 leading-tight">
           Seni Rutinitas Skincare
         </h1>
         <p className="text-sm font-bold text-brand-primary-300 mb-10 tracking-wide uppercase">

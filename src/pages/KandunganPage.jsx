@@ -439,9 +439,9 @@ const KandunganPage = () => {
   return (
     <div className="bg-brand-secondary-100 min-h-screen font-sans text-brand-dark-500 py-12 px-6 lg:px-20">
       <div className="max-w-6xl mx-auto">
-        {/* HEADER TEXT - MENGGUNAKAN MARCELLUS SC */}
+        {/* HEADER TEXT */}
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <h1 className="text-4xl font-marcellus text-brand-dark-500 mb-3 tracking-tight">
+          <h1 className="text-4xl font-sans text-brand-dark-500 mb-3 tracking-tight">
             Perpustakaan Kandungan
           </h1>
           <p className="text-neutral-500 text-sm leading-relaxed">
@@ -578,7 +578,7 @@ const KandunganPage = () => {
                   <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest block mb-1">
                     Profil Kandungan
                   </span>
-                  <h2 className="text-2xl font-marcellus text-brand-dark-500 mb-6">
+                  <h2 className="text-2xl font-sans text-brand-dark-500 mb-6">
                     {selectedIngredient.nama_bahan ||
                       selectedIngredient.nama_kandungan}
                   </h2>

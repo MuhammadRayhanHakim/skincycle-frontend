@@ -228,12 +228,12 @@ const ProductDetailPage = () => {
               </span>
             </div>
 
-            <h1 className="text-4xl font-marcellus text-brand-dark-500 mb-2 leading-tight uppercase tracking-tight">
+            <h1 className="text-4xl font-sans text-brand-dark-500 mb-2 leading-tight uppercase tracking-tight">
               {product.nama_produk}
             </h1>
 
             <div className="mb-6">
-              <h2 className="text-3xl font-marcellus text-brand-primary-300 font-bold">
+              <h2 className="text-3xl font-sans text-brand-primary-300 font-bold">
                 Rp {product.harga_asli?.toLocaleString("id-ID")}
               </h2>
               <p className="text-[10px] text-neutral-400 font-bold mt-2 uppercase tracking-wide flex items-center gap-1">

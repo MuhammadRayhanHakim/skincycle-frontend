@@ -55,7 +55,7 @@ const EditProfilePage = ({ user, setUser }) => {
         {/* HEADER CONTROL BAR */}
         <div className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-3xl font-marcellus text-brand-dark-500 tracking-tight">
+            <h1 className="text-3xl font-sans text-brand-dark-500 tracking-tight">
               Pengaturan Profil
             </h1>
             <p className="text-neutral-500 text-xs uppercase tracking-widest mt-1 font-bold">
@@ -75,10 +75,10 @@ const EditProfilePage = ({ user, setUser }) => {
           {/* SIDEBAR KIRI: KREDENSIAL AVATAR & NAVIGATION */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-neutral-default rounded-[40px] p-8 shadow-sm border border-neutral-100 text-center">
-              <div className="w-32 h-32 bg-brand-primary-300 rounded-full mx-auto flex items-center justify-center text-neutral-default text-4xl font-marcellus font-bold border-4 border-brand-secondary-100 shadow-lg mb-6 overflow-hidden uppercase">
+              <div className="w-32 h-32 bg-brand-primary-300 rounded-full mx-auto flex items-center justify-center text-neutral-default text-4xl font-sans font-bold border-4 border-brand-secondary-100 shadow-lg mb-6 overflow-hidden uppercase">
                 {formData.username.charAt(0)}
               </div>
-              <h3 className="text-xl font-marcellus font-black text-brand-dark-500 uppercase tracking-tight">
+              <h3 className="text-xl font-sans font-black text-brand-dark-500 uppercase tracking-tight">
                 {formData.username}
               </h3>
               <p className="text-[10px] text-brand-primary-300 mt-1 uppercase tracking-widest font-black flex items-center justify-center gap-1">
@@ -136,7 +136,7 @@ const EditProfilePage = ({ user, setUser }) => {
           {/* AREA UTAMA: FORM ISIAN INTERNAL */}
           <div className="lg:col-span-8 bg-neutral-default rounded-[50px] p-10 shadow-sm border border-neutral-100 flex flex-col">
             <div className="flex justify-between items-center mb-8 pb-4 border-b border-neutral-50">
-              <h3 className="text-xl font-marcellus text-brand-dark-500">
+              <h3 className="text-xl font-sans text-brand-dark-500">
                 Informasi Pribadi
               </h3>
               <span className="text-[10px] bg-brand-primary-100/30 text-brand-primary-300 px-3 py-1 rounded-full font-black uppercase tracking-wider flex items-center gap-1">

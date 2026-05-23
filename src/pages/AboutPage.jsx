@@ -39,7 +39,7 @@ const AboutPage = () => {
       - Menurunkan ukuran font judul dari 'text-6xl' menjadi 'text-3xl md:text-4xl lg:text-5xl'
       - Mengurangi margin bawah dari 'mb-6' menjadi 'mb-4'
     */}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-marcellus mb-4 leading-tight text-brand-dark-500 uppercase tracking-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-sans mb-4 leading-tight text-brand-dark-500 uppercase tracking-wide">
               Kulit Glowing Tanpa Harus Merusak Bumi.
             </h1>
 
@@ -75,7 +75,7 @@ const AboutPage = () => {
             <span className="text-xs font-black text-brand-primary-300 uppercase tracking-[0.3em] mb-6 block">
               MENGAPA SKINCYCLE ADA?
             </span>
-            <h2 className="text-4xl md:text-5xl font-marcellus mb-8 leading-tight text-brand-dark-500">
+            <h2 className="text-4xl md:text-5xl font-sans mb-8 leading-tight text-brand-dark-500">
               Berhenti Membeli Botol, Mulailah Berinvestasi pada Kulit & Bumi.
             </h2>
             <h3 className="text-xl md:text-2xl italic text-neutral-500 mb-8 font-serif leading-relaxed">
@@ -93,9 +93,9 @@ const AboutPage = () => {
             <div className="w-full max-w-xl relative">
               <div className="rounded-[40px] overflow-hidden shadow-2xl h-[400px] md:h-[500px] border border-neutral-100 bg-neutral-default">
                 <img
-                  src="https://images.unsplash.com/photo-1556228578-0d85b1a4d520?auto=format&fit=crop&q=80&w=800"
+                  src="https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=800"
                   className="w-full h-full object-cover"
-                  alt="Product"
+                  alt="Produk skincare alami dengan bahan botanis dan kemasan ramah lingkungan"
                 />
               </div>
               <div className="absolute -bottom-6 -left-6 bg-brand-secondary-300 p-6 rounded-3xl max-w-xs shadow-xl border border-neutral-100/50">
@@ -115,7 +115,7 @@ const AboutPage = () => {
             <div className="w-12 h-12 bg-feedback-info-100 text-brand-primary-300 rounded-2xl flex items-center justify-center mb-8">
               <Leaf className="w-6 h-6" />
             </div>
-            <h4 className="text-3xl md:text-4xl font-marcellus mb-6 text-brand-dark-500">
+            <h4 className="text-3xl md:text-4xl font-sans mb-6 text-brand-dark-500">
               Misi Kami
             </h4>
             <p className="text-sm md:text-base text-neutral-500 leading-relaxed font-medium font-sans">
@@ -129,7 +129,7 @@ const AboutPage = () => {
             <div className="w-12 h-12 bg-neutral-default/20 text-neutral-default rounded-2xl flex items-center justify-center mb-8">
               <Mountain className="w-6 h-6" />
             </div>
-            <h4 className="text-3xl md:text-4xl font-marcellus mb-6 text-neutral-default">
+            <h4 className="text-3xl md:text-4xl font-sans mb-6 text-neutral-default">
               Visi Kami
             </h4>
             <p className="text-sm md:text-base text-neutral-default/80 leading-relaxed font-medium font-sans">
@@ -144,7 +144,7 @@ const AboutPage = () => {
       {/* SECTION 4: PILAR UTAMA (Full Screen) */}
       <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-20 text-center">
         <div className="max-w-7xl mx-auto w-full">
-          <h2 className="text-4xl md:text-5xl font-marcellus mb-4 text-brand-dark-500">
+          <h2 className="text-4xl md:text-5xl font-sans mb-4 text-brand-dark-500">
             Pilar Utama SkinCycle
           </h2>
           <p className="text-base md:text-xl text-neutral-500 mb-20 max-w-3xl mx-auto font-medium font-sans">
@@ -152,7 +152,7 @@ const AboutPage = () => {
             bumi kita.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
             {[
               {
                 title: "Ensiklopedia",
@@ -175,16 +175,22 @@ const AboutPage = () => {
             ].map((pilar) => (
               <div
                 key={pilar.title}
-                className="flex flex-col items-center cursor-pointer group"
+                className="bg-neutral-default border border-neutral-100 rounded-[40px] p-10 flex flex-col items-center text-center cursor-pointer group hover:shadow-2xl hover:border-brand-primary-100/60 hover:-translate-y-2 hover:bg-brand-secondary-100/60 transition-all duration-500 ease-out shadow-sm"
                 onClick={() => navigate(pilar.path)}
               >
-                <div className="w-16 h-16 bg-neutral-default rounded-3xl border border-neutral-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm group-hover:border-brand-primary-100">
+
+                {/* Icon */}
+                <div className="w-14 h-14 bg-brand-secondary-100 rounded-2xl border border-neutral-100 flex items-center justify-center mb-6 transition-all duration-500 group-hover:bg-brand-primary-100/30 group-hover:border-brand-primary-100 group-hover:scale-110 shadow-sm">
                   {pilar.icon}
                 </div>
-                <h5 className="text-2xl font-marcellus mb-4 text-brand-dark-500 group-hover:text-brand-primary-300 transition-colors">
+
+                {/* Title */}
+                <h5 className="text-2xl font-sans mb-3 text-brand-dark-500 transition-colors duration-500 group-hover:text-brand-primary-300">
                   {pilar.title}
                 </h5>
-                <p className="text-sm text-neutral-400 leading-relaxed px-6 font-medium font-sans">
+
+                {/* Desc */}
+                <p className="text-sm text-neutral-400 leading-relaxed font-medium font-sans transition-colors duration-500 group-hover:text-neutral-500">
                   {pilar.desc}
                 </p>
               </div>
@@ -199,7 +205,7 @@ const AboutPage = () => {
           <span className="text-xs font-black text-brand-primary-300 uppercase tracking-widest mb-4 block">
             SOSOK DI BALIK LAYAR
           </span>
-          <h2 className="text-4xl md:text-5xl font-marcellus mb-16 text-brand-dark-500">
+          <h2 className="text-4xl md:text-5xl font-sans mb-16 text-brand-dark-500">
             Tim Kami
           </h2>
 
@@ -234,7 +240,7 @@ const AboutPage = () => {
                     alt={member.name}
                   />
                 </div>
-                <h5 className="text-lg font-bold mb-1 text-brand-dark-500 font-marcellus">
+                <h5 className="text-lg font-bold mb-1 text-brand-dark-500 font-sans">
                   {member.name}
                 </h5>
                 <p className="text-[10px] font-black text-brand-primary-300 tracking-widest uppercase mb-4">
@@ -257,7 +263,7 @@ const AboutPage = () => {
             <span className="text-xs font-black text-brand-primary-300 uppercase tracking-widest mb-6 block">
               KONTAK KAMI
             </span>
-            <h2 className="text-4xl md:text-5xl font-marcellus mb-8 text-brand-dark-500">
+            <h2 className="text-4xl md:text-5xl font-sans mb-8 text-brand-dark-500">
               Sapa SkinCycle
             </h2>
             <p className="text-sm md:text-lg text-neutral-500 mb-12 leading-relaxed font-medium font-sans">
@@ -276,7 +282,7 @@ const AboutPage = () => {
                   <p className="text-[10px] font-black text-brand-primary-300 uppercase mb-1">
                     Email Support
                   </p>
-                  <p className="text-lg md:text-xl font-medium text-brand-dark-500 font-marcellus">
+                  <p className="text-lg md:text-xl font-medium text-brand-dark-500 font-sans">
                     hello@skincycle.id
                   </p>
                 </div>
@@ -289,8 +295,8 @@ const AboutPage = () => {
                   <p className="text-[10px] font-black text-brand-primary-300 uppercase mb-1">
                     Kantor Operasional
                   </p>
-                  <p className="text-lg md:text-xl font-medium text-brand-dark-500 font-marcellus">
-                    Cikarang Utara, Bekasi Regency
+                  <p className="text-lg md:text-xl font-medium text-brand-dark-500 font-sans">
+                    Surabaya, Jawa Timur
                   </p>
                 </div>
               </div>

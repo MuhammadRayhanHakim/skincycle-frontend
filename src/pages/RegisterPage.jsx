@@ -169,7 +169,7 @@ const RegisterPage = () => {
         {/* SISI KIRI: DATA INPUT FORM */}
         <div className="flex-1 px-8 lg:px-16 py-6 lg:py-8 flex flex-col justify-center bg-neutral-default">
           <div className="mb-6">
-            <h1 className="text-3xl lg:text-4xl font-marcellus text-brand-dark-500 mb-1 leading-tight">
+            <h1 className="text-3xl lg:text-4xl font-sans text-brand-dark-500 mb-1 leading-tight">
               Mulai Sekarang
             </h1>
             <p className="text-neutral-400 text-[11px] lg:text-xs font-medium">

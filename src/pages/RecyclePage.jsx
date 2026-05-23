@@ -196,7 +196,7 @@ const RecyclePage = () => {
             <span className="text-[12px] font-bold text-brand-primary-300 uppercase tracking-[0.3em] mb-6 block">
               Urgensi
             </span>
-            <h1 className="text-6xl font-marcellus text-brand-dark-500 mb-8 leading-tight">
+            <h1 className="text-6xl font-sans text-brand-dark-500 mb-8 leading-tight">
               120 Miliar <br />
               <span className="italic text-brand-primary-300">
                 Sampah Kecantikan.
@@ -211,7 +211,7 @@ const RecyclePage = () => {
             {/* Statistik */}
             <div className="grid grid-cols-2 gap-8 border-t border-brand-primary-300/20 pt-8">
               <div>
-                <p className="text-4xl font-marcellus text-brand-primary-300 font-bold mb-1">
+                <p className="text-4xl font-sans text-brand-primary-300 font-bold mb-1">
                   70%
                 </p>
                 <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">
@@ -219,7 +219,7 @@ const RecyclePage = () => {
                 </p>
               </div>
               <div>
-                <p className="text-4xl font-marcellus text-brand-primary-300 font-bold mb-1">
+                <p className="text-4xl font-sans text-brand-primary-300 font-bold mb-1">
                   450 Tahun
                 </p>
                 <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">
@@ -233,7 +233,7 @@ const RecyclePage = () => {
           <div className="relative">
             <div className="rounded-[50px] overflow-hidden shadow-2xl h-[500px] border border-neutral-100">
               <img
-                src="https://images.unsplash.com/photo-1611080626919-7cf5a969fc24?auto=format&fit=crop&q=80&w=1000"
+                src="/produk-skincare.jpg"
                 alt="Skincare Products"
                 className="w-full h-full object-cover"
               />
@@ -251,7 +251,7 @@ const RecyclePage = () => {
       <section className="min-h-screen flex flex-col justify-center px-10 py-10 bg-neutral-100">
         <div className="max-w-5xl mx-auto w-full bg-neutral-200 p-16 rounded-[60px] shadow-sm flex flex-col md:flex-row items-center gap-12 border border-neutral-100/50">
           <div className="flex-1">
-            <h2 className="text-5xl font-marcellus text-brand-dark-500 mb-6 leading-tight">
+            <h2 className="text-5xl font-sans text-brand-dark-500 mb-6 leading-tight">
               Bergabung dengan Gerakan.
             </h2>
             <p className="text-neutral-600 text-lg leading-relaxed">
@@ -298,7 +298,7 @@ const RecyclePage = () => {
       {/* --- SECTION 3: SOLUSI KAMI --- */}
       <section className="min-h-screen flex flex-col justify-center px-10 py-10">
         <div className="max-w-7xl mx-auto w-full text-center mb-16">
-          <h2 className="text-4xl font-marcellus text-brand-dark-500 mb-4">
+          <h2 className="text-4xl font-sans text-brand-dark-500 mb-4">
             Solusi Daur Ulang Kami
           </h2>
           <p className="text-neutral-500 text-lg max-w-2xl mx-auto">

@@ -447,9 +447,9 @@ const RecycleDropPage = () => {
   return (
     <div className="bg-brand-secondary-100 font-sans min-h-screen overflow-y-auto text-brand-dark-500">
       <div className="max-w-7xl mx-auto px-10 flex flex-col justify-center py-10">
-        {/* HEADER PANEL - MENGGUNAKAN MARCELLUS SC */}
+        {/* HEADER PANEL */}
         <header className="mb-6">
-          <h1 className="text-4xl font-marcellus text-brand-dark-500 mb-2 tracking-tight">
+          <h1 className="text-4xl font-sans text-brand-dark-500 mb-2 tracking-tight">
             Antar & Verifikasi
           </h1>
           <p className="text-neutral-500 text-sm font-medium">
@@ -570,7 +570,7 @@ const RecycleDropPage = () => {
               <div className="inline-flex items-center justify-center w-44 h-44 rounded-full border-[10px] border-neutral-default/10 mb-6 mx-auto bg-brand-primary-400/20 shadow-inner">
                 <div className="text-neutral-default">
                   <p className="text-sm font-black italic mb-0.5">Rp</p>
-                  <span className="text-5xl font-marcellus font-black block leading-none">
+                  <span className="text-5xl font-sans font-black block leading-none">
                     {estimatedBalance.toLocaleString("id-ID")}
                   </span>
                 </div>

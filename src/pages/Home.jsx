@@ -369,8 +369,8 @@ const Home = () => {
             <span className="bg-neutral-default/80 backdrop-blur-sm px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-neutral-100 shadow-sm text-brand-primary-300">
               Conscious Care
             </span>
-            {/* Menggunakan font-marcellus untuk Headline */}
-            <h2 className="text-6xl font-marcellus mt-8 leading-[1.1] text-neutral-800">
+            {/* Menggunakan font-sans untuk Headline */}
+            <h2 className="text-6xl font-sans mt-8 leading-[1.1] text-neutral-800">
               Ubah Rutinitas Skincare <br />
               Menjadi Aksi Nyata <br />
               <span className="italic text-brand-primary-300">Untuk Bumi</span>
@@ -441,7 +441,7 @@ const Home = () => {
       <section className="min-h-screen flex flex-col justify-center px-10 py-10 bg-neutral-default/40">
         <div className="max-w-7xl mx-auto w-full">
           <div className="text-center mb-10">
-            <h2 className="text-5xl font-marcellus text-brand-dark-500 mb-4">
+            <h2 className="text-5xl font-sans text-brand-dark-500 mb-4">
               Ensiklopedia
             </h2>
             <p className="text-neutral-500 max-w-3xl mx-auto text-lg leading-relaxed">
@@ -538,7 +538,7 @@ const Home = () => {
       <section className="min-h-screen flex flex-col justify-center px-10 py-20">
         <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-20 items-center">
           <div className="lg:col-span-6">
-            <h2 className="text-5xl font-marcellus text-brand-dark-500 leading-tight mb-8">
+            <h2 className="text-5xl font-sans text-brand-dark-500 leading-tight mb-8">
               Daur Ulang dan <br /> Dapatkan{" "}
               <span className="text-brand-primary-300">Reward</span>
             </h2>
@@ -615,7 +615,7 @@ const Home = () => {
       {/* --- SECTION 4: FORUM DISKUSI --- */}
       <section className="min-h-screen flex flex-col justify-center px-10 py-20 bg-neutral-default/30">
         <div className="max-w-7xl mx-auto w-full text-center mb-16">
-          <h2 className="text-5xl font-marcellus text-brand-dark-500 mb-4">
+          <h2 className="text-5xl font-sans text-brand-dark-500 mb-4">
             Forum Diskusii
           </h2>
           <p className="text-neutral-500 max-w-3xl mx-auto text-lg leading-relaxed">

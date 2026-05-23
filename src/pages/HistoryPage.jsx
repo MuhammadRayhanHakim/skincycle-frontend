@@ -109,10 +109,10 @@ const HistoryPage = () => {
   }
 
   return (
-    <div className="bg-brand-secondary-100 font-sans h-[calc(100vh-64px)] overflow-hidden text-brand-dark-500">
-      <div className="max-w-7xl mx-auto px-10 h-full flex flex-col py-6">
+    <div className="bg-brand-secondary-100 font-sans min-h-[calc(100vh-64px)] text-brand-dark-500">
+      <div className="max-w-7xl mx-auto px-10 flex flex-col py-6 gap-6">
         {/* --- TOP SECTION: WALLET OVERVIEW & IMPACT SCORE --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Wallet Balance Card */}
           <div className="lg:col-span-8 bg-neutral-default p-8 rounded-[40px] shadow-sm border border-neutral-default flex justify-between items-center relative overflow-hidden">
             <div className="relative z-10">
@@ -120,7 +120,7 @@ const HistoryPage = () => {
                 <Wallet className="w-3.5 h-3.5 text-brand-primary-300" /> Wallet
                 Overview
               </p>
-              <h2 className="text-5xl font-marcellus text-brand-dark-500 mb-6 leading-none">
+              <h2 className="text-5xl font-sans text-brand-dark-500 mb-6 leading-none">
                 Rp {walletBalance.toLocaleString("id-ID")}
               </h2>
               <div className="flex gap-3">
@@ -148,7 +148,7 @@ const HistoryPage = () => {
                 <Leaf className="w-3.5 h-3.5" /> Impact Score
               </p>
               <div className="flex items-end gap-2 mb-4">
-                <span className="text-4xl font-marcellus font-black leading-none text-brand-primary-500">
+                <span className="text-4xl font-sans font-black leading-none text-brand-primary-500">
                   84
                 </span>
                 <span className="text-sm font-bold opacity-60">/ 100</span>
@@ -168,7 +168,7 @@ const HistoryPage = () => {
         </div>
 
         {/* --- BOTTOM SECTION: DETAILED HISTORY LOG TABLE --- */}
-        <div className="bg-neutral-default rounded-[40px] shadow-sm border border-neutral-100 flex-grow flex flex-col overflow-hidden">
+        <div className="bg-neutral-default rounded-[40px] shadow-sm border border-neutral-100">
           <div className="p-6 border-b border-neutral-50 flex flex-col sm:flex-row gap-4 justify-between items-center">
             <h3 className="font-bold text-brand-dark-500 text-sm uppercase tracking-widest">
               Riwayat
@@ -188,9 +188,9 @@ const HistoryPage = () => {
           </div>
 
           {/* Table Container Body */}
-          <div className="overflow-y-auto flex-grow px-6">
+          <div className="px-6">
             <table className="w-full text-left border-collapse">
-              <thead className="sticky top-0 bg-neutral-default z-10 border-b border-neutral-50">
+              <thead className="border-b border-neutral-50">
                 <tr className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">
                   <th className="py-4 px-2">Date</th>
                   <th className="py-4 px-2">Description</th>
@@ -236,7 +236,7 @@ const HistoryPage = () => {
                       {/* Jumlah Saldo */}
                       <td className="py-4 px-2 text-[11px] font-black text-right">
                         {item.status_jemput === "selesai" ? (
-                          <span className="text-feedback-success-300 font-marcellus text-sm font-black">
+                          <span className="text-feedback-success-300 font-sans text-sm font-black">
                             +Rp{" "}
                             {parseInt(item.saldo_cair).toLocaleString("id-ID")}
                           </span>

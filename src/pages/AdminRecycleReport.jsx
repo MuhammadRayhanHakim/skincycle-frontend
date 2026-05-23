@@ -739,7 +739,7 @@ const AdminRecycleReport = () => {
       <main className="flex-1 ml-64 p-8 overflow-y-auto">
         <header className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-3xl font-marcellus text-brand-dark-500 uppercase tracking-tight">
+            <h1 className="text-3xl font-sans text-brand-dark-500 uppercase tracking-tight">
               Laporan Daur Ulang
             </h1>
             <p className="text-sm text-neutral-400 font-medium mt-0.5">
@@ -820,12 +820,12 @@ const AdminRecycleReport = () => {
                     </div>
 
                     <div className="flex items-center gap-5 mb-10">
-                      <div className="w-14 h-14 bg-brand-primary-300 rounded-[22px] flex items-center justify-center text-neutral-default text-xl font-marcellus font-black uppercase shadow-lg shadow-brand-primary-500/20">
+                      <div className="w-14 h-14 bg-brand-primary-300 rounded-[22px] flex items-center justify-center text-neutral-default text-xl font-sans font-black uppercase shadow-lg shadow-brand-primary-500/20">
                         {selectedLaporan.penulis_laporan?.username?.charAt(0) ||
                           "U"}
                       </div>
                       <div>
-                        <p className="font-marcellus font-black text-xl text-brand-dark-500 uppercase tracking-tight leading-none mb-1">
+                        <p className="font-sans font-black text-xl text-brand-dark-500 uppercase tracking-tight leading-none mb-1">
                           {selectedLaporan.penulis_laporan?.username || "User"}
                         </p>
                         <p className="text-[10px] text-neutral-400 font-bold tracking-widest">
@@ -852,7 +852,7 @@ const AdminRecycleReport = () => {
                           <p className="font-black text-[9px] text-neutral-300 uppercase tracking-widest mb-1">
                             Berat Estimasi
                           </p>
-                          <p className="font-marcellus font-black text-brand-primary-300 text-lg">
+                          <p className="font-sans font-black text-brand-primary-300 text-lg">
                             {selectedLaporan.estimasi_berat || 0} KG
                           </p>
                         </div>
@@ -973,7 +973,7 @@ const AdminRecycleReport = () => {
                       <td className="py-4 px-4 font-bold text-neutral-500">
                         {item.estimasi_berat} KG
                       </td>
-                      <td className="py-4 px-4 text-right font-marcellus font-black text-feedback-success-300 text-sm">
+                      <td className="py-4 px-4 text-right font-sans font-black text-feedback-success-300 text-sm">
                         +Rp{" "}
                         {parseInt(item.saldo_cair || 0).toLocaleString("id-ID")}
                       </td>

@@ -165,7 +165,7 @@ const ArtikelListPage = () => {
     <div className="bg-brand-secondary-100 font-sans text-brand-dark-500 min-h-screen pb-20">
       {/* --- HEADER FEATURED POST --- */}
       <header className="px-10 py-16 max-w-7xl mx-auto">
-        <h1 className="text-5xl font-marcellus mb-12 text-brand-dark-500 tracking-tight">
+        <h1 className="text-5xl font-sans mb-12 text-brand-dark-500 tracking-tight">
           Jendela Edukasi Skincare
         </h1>
 
@@ -186,7 +186,7 @@ const ArtikelListPage = () => {
               <BookOpen className="w-3 h-3" /> Featured Ritual
             </span>
             <h2
-              className="text-3xl md:text-4xl font-marcellus mb-6 leading-tight cursor-pointer hover:text-brand-primary-300 transition-colors text-brand-dark-500"
+              className="text-3xl md:text-4xl font-sans mb-6 leading-tight cursor-pointer hover:text-brand-primary-300 transition-colors text-brand-dark-500"
               onClick={() => navigate("/ensiklopedia/detail/1")}
             >
               The Art of the Layered Routine
@@ -238,7 +238,7 @@ const ArtikelListPage = () => {
                 </span>
 
                 {/* Judul Sub-Artikel - Menggunakan Marcellus SC */}
-                <h4 className="text-xl font-marcellus mb-3 text-brand-dark-500 group-hover:text-brand-primary-300 transition-colors leading-tight">
+                <h4 className="text-xl font-sans mb-3 text-brand-dark-500 group-hover:text-brand-primary-300 transition-colors leading-tight">
                   {art.title}
                 </h4>
 

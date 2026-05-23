@@ -601,7 +601,7 @@ const AdminProductManagement = () => {
       <main className="flex-1 ml-64 p-10">
         <header className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-3xl font-marcellus text-brand-dark-500 uppercase tracking-tight">
+            <h1 className="text-3xl font-sans text-brand-dark-500 uppercase tracking-tight">
               Manajemen Produk
             </h1>
             <p className="text-xs text-neutral-400 font-medium mt-0.5">
@@ -663,7 +663,7 @@ const AdminProductManagement = () => {
                         {p.kategori}
                       </span>
                     </td>
-                    <td className="px-8 py-5 text-brand-primary-300 font-marcellus text-sm">
+                    <td className="px-8 py-5 text-brand-primary-300 font-sans text-sm">
                       Rp {p.harga_asli?.toLocaleString("id-ID")}
                     </td>
                     <td className="px-8 py-5 text-center flex justify-center gap-4 pt-6">
@@ -697,7 +697,7 @@ const AdminProductManagement = () => {
         <div className="fixed inset-0 bg-brand-dark-500/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-neutral-default w-full max-w-xl rounded-[40px] p-8 shadow-2xl max-h-[90vh] overflow-y-auto space-y-4 border border-neutral-100">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-marcellus font-bold text-brand-dark-500 uppercase tracking-tight">
+              <h2 className="text-xl font-sans font-bold text-brand-dark-500 uppercase tracking-tight">
                 {isEditMode ? "Edit Detail Produk" : "Tambah Produk Baru"}
               </h2>
               <button

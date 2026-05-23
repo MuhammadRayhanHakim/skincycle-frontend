@@ -37,7 +37,7 @@
 //               <p className="text-[10px] font-black uppercase tracking-widest opacity-80 flex items-center gap-1.5">
 //                 <Wallet className="w-3.5 h-3.5" /> Saldo Saat Ini
 //               </p>
-//               <h2 className="text-4xl font-marcellus font-bold mt-4">
+//               <h2 className="text-4xl font-sans font-bold mt-4">
 //                 {formatRupiah(user?.total_saldo || 0)}
 //               </h2>
 //               <p className="text-xs mt-2 opacity-70 font-medium">
@@ -58,7 +58,7 @@
 //                 </button>
 //               </div>
 //             </div>
-//             <div className="absolute bottom-[-10%] right-[-5%] text-[150px] opacity-10 italic font-marcellus pointer-events-none select-none">
+//             <div className="absolute bottom-[-10%] right-[-5%] text-[150px] opacity-10 italic font-sans pointer-events-none select-none">
 //               Rp
 //             </div>
 //           </div>
@@ -79,7 +79,7 @@
 //                     {user?.level_pengguna || "Level 1"}
 //                   </p>
 //                 </div>
-//                 <span className="text-2xl font-marcellus font-black text-brand-primary-300">
+//                 <span className="text-2xl font-sans font-black text-brand-primary-300">
 //                   75%
 //                 </span>
 //               </div>
@@ -147,11 +147,11 @@
 //           <div className="lg:col-span-2 bg-neutral-default rounded-[40px] p-8 shadow-sm border border-neutral-100">
 //             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
 //               <div className="flex gap-5 items-center">
-//                 <div className="w-20 h-20 bg-brand-primary-300 rounded-full flex items-center justify-center text-neutral-default text-3xl font-marcellus font-bold border-4 border-brand-secondary-100 uppercase shadow-md">
+//                 <div className="w-20 h-20 bg-brand-primary-300 rounded-full flex items-center justify-center text-neutral-default text-3xl font-sans font-bold border-4 border-brand-secondary-100 uppercase shadow-md">
 //                   {user?.username?.charAt(0) || "U"}
 //                 </div>
 //                 <div>
-//                   <h3 className="text-2xl font-marcellus font-black text-brand-dark-500 uppercase tracking-tight">
+//                   <h3 className="text-2xl font-sans font-black text-brand-dark-500 uppercase tracking-tight">
 //                     {user?.username || "Guest"}
 //                   </h3>
 //                   <p className="text-[10px] text-neutral-400 mt-1 font-bold uppercase tracking-wider flex items-center gap-1">
@@ -191,7 +191,7 @@
 //                   key={i}
 //                   className="bg-neutral-50 p-5 rounded-3xl text-center border border-neutral-100"
 //                 >
-//                   <p className="text-sm font-marcellus font-black text-brand-dark-500 leading-none">
+//                   <p className="text-sm font-sans font-black text-brand-dark-500 leading-none">
 //                     {stat.n}
 //                   </p>
 //                   <p className="text-[9px] text-neutral-400 font-bold uppercase mt-1.5 tracking-wide">
@@ -211,7 +211,7 @@
 //               <div className="grid grid-cols-2 gap-4">
 //                 <div className="bg-brand-primary-100/10 p-6 rounded-[30px] text-center border border-brand-primary-100/20 flex flex-col items-center justify-center gap-1">
 //                   <MessageSquare className="w-5 h-5 text-brand-primary-300" />
-//                   <p className="text-3xl font-marcellus font-black text-brand-primary-500 leading-none mt-1">
+//                   <p className="text-3xl font-sans font-black text-brand-primary-500 leading-none mt-1">
 //                     12
 //                   </p>
 //                   <p className="text-[9px] font-black text-brand-primary-300 uppercase tracking-wider mt-1">
@@ -220,7 +220,7 @@
 //                 </div>
 //                 <div className="bg-brand-secondary-100/40 p-6 rounded-[30px] text-center border border-brand-secondary-300/30 flex flex-col items-center justify-center gap-1">
 //                   <Heart className="w-5 h-5 text-brand-primary-300" />
-//                   <p className="text-3xl font-marcellus font-black text-brand-dark-500 leading-none mt-1">
+//                   <p className="text-3xl font-sans font-black text-brand-dark-500 leading-none mt-1">
 //                     48
 //                   </p>
 //                   <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wider mt-1">
@@ -244,7 +244,7 @@
 //                 <History className="w-5 h-5" />
 //               </div>
 //               <div>
-//                 <h4 className="text-xl font-marcellus font-black uppercase tracking-tight text-brand-dark-500">
+//                 <h4 className="text-xl font-sans font-black uppercase tracking-tight text-brand-dark-500">
 //                   Riwayat Terbaru
 //                 </h4>
 //                 <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider mt-0.5">
@@ -366,7 +366,7 @@ const ProfilePage = ({ user }) => {
               <p className="text-[10px] font-black uppercase tracking-widest opacity-80 flex items-center gap-1.5">
                 <Wallet className="w-3.5 h-3.5" /> Saldo Saat Ini
               </p>
-              <h2 className="text-4xl font-marcellus font-bold mt-4">
+              <h2 className="text-4xl font-sans font-bold mt-4">
                 {formatRupiah(user?.total_saldo || 0)}
               </h2>
               <p className="text-xs mt-2 opacity-70 font-medium">
@@ -387,7 +387,7 @@ const ProfilePage = ({ user }) => {
                 </button>
               </div>
             </div>
-            <div className="absolute bottom-[-10%] right-[-5%] text-[150px] opacity-10 italic font-marcellus pointer-events-none select-none">
+            <div className="absolute bottom-[-10%] right-[-5%] text-[150px] opacity-10 italic font-sans pointer-events-none select-none">
               Rp
             </div>
           </div>
@@ -408,7 +408,7 @@ const ProfilePage = ({ user }) => {
                     {user?.level_pengguna || "Level 1"}
                   </p>
                 </div>
-                <span className="text-2xl font-marcellus font-black text-brand-primary-300">
+                <span className="text-2xl font-sans font-black text-brand-primary-300">
                   75%
                 </span>
               </div>
@@ -474,11 +474,11 @@ const ProfilePage = ({ user }) => {
           <div className="lg:col-span-2 bg-neutral-default rounded-[40px] p-8 shadow-sm border border-neutral-100">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div className="flex gap-5 items-center">
-                <div className="w-20 h-20 bg-brand-primary-300 rounded-full flex items-center justify-center text-neutral-default text-3xl font-marcellus font-bold border-4 border-brand-secondary-100 uppercase shadow-md">
+                <div className="w-20 h-20 bg-brand-primary-300 rounded-full flex items-center justify-center text-neutral-default text-3xl font-sans font-bold border-4 border-brand-secondary-100 uppercase shadow-md">
                   {user?.username?.charAt(0) || "U"}
                 </div>
                 <div>
-                  <h3 className="text-2xl font-marcellus font-black text-brand-dark-500 uppercase tracking-tight">
+                  <h3 className="text-2xl font-sans font-black text-brand-dark-500 uppercase tracking-tight">
                     {user?.username || "Guest"}
                   </h3>
                   <p className="text-[10px] text-neutral-400 mt-1 font-bold uppercase tracking-wider flex items-center gap-1">
@@ -517,7 +517,7 @@ const ProfilePage = ({ user }) => {
                   key={i}
                   className="bg-neutral-50 p-5 rounded-3xl text-center border border-neutral-100"
                 >
-                  <p className="text-sm font-marcellus font-black text-brand-dark-500 leading-none">
+                  <p className="text-sm font-sans font-black text-brand-dark-500 leading-none">
                     {stat.n}
                   </p>
                   <p className="text-[9px] text-neutral-400 font-bold uppercase mt-1.5 tracking-wide">
@@ -536,7 +536,7 @@ const ProfilePage = ({ user }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-brand-primary-100/10 p-6 rounded-[30px] text-center border border-brand-primary-100/20 flex flex-col items-center justify-center gap-1">
                   <MessageSquare className="w-5 h-5 text-brand-primary-300" />
-                  <p className="text-3xl font-marcellus font-black text-brand-primary-500 leading-none mt-1">
+                  <p className="text-3xl font-sans font-black text-brand-primary-500 leading-none mt-1">
                     12
                   </p>
                   <p className="text-[9px] font-black text-brand-primary-300 uppercase tracking-wider mt-1">
@@ -545,7 +545,7 @@ const ProfilePage = ({ user }) => {
                 </div>
                 <div className="bg-brand-secondary-100/40 p-6 rounded-[30px] text-center border border-brand-secondary-300/30 flex flex-col items-center justify-center gap-1">
                   <Heart className="w-5 h-5 text-brand-primary-300" />
-                  <p className="text-3xl font-marcellus font-black text-brand-dark-500 leading-none mt-1">
+                  <p className="text-3xl font-sans font-black text-brand-dark-500 leading-none mt-1">
                     48
                   </p>
                   <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wider mt-1">
@@ -570,7 +570,7 @@ const ProfilePage = ({ user }) => {
                 <History className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-xl font-marcellus font-black uppercase tracking-tight text-brand-dark-500">
+                <h4 className="text-xl font-sans font-black uppercase tracking-tight text-brand-dark-500">
                   Riwayat Terbaru
                 </h4>
                 <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider mt-0.5">

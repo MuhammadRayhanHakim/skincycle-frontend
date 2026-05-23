@@ -1,13 +1,12 @@
 @import "tailwindcss";
 
 /* 1. Import Font Family dari Google Fonts */
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Marcellus+SC&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
 
 /* 2. Registrasi Variabel Design System ke Utility Class Tailwind */
 @theme {
   /* Tipografi */
   --font-sans: "DM Sans", sans-serif;
-  --font-marcellus: "Marcellus SC", serif;
 
   /* Palette Warna: Primary & Primary Dark */
   --color-brand-primary-100: #a8bdac;

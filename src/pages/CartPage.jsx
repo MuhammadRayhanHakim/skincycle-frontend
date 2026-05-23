@@ -107,7 +107,7 @@ const CartPage = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header Halaman */}
         <div className="mb-10">
-          <h1 className="text-4xl font-marcellus text-brand-dark-500 tracking-tight">
+          <h1 className="text-4xl font-sans text-brand-dark-500 tracking-tight">
             Daftar Belanja Skincare Kamu
           </h1>
           <p className="text-neutral-500 text-sm mt-2 font-medium">
@@ -197,7 +197,7 @@ const CartPage = () => {
                       <p className="text-neutral-400 text-xs uppercase tracking-widest mt-0.5 font-bold">
                         {item.brand || "SkinCycle"}
                       </p>
-                      <p className="text-brand-primary-300 font-marcellus mt-2 text-base">
+                      <p className="text-brand-primary-300 font-sans mt-2 text-base">
                         Rp {item.harga_asli?.toLocaleString("id-ID")}
                       </p>
                     </div>
@@ -249,7 +249,7 @@ const CartPage = () => {
             {/* SISI KANAN: PANEL RINGKASAN BELANJA INTERAKTIF */}
             <div className="lg:col-span-4 bg-brand-primary-300 text-neutral-default rounded-[40px] p-8 h-fit shadow-xl border border-brand-primary-400 flex flex-col justify-between">
               <div>
-                <h2 className="text-2xl font-marcellus font-bold mb-8 tracking-tight">
+                <h2 className="text-2xl font-sans font-bold mb-8 tracking-tight">
                   Ringkasan
                 </h2>
 
@@ -264,13 +264,13 @@ const CartPage = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-default/70">Subtotal</span>
-                    <span className="font-marcellus">
+                    <span className="font-sans">
                       Rp {subtotal.toLocaleString("id-ID")}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-default/70">Pengiriman</span>
-                    <span className="font-marcellus">
+                    <span className="font-sans">
                       Rp {shipping.toLocaleString("id-ID")}
                     </span>
                   </div>
@@ -280,7 +280,7 @@ const CartPage = () => {
                   <span className="text-base font-black uppercase tracking-wider opacity-90">
                     Total
                   </span>
-                  <span className="text-2xl font-marcellus font-black">
+                  <span className="text-2xl font-sans font-black">
                     Rp {total.toLocaleString("id-ID")}
                   </span>
                 </div>

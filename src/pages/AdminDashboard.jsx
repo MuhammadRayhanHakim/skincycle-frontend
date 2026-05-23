@@ -58,7 +58,7 @@ const AdminDashboard = () => {
       <main className="flex-1 ml-64 p-10 flex flex-col items-center justify-center text-center">
         <div className="bg-neutral-default p-12 rounded-[50px] shadow-sm border border-neutral-100 max-w-2xl">
           <span className="text-4xl block mb-6">👋</span>
-          <h1 className="text-4xl font-marcellus text-brand-dark-500 uppercase tracking-tight">
+          <h1 className="text-4xl font-sans text-brand-dark-500 uppercase tracking-tight">
             Selamat Datang, {adminData?.nama_lengkap || "Admin"}!
           </h1>
           <p className="text-neutral-400 mt-4 text-sm leading-relaxed font-medium">
