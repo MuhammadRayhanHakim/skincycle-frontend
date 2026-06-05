@@ -1,89 +1,153 @@
-// import React, { useState } from "react";
+// import React, { useState, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
+// import {
+//   PenTool,
+//   Hash,
+//   X,
+//   MapPin,
+//   EyeOff,
+//   Eye,
+//   Send,
+//   ArrowLeft,
+//   Bold,
+//   Italic,
+//   Underline,
+//   Link2,
+//   Image,
+//   Code,
+//   List,
+//   HelpCircle,
+//   CheckCircle2,
+//   AlertCircle,
+//   ChevronRight,
+//   MessageSquare,
+//   Bell,
+//   Loader2,
+// } from "lucide-react";
 
 // const CreateForumPage = ({ user }) => {
 //   const navigate = useNavigate();
 
-//   // 1. STATE UNTUK FORM DATA
+//   // --- REF UNTUK INPUT FILE TERSEMBUNYI ---
+//   const fileInputRef = useRef(null);
+
+//   // Jalankan ekstraksi nama aman
+//   const currentUsername = user?.username || user?.penulis?.username || "User";
+
+//   // --- STATE FORUM & MEDIA ---
 //   const [forumData, setForumData] = useState({
 //     judul_posting: "",
 //     isi_posting: "",
-//     kategori: "Pilih Kategori...", // Default value untuk validasi
+//     kategori: "Ulasan Produk",
 //     anonim: false,
-//     media_url: null,
 //   });
+//   const [selectedFile, setSelectedFile] = useState(null);
+//   const [imagePreview, setImagePreview] = useState(null);
+//   const [isSubmitting, setIsSubmitting] = useState(false);
 
-//   // DAFTAR 5 KATEGORI YANG DISESUAIKAN DENGAN HALAMAN FORUM
 //   const categories = [
-//     "Rekomendasi",
-//     "Daur Ulang",
-//     "Bahan Alami",
-//     "Tips & Trik",
-//     "Produk Baru",
+//     { label: "Rekomendasi", icon: "🌱" },
+//     { label: "Daur Ulang", icon: "♻️" },
+
+//     { label: "Kandungan", icon: "🧪" },
+//     { label: "Tips & Trik", icon: "💡" },
+//     { label: "Produk", icon: "📦" },
 //   ];
 
 //   const [tags, setTags] = useState([
-//     "#SkincareHack",
-//     "#Recycle",
-//     "#SustainableBeauty",
+//     "perawatan_kulit",
+//     "organik",
+//     "ramah_lingkungan",
 //   ]);
 //   const [newTag, setNewTag] = useState("");
 
-//   // 2. FUNGSI HANDLE SUBMIT
+//   // --- HANDLER TRIGGER KLIK SELEKSI FILE ---
+//   const handleDropzoneClick = () => {
+//     fileInputRef.current.click();
+//   };
+
+//   // --- HANDLER SAAT USER SELESAI MEMILIH GAMBAR ---
+//   const handleFileChange = (e) => {
+//     const file = e.target.files[0];
+//     if (file) {
+//       if (file.size > 10 * 1024 * 1024) {
+//         alert("Ukuran file terlalu besar! Maksimal batas berkas adalah 10MB.");
+//         return;
+//       }
+//       setSelectedFile(file);
+//       setImagePreview(URL.createObjectURL(file)); // Bikin URL lokal untuk pratinjau gambar
+//     }
+//   };
+
+//   // --- HANDLER HAPUS PREVIEW GAMBAR ---
+//   const handleRemoveImage = (e) => {
+//     e.stopPropagation(); // Mencegah trigger klik dropzone ulang
+//     setSelectedFile(null);
+//     setImagePreview(null);
+//     fileInputRef.current.value = ""; // Reset input file
+//   };
+
+//   // --- FUNGSI PUBLISH (MENGGUNAKAN FORMDATA UNTUK UNGGUH GAMBAR KE BACKEND) ---
 //   const handlePublish = async () => {
-//     // Validasi input wajib
-//     if (
-//       forumData.kategori === "Pilih Kategori..." ||
-//       !forumData.judul_posting.trim() ||
-//       !forumData.isi_posting.trim()
-//     ) {
-//       alert("Mohon lengkapi Kategori, Judul, dan Deskripsi diskusi Anda.");
+//     if (!forumData.judul_posting.trim() || !forumData.isi_posting.trim()) {
+//       alert("Mohon lengkapi Judul dan Deskripsi diskusi Anda.");
 //       return;
 //     }
 
 //     const token = localStorage.getItem("token");
 //     if (!token) return alert("Sesi berakhir, silakan login kembali.");
 
-//     const payload = {
-//       ...forumData,
-//       tags: tags.join(","),
-//     };
+//     setIsSubmitting(true);
+
+//     // KARENA ADA FILE GAMBAR, WAJIB MENGGUNAKAN FORMDATA BUKAN JSON STRING biasa
+//     const formDataPayload = new FormData();
+//     formDataPayload.append("judul_posting", forumData.judul_posting.trim());
+//     formDataPayload.append("isi_posting", forumData.isi_posting.trim());
+//     formDataPayload.append("kategori", forumData.kategori);
+//     formDataPayload.append("anonim", forumData.anonim);
+//     formDataPayload.append("tags", tags.map((t) => `#${t.trim()}`).join(","));
+
+//     // Jika user memilih file, kirimkan file fisik ke backend
+//     if (selectedFile) {
+//       formDataPayload.append("media", selectedFile); // Key 'media' disesuaikan dengan handler multer backend
+//     }
 
 //     try {
 //       const response = await fetch("http://localhost:5000/api/forum", {
 //         method: "POST",
 //         headers: {
-//           "Content-Type": "application/json",
 //           Authorization: `Bearer ${token}`,
+//           // CATATAN: Jangan tulis Content-Type application/json jika mengirim FormData! Browser akan mengaturnya secara otomatis.
 //         },
-//         body: JSON.stringify(payload),
+//         body: formDataPayload,
 //       });
 
 //       const result = await response.json();
 
-//       if (response.ok) {
+//       if (response.ok || result.status === "success") {
 //         alert("🚀 Diskusi Anda telah berhasil dipublikasikan!");
 //         return navigate("/forum");
 //       }
 
-//       alert("Gagal mempublikasikan: " + result.message);
+//       alert(
+//         "Gagal mempublikasikan: " +
+//           (result.message || "Terjadi kesalahan internal"),
+//       );
 //     } catch (error) {
 //       console.error("Error publishing forum:", error);
 //       alert("Gagal terhubung ke server. Pastikan backend menyala.");
+//     } finally {
+//       setIsSubmitting(false);
 //     }
 //   };
 
-//   // 3. FUNGSI MANAJEMEN TAG
 //   const addTag = (e) => {
 //     if (e.key === "Enter") {
 //       e.preventDefault();
 //       if (newTag.trim() !== "" && tags.length < 5) {
-//         // Otomatis tambah '#' jika belum ada
-//         const formattedTag = newTag.startsWith("#")
-//           ? newTag.trim()
-//           : `#${newTag.trim()}`;
-//         if (!tags.includes(formattedTag)) {
-//           setTags([...tags, formattedTag]);
+//         const cleanTag = newTag.replace(/#/g, "").trim().toLowerCase();
+//         if (cleanTag && !tags.includes(cleanTag)) {
+//           setTags([...tags, cleanTag]);
 //         }
 //         setNewTag("");
 //       }
@@ -95,53 +159,67 @@
 //   };
 
 //   return (
-//     <div className="bg-[#F2EDE4] font-sans min-h-screen pb-10">
-//       <div className="max-w-7xl mx-auto px-10 pt-8">
-//         <header className="mb-8">
-//           <div className="flex items-center gap-4 mb-2">
-//             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
-//               <span className="text-xl">📝</span>
+//     <div className="bg-brand-secondary-100 font-sans min-h-screen pb-16 text-brand-dark-500">
+//       <div className="max-w-7xl mx-auto px-6 lg:px-10 pt-8">
+//         {/* HEADER HALAMAN */}
+//         <header className="mb-8 pl-2">
+//           <div className="flex items-center gap-3 mb-1">
+//             <div className="w-9 h-9 bg-neutral-default rounded-xl flex items-center justify-center shadow-sm border border-neutral-100 text-brand-primary-300">
+//               <PenTool className="w-4 h-4" />
 //             </div>
-//             <h1 className="text-3xl font-serif text-[#1e2b19]">
+//             <h1 className="text-2xl font-marcellus text-brand-dark-500 tracking-tight">
 //               Buat Diskusi Baru
 //             </h1>
 //           </div>
-//           <p className="text-gray-500 text-xs ml-14">
-//             Bagikan kontribusi ramah lingkunganmu di sini.
+//           <p className="text-neutral-400 text-xs pl-12 font-medium max-w-3xl leading-relaxed">
+//             Bagikan rutinitas ramah lingkunganmu, minta saran, atau ulas produk
+//             berkelanjutan — suaramu membantu membangun komunitas ini.
 //           </p>
 //         </header>
 
 //         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-//           <div className="lg:col-span-8 space-y-6">
-//             <div className="bg-white p-8 rounded-[40px] shadow-sm border border-white space-y-6">
-//               {/* Dropdown Kategori Baru */}
+//           {/* SISI KIRI: INPUT FORM UTAMA */}
+//           <div className="lg:col-span-8 space-y-5">
+//             <div className="bg-neutral-default p-8 rounded-[40px] shadow-sm border border-neutral-100 space-y-6">
+//               {/* 1. SELEKSI KATEGORI & PIL BUTTONS */}
 //               <div>
-//                 <label className="block text-[10px] font-black text-[#3D5532] uppercase tracking-widest mb-3 italic">
-//                   Pilih Kategori *
+//                 <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-2.5">
+//                   Kategori <span className="text-feedback-error-200">*</span>
 //                 </label>
-//                 <select
-//                   value={forumData.kategori}
-//                   onChange={(e) =>
-//                     setForumData({ ...forumData, kategori: e.target.value })
-//                   }
-//                   className="w-full bg-[#F9F9F7] rounded-2xl p-4 text-xs text-[#3D5532] font-bold outline-none border border-transparent focus:border-[#3D5532]/20 appearance-none cursor-pointer"
-//                 >
-//                   <option disabled>Pilih Kategori...</option>
-//                   {categories.map((c) => (
-//                     <option key={c} value={c}>
-//                       {c}
-//                     </option>
+//                 <div className="flex flex-wrap gap-2">
+//                   {categories.map((cat) => (
+//                     <button
+//                       key={cat.label}
+//                       type="button"
+//                       onClick={() =>
+//                         setForumData({ ...forumData, kategori: cat.label })
+//                       }
+//                       className={`px-4 py-1.5 rounded-full text-[10px] font-bold border transition-all flex items-center gap-1.5 uppercase tracking-wider outline-none ${
+//                         forumData.kategori === cat.label
+//                           ? "bg-brand-primary-300 text-neutral-default border-transparent shadow-sm"
+//                           : "bg-neutral-50 text-neutral-400 border-neutral-100/70 hover:border-brand-primary-100"
+//                       }`}
+//                     >
+//                       <span>{cat.icon}</span> {cat.label}
+//                     </button>
 //                   ))}
-//                 </select>
+//                 </div>
 //               </div>
 
-//               {/* Judul */}
+//               {/* 2. FIELD JUDUL DISKUSI */}
 //               <div>
-//                 <label className="block text-[10px] font-black text-[#3D5532] uppercase tracking-widest mb-3 italic">
-//                   Judul Diskusi *
-//                 </label>
+//                 <div className="flex justify-between items-center mb-2">
+//                   <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest">
+//                     Judul Diskusi{" "}
+//                     <span className="text-feedback-error-200">*</span>
+//                   </label>
+//                   <span className="text-[9px] text-neutral-300 font-bold">
+//                     {forumData.judul_posting.length} / 150
+//                   </span>
+//                 </div>
 //                 <input
 //                   type="text"
+//                   maxLength={150}
 //                   value={forumData.judul_posting}
 //                   onChange={(e) =>
 //                     setForumData({
@@ -149,43 +227,97 @@
 //                       judul_posting: e.target.value,
 //                     })
 //                   }
-//                   className="w-full bg-[#F9F9F7] rounded-2xl p-4 text-xs text-gray-600 outline-none border border-transparent focus:border-[#3D5532]/20"
-//                   placeholder="Apa topik diskusi Anda?"
+//                   className="w-full bg-neutral-50 rounded-2xl p-4 text-xs text-brand-dark-500 font-medium outline-none border border-neutral-100 focus:border-brand-primary-100 placeholder-neutral-300 transition-all shadow-inner"
+//                   placeholder="Contoh: Pelembab vegan terbaik untuk kulit kering saat musim dingin?"
 //                 />
+//                 <p className="text-[9px] text-neutral-400 font-medium mt-1.5 pl-1">
+//                   💡 Judul yang jelas bisa mendapatkan hingga 3x lebih banyak
+//                   interaksi dari komunitas.
+//                 </p>
 //               </div>
 
-//               {/* Deskripsi */}
+//               {/* 3. FIELD TEXTAREA DESKRIPSI */}
 //               <div>
-//                 <label className="block text-[10px] font-black text-[#3D5532] uppercase tracking-widest mb-3 italic">
-//                   Deskripsi *
+//                 <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-2">
+//                   Deskripsi <span className="text-feedback-error-200">*</span>
 //                 </label>
-//                 <textarea
-//                   value={forumData.isi_posting}
-//                   onChange={(e) =>
-//                     setForumData({ ...forumData, isi_posting: e.target.value })
-//                   }
-//                   className="w-full bg-[#F9F9F7] rounded-2xl p-4 text-xs text-gray-600 outline-none border border-transparent focus:border-[#3D5532]/20 resize-none h-48"
-//                   placeholder="Tulis detail pemikiran atau pertanyaan Anda di sini..."
-//                 />
+
+//                 <div className="border border-neutral-100 rounded-3xl overflow-hidden bg-neutral-50 shadow-inner">
+//                   <div className="flex items-center gap-1 p-2 bg-neutral-default border-b border-neutral-100 text-neutral-400 select-none">
+//                     <button
+//                       type="button"
+//                       className="p-1.5 hover:bg-neutral-50 hover:text-brand-dark-500 rounded transition-colors"
+//                     >
+//                       <Bold className="w-3.5 h-3.5" />
+//                     </button>
+//                     <button
+//                       type="button"
+//                       className="p-1.5 hover:bg-neutral-50 hover:text-brand-dark-500 rounded transition-colors"
+//                     >
+//                       <Italic className="w-3.5 h-3.5" />
+//                     </button>
+//                     <button
+//                       type="button"
+//                       className="p-1.5 hover:bg-neutral-50 hover:text-brand-dark-500 rounded transition-colors"
+//                     >
+//                       <Underline className="w-3.5 h-3.5" />
+//                     </button>
+//                     <div className="w-[1px] h-4 bg-neutral-100 mx-1"></div>
+//                     <button
+//                       type="button"
+//                       className="p-1.5 hover:bg-neutral-50 hover:text-brand-dark-500 rounded transition-colors"
+//                     >
+//                       <Link2 className="w-3.5 h-3.5" />
+//                     </button>
+//                     <button
+//                       type="button"
+//                       className="p-1.5 hover:bg-neutral-50 hover:text-brand-dark-500 rounded transition-colors"
+//                     >
+//                       <Code className="w-3.5 h-3.5" />
+//                     </button>
+//                     <button
+//                       type="button"
+//                       className="p-1.5 hover:bg-neutral-50 hover:text-brand-dark-500 rounded transition-colors"
+//                     >
+//                       <List className="w-3.5 h-3.5" />
+//                     </button>
+//                   </div>
+
+//                   <textarea
+//                     value={forumData.isi_posting}
+//                     onChange={(e) =>
+//                       setForumData({
+//                         ...forumData,
+//                         isi_posting: e.target.value,
+//                       })
+//                     }
+//                     className="w-full bg-transparent p-4 text-xs text-brand-dark-500 font-medium outline-none h-48 resize-none leading-relaxed"
+//                     placeholder="Bagikan pemikiran, masalah kulit, atau pertanyaanmu di sini. Jelaskan sejelas mungkin — semakin lengkap, semakin mudah komunitas membantu!"
+//                   />
+//                 </div>
 //               </div>
 
-//               {/* Tag Management */}
+//               {/* 4. MANAGEMENT TAGS */}
 //               <div>
-//                 <label className="block text-[10px] font-black text-[#3D5532] uppercase tracking-widest mb-3 italic">
-//                   Tag (Maks. 5)
+//                 <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-2">
+//                   Tag{" "}
+//                   <span className="text-neutral-400 font-medium lowercase">
+//                     (maks. 5)
+//                   </span>
 //                 </label>
-//                 <div className="flex flex-wrap gap-2 p-3 bg-[#F9F9F7] rounded-2xl">
+//                 <div className="flex flex-wrap gap-2 p-3 bg-neutral-50 rounded-2xl border border-neutral-100 shadow-inner">
 //                   {tags.map((tag) => (
 //                     <span
 //                       key={tag}
-//                       className="px-3 py-1 bg-white text-[#3D5532] rounded-lg text-[10px] font-bold border border-gray-100 flex items-center gap-2"
+//                       className="px-3 py-1 bg-neutral-default text-brand-primary-300 rounded-lg text-[10px] font-bold border border-neutral-100 flex items-center gap-1.5 shadow-sm"
 //                     >
-//                       {tag}
+//                       <Hash className="w-2.5 h-2.5 opacity-50" /> {tag}
 //                       <button
+//                         type="button"
 //                         onClick={() => removeTag(tag)}
-//                         className="text-gray-300 hover:text-red-400 transition-colors"
+//                         className="text-neutral-300 hover:text-feedback-error-200 transition-colors focus:outline-none"
 //                       >
-//                         ×
+//                         <X className="w-3 h-3" />
 //                       </button>
 //                     </span>
 //                   ))}
@@ -194,75 +326,304 @@
 //                     value={newTag}
 //                     onChange={(e) => setNewTag(e.target.value)}
 //                     onKeyDown={addTag}
-//                     className="bg-transparent outline-none text-[10px] flex-grow min-w-[120px]"
+//                     className="bg-transparent outline-none text-[10px] font-semibold flex-grow min-w-[150px] text-brand-dark-500 placeholder-neutral-300 px-1"
 //                     placeholder={
 //                       tags.length < 5
-//                         ? "Ketik tag lalu Enter..."
-//                         : "Maksimal 5 tag"
+//                         ? "Tambahkan tag..."
+//                         : "Maksimal tag tercapai"
 //                     }
 //                     disabled={tags.length >= 5}
 //                   />
 //                 </div>
+//                 <p className="text-[9px] text-neutral-400 font-medium mt-1.5 pl-1">
+//                   ℹ️ Tekan Enter untuk menambahkan tag ({tags.length} dari 5
+//                   digunakan)
+//                 </p>
+//               </div>
+
+//               {/* 5. UPLOAD MEDIA DROPOUT ZONE (SEKARANG BERFUNGSI AKTIF) */}
+//               <div>
+//                 <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-2">
+//                   Media{" "}
+//                   <span className="text-neutral-400 font-medium lowercase">
+//                     (Opsional)
+//                   </span>
+//                 </label>
+
+//                 {/* Tag Input File Fisik Sembunyi */}
+//                 <input
+//                   type="file"
+//                   ref={fileInputRef}
+//                   onChange={handleFileChange}
+//                   accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
+//                   className="hidden"
+//                 />
+
+//                 <div
+//                   onClick={handleDropzoneClick}
+//                   className="border-2 border-dashed border-neutral-200 bg-neutral-50 rounded-2xl p-6 text-center shadow-inner group hover:border-brand-primary-200 transition-colors cursor-pointer relative overflow-hidden min-h-[160px] flex flex-col justify-center items-center"
+//                 >
+//                   {imagePreview ? (
+//                     /* JIKA GAMBAR TERPILIH: TAMPILKAN PREVIEW DAN TOMBOL HAPUS */
+//                     <div className="absolute inset-0 w-full h-full bg-neutral-900/5 group/preview flex items-center justify-center">
+//                       <img
+//                         src={imagePreview}
+//                         alt="Preview Unggahan"
+//                         className="w-full h-full object-contain"
+//                       />
+//                       <button
+//                         type="button"
+//                         onClick={handleRemoveImage}
+//                         className="absolute top-3 right-3 bg-brand-dark-500/80 hover:bg-feedback-error-200 text-neutral-default p-2 rounded-full shadow-md transition-colors opacity-0 group-hover/preview:opacity-100 outline-none"
+//                         title="Hapus Gambar"
+//                       >
+//                         <X className="w-4 h-4" />
+//                       </button>
+//                     </div>
+//                   ) : (
+//                     /* JIKA BELUM ADA GAMBAR: TAMPILKAN RETORIKA KOSONG */
+//                     <>
+//                       <div className="w-10 h-10 bg-neutral-default rounded-xl flex items-center justify-center mx-auto text-neutral-300 shadow-sm group-hover:text-brand-primary-300 mb-2 transition-colors">
+//                         <Image className="w-5 h-5" />
+//                       </div>
+//                       <p className="text-xs text-neutral-500 font-medium">
+//                         <span className="text-brand-primary-300 font-bold underline">
+//                           Klik untuk mengunggah
+//                         </span>{" "}
+//                         atau seret & lepas
+//                       </p>
+//                       <p className="text-[9px] text-neutral-400 mt-1 font-semibold uppercase tracking-wider">
+//                         PNG, JPG, GIF, WEBP — Maks. 10MB per file
+//                       </p>
+//                     </>
+//                   )}
+//                 </div>
 //               </div>
 //             </div>
 
-//             {/* Anonim Toggle */}
-//             <div className="bg-white p-6 rounded-[35px] shadow-sm border border-white">
-//               <div className="flex items-center justify-between p-4 bg-[#F9F9F7] rounded-2xl">
-//                 <div>
-//                   <h5 className="text-[11px] font-bold">
-//                     Posting secara Anonim
-//                   </h5>
-//                   <p className="text-[9px] text-gray-400">
-//                     Nama asli Anda tidak akan dipublikasikan.
-//                   </p>
+//             {/* PENGATURAN POSTINGAN PANEL ACTIONS */}
+//             <div className="bg-neutral-default p-6 rounded-[35px] shadow-sm border border-neutral-100 space-y-3.5">
+//               <p className="text-[10px] font-black text-neutral-300 uppercase tracking-[0.15em] pl-1 mb-1">
+//                 Pengaturan Postingan
+//               </p>
+
+//               <div className="flex items-center justify-between p-3.5 bg-neutral-50 rounded-2xl border border-neutral-100/60 shadow-inner">
+//                 <div className="flex items-center gap-3">
+//                   <EyeOff className="w-4 h-4 text-neutral-400" />
+//                   <div>
+//                     <h5 className="text-[11px] font-bold text-brand-dark-500">
+//                       Posting Secara Anonim
+//                     </h5>
+//                     <p className="text-[9px] text-neutral-400 font-medium">
+//                       Nama pengguna Anda akan disembunyikan dari diskusi ini.
+//                     </p>
+//                   </div>
 //                 </div>
 //                 <div
 //                   onClick={() =>
 //                     setForumData({ ...forumData, anonim: !forumData.anonim })
 //                   }
-//                   className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors duration-300 ${forumData.anonim ? "bg-[#3D5532]" : "bg-gray-200"}`}
+//                   className={`w-9 h-5 rounded-full relative cursor-pointer transition-colors duration-200 ${forumData.anonim ? "bg-brand-primary-300" : "bg-neutral-200"}`}
 //                 >
 //                   <div
-//                     className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300 ${forumData.anonim ? "right-1" : "left-1"}`}
+//                     className={`absolute top-0.5 w-4 h-4 bg-neutral-default rounded-full transition-all duration-200 ${forumData.anonim ? "right-0.5" : "left-0.5"}`}
 //                   ></div>
+//                 </div>
+//               </div>
+
+//               <div className="flex items-center justify-between p-3.5 bg-neutral-50 rounded-2xl border border-neutral-100/60 shadow-inner">
+//                 <div className="flex items-center gap-3">
+//                   <Bell className="w-4 h-4 text-neutral-400" />
+//                   <div>
+//                     <h5 className="text-[11px] font-bold text-brand-dark-500">
+//                       Notifikasi Email
+//                     </h5>
+//                     <p className="text-[9px] text-neutral-400 font-medium">
+//                       Dapatkan notifikasi saat seseorang membalas postingan
+//                       Anda.
+//                     </p>
+//                   </div>
+//                 </div>
+//                 <div className="w-9 h-5 rounded-full relative bg-brand-primary-300">
+//                   <div className="absolute top-0.5 w-4 h-4 bg-neutral-default rounded-full right-0.5"></div>
+//                 </div>
+//               </div>
+
+//               <div className="flex items-center justify-between p-3.5 bg-neutral-50 rounded-2xl border border-neutral-100/60 shadow-inner">
+//                 <div className="flex items-center gap-3">
+//                   <MessageSquare className="w-4 h-4 text-neutral-400" />
+//                   <div>
+//                     <h5 className="text-[11px] font-bold text-brand-dark-500">
+//                       Izinkan Komentar
+//                     </h5>
+//                     <p className="text-[9px] text-neutral-400 font-medium">
+//                       Izinkan anggota lain membalas dan berinteraksi dengan
+//                       postingan Anda.
+//                     </p>
+//                   </div>
+//                 </div>
+//                 <div className="w-9 h-5 rounded-full relative bg-brand-primary-300">
+//                   <div className="absolute top-0.5 w-4 h-4 bg-neutral-default rounded-full right-0.5"></div>
 //                 </div>
 //               </div>
 //             </div>
 
-//             {/* Action Buttons */}
-//             <div className="flex justify-end gap-4">
+//             {/* Action Bar Buttons */}
+//             <div className="flex justify-end gap-3 items-center pr-2">
 //               <button
+//                 type="button"
 //                 onClick={() => navigate("/forum")}
-//                 className="px-8 py-3 rounded-full text-[11px] font-bold text-gray-400 hover:text-[#1e2b19] transition-colors"
+//                 disabled={isSubmitting}
+//                 className="px-6 py-2.5 rounded-full text-[11px] font-bold text-neutral-400 hover:text-brand-dark-500 transition-colors flex items-center gap-1 outline-none"
 //               >
 //                 Batal
 //               </button>
 //               <button
+//                 type="button"
 //                 onClick={handlePublish}
-//                 className="px-10 py-3 rounded-full text-[11px] font-black uppercase tracking-widest bg-[#3D5532] text-white shadow-lg active:scale-95 transition-all"
+//                 disabled={isSubmitting}
+//                 className="px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest bg-brand-primary-300 text-neutral-default shadow-lg hover:bg-brand-primary-500 transition-all flex items-center gap-1.5 outline-none active:scale-98 disabled:opacity-50"
 //               >
-//                 🚀 Publikasikan Diskusi
+//                 {isSubmitting ? (
+//                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
+//                 ) : (
+//                   <Send className="w-3.5 h-3.5" />
+//                 )}
+//                 {isSubmitting ? "Mengunggah..." : "Publikasikan"}
 //               </button>
 //             </div>
 //           </div>
 
-//           {/* Sisi Kanan - Info User */}
-//           <div className="lg:col-span-4 space-y-6">
-//             <div className="bg-white p-6 rounded-[40px] shadow-sm border border-white flex items-center gap-4">
-//               <div className="w-12 h-12 bg-[#3D5532] rounded-2xl flex items-center justify-center text-white font-bold uppercase shadow-inner">
-//                 {user?.username?.substring(0, 2) || "U"}
-//               </div>
-//               <div>
-//                 <h4 className="text-xs font-black text-[#1e2b19] uppercase tracking-tight">
-//                   {user?.username || "Guest User"}
-//                 </h4>
-//                 <div className="flex items-center gap-1">
-//                   <span className="text-[10px] text-[#3D5532]">📍</span>
-//                   <p className="text-[9px] text-gray-400 font-medium">
-//                     Kabupaten Bekasi
+//           {/* SISI KANAN: PREVIEW SIDEBAR LOGS INFO METRICS */}
+//           <div className="lg:col-span-4 space-y-5">
+//             <div className="bg-neutral-default p-6 rounded-[32px] shadow-sm border border-neutral-100">
+//               <p className="text-[9px] font-black text-neutral-300 uppercase tracking-wider mb-4">
+//                 Posting Sebagai
+//               </p>
+//               <div className="flex items-center gap-3.5 mb-5">
+//                 <div className="w-11 h-11 bg-brand-secondary-300 rounded-full flex items-center justify-center text-brand-primary-500 font-marcellus font-black uppercase text-base shadow-sm border border-brand-secondary-200">
+//                   {currentUsername.substring(0, 1).toUpperCase()}
+//                 </div>
+//                 <div>
+//                   <h4 className="text-xs font-black text-brand-dark-500 uppercase tracking-tight font-marcellus leading-none">
+//                     {currentUsername}
+//                   </h4>
+//                   <p className="text-[9px] text-neutral-400 mt-1 font-bold">
+//                     🍀 Level 4: Pecinta Skincare
 //                   </p>
 //                 </div>
+//               </div>
+
+//               <div className="space-y-1.5 border-t border-neutral-50 pt-4">
+//                 <div className="flex justify-between text-[9px] font-bold text-neutral-400 uppercase tracking-wide">
+//                   <span>Progres ke level 5</span>
+//                   <span className="text-brand-primary-300 font-black">78%</span>
+//                 </div>
+//                 <div className="w-full bg-neutral-50 border border-neutral-100/50 rounded-full h-2 overflow-hidden shadow-inner">
+//                   <div className="bg-brand-primary-300 h-full w-[78%] rounded-full"></div>
+//                 </div>
+//                 <p className="text-[8px] text-neutral-400 font-medium text-right pt-0.5 uppercase tracking-tighter">
+//                   3.200 / 4.000 XP •{" "}
+//                   <span className="text-brand-primary-300 font-bold">
+//                     +50 XP
+//                   </span>{" "}
+//                   per posting
+//                 </p>
+//               </div>
+//             </div>
+
+//             <div className="bg-neutral-default p-6 rounded-[32px] shadow-sm border border-neutral-100">
+//               <h4 className="text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-4 flex items-center gap-1">
+//                 <HelpCircle className="w-4 h-4 opacity-70" /> Tips Postingan
+//                 yang Baik
+//               </h4>
+//               <ul className="text-[11px] text-neutral-500 space-y-3 font-medium leading-relaxed">
+//                 <li className="flex items-start gap-2">
+//                   <CheckCircle2 className="w-3.5 h-3.5 text-feedback-success-300 shrink-0 mt-0.5" />
+//                   <span>
+//                     <strong className="text-brand-dark-500">
+//                       Judul yang jelas:
+//                     </strong>{" "}
+//                     Buat judul yang ringkas dan spesifik agar orang langsung
+//                     tahu topiknya.
+//                   </span>
+//                 </li>
+//                 <li className="flex items-start gap-2">
+//                   <CheckCircle2 className="w-3.5 h-3.5 text-feedback-success-300 shrink-0 mt-0.5" />
+//                   <span>
+//                     <strong className="text-brand-dark-500">
+//                       Gunakan tag:
+//                     </strong>{" "}
+//                     Gunakan tag yang relevan seperti{" "}
+//                     <span className="text-brand-primary-300 font-bold">
+//                       #skincarehack
+//                     </span>{" "}
+//                     agar post mudah ditemukan.
+//                   </span>
+//                 </li>
+//                 <li className="flex items-start gap-2">
+//                   <CheckCircle2 className="w-3.5 h-3.5 text-feedback-success-300 shrink-0 mt-0.5" />
+//                   <span>
+//                     <strong className="text-brand-dark-500">
+//                       Format yang rapi:
+//                     </strong>{" "}
+//                     Berikan poin-poin dan spasi antar paragraf agar mudah
+//                     dibaca.
+//                   </span>
+//                 </li>
+//                 <li className="flex items-start gap-2">
+//                   <CheckCircle2 className="w-3.5 h-3.5 text-feedback-success-300 shrink-0 mt-0.5" />
+//                   <span>
+//                     <strong className="text-brand-dark-500">
+//                       Tambahkan visual:
+//                     </strong>{" "}
+//                     Foto produk atau tekstur skincare bisa membuat review lebih
+//                     menarik.
+//                   </span>
+//                 </li>
+//               </ul>
+//             </div>
+
+//             <div className="bg-[#3D5532]/10 p-6 rounded-[32px] border border-[#3D5532]/20 text-brand-dark-500">
+//               <h4 className="text-[10px] font-black text-[#3D5532] uppercase tracking-widest mb-3.5 flex items-center gap-1">
+//                 <AlertCircle className="w-4 h-4 opacity-70" /> Panduan Komunitas
+//               </h4>
+//               <ul className="text-[11px] text-neutral-500 space-y-2 font-medium list-disc pl-4 leading-relaxed">
+//                 <li>Berbaik sopan dan menghargai anggota lain</li>
+//                 <li>Dilarang promosi atau spam</li>
+//                 <li>Jaga komunikasi tetap positif</li>
+//                 <li>Cantumkan sumber untuk klaim medis</li>
+//                 <li>Gunakan peringatan untuk topik sensitif</li>
+//               </ul>
+//               <button
+//                 type="button"
+//                 className="text-[10px] font-black text-brand-primary-300 hover:text-brand-primary-500 uppercase tracking-widest flex items-center gap-0.5 mt-4 transition-colors"
+//               >
+//                 Baca panduan lengkap <ChevronRight className="w-3.5 h-3.5" />
+//               </button>
+//             </div>
+
+//             <div className="bg-neutral-default p-6 rounded-[32px] shadow-sm border border-neutral-100">
+//               <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-4">
+//                 Tag Populer
+//               </h4>
+//               <div className="flex flex-wrap gap-1.5">
+//                 {[
+//                   "Sunscreen",
+//                   "SkincareIn",
+//                   "AcneProne",
+//                   "CrueltyFree",
+//                   "VeganBeauty",
+//                   "ZeroWaste",
+//                   "GlassSkin",
+//                 ].map((pop) => (
+//                   <span
+//                     key={pop}
+//                     className="px-2.5 py-1 bg-neutral-50 border border-neutral-100 rounded-md text-[10px] text-neutral-400 font-bold transition-colors hover:border-brand-primary-100 hover:text-brand-primary-300 cursor-pointer"
+//                   >
+//                     #{pop}
+//                   </span>
+//                 ))}
 //               </div>
 //             </div>
 //           </div>
@@ -274,67 +635,73 @@
 
 // export default CreateForumPage;
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   PenTool,
   Hash,
   X,
-  User,
   MapPin,
   EyeOff,
   Eye,
   Send,
   ArrowLeft,
-} from "lucide-react"; // Menggunakan lucide-react untuk konsistensi ikon design system
+  Bold,
+  Italic,
+  Underline,
+  Link2,
+  Code,
+  List,
+  HelpCircle,
+  CheckCircle2,
+  AlertCircle,
+  ChevronRight,
+  MessageSquare,
+  Bell,
+  Loader2,
+} from "lucide-react";
 
 const CreateForumPage = ({ user }) => {
   const navigate = useNavigate();
 
-  // 1. STATE UNTUK FORM DATA
+  // Jalankan ekstraksi nama aman
+  const currentUsername = user?.username || user?.penulis?.username || "User";
+
+  // --- STATE FORUM ---
   const [forumData, setForumData] = useState({
     judul_posting: "",
     isi_posting: "",
-    kategori: "Pilih Kategori...", // Default value untuk validasi
+    kategori: "Ulasan Produk",
     anonim: false,
-    media_url: null,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // DAFTAR 5 KATEGORI YANG DISESUAIKAN DENGAN HALAMAN FORUM
   const categories = [
-    "Rekomendasi",
-    "Daur Ulang",
-    "Bahan Alami",
-    "Tips & Trik",
-    "Produk Baru",
+    { label: "Rekomendasi", icon: "🌱" },
+    { label: "Daur Ulang", icon: "♻️" },
+    { label: "Kandungan", icon: "🧪" },
+    { label: "Tips & Trik", icon: "💡" },
+    { label: "Produk", icon: "📦" },
   ];
 
   const [tags, setTags] = useState([
-    "#SkincareHack",
-    "#Recycle",
-    "#SustainableBeauty",
+    "perawatan_kulit",
+    "organik",
+    "ramah_lingkungan",
   ]);
   const [newTag, setNewTag] = useState("");
 
-  // 2. FUNGSI HANDLE SUBMIT
+  // --- FUNGSI PUBLISH ---
   const handlePublish = async () => {
-    // Validasi input wajib
-    if (
-      forumData.kategori === "Pilih Kategori..." ||
-      !forumData.judul_posting.trim() ||
-      !forumData.isi_posting.trim()
-    ) {
-      alert("Mohon lengkapi Kategori, Judul, dan Deskripsi diskusi Anda.");
+    if (!forumData.judul_posting.trim() || !forumData.isi_posting.trim()) {
+      alert("Mohon lengkapi Judul dan Deskripsi diskusi Anda.");
       return;
     }
 
     const token = localStorage.getItem("token");
     if (!token) return alert("Sesi berakhir, silakan login kembali.");
 
-    const payload = {
-      ...forumData,
-      tags: tags.join(","),
-    };
+    setIsSubmitting(true);
 
     try {
       const response = await fetch("http://localhost:5000/api/forum", {
@@ -343,34 +710,42 @@ const CreateForumPage = ({ user }) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          judul_posting: forumData.judul_posting.trim(),
+          isi_posting: forumData.isi_posting.trim(),
+          kategori: forumData.kategori,
+          anonim: forumData.anonim,
+          tags: tags.map((t) => `#${t.trim()}`).join(","),
+        }),
       });
 
       const result = await response.json();
 
-      if (response.ok) {
+      if (response.ok || result.status === "success") {
         alert("🚀 Diskusi Anda telah berhasil dipublikasikan!");
         return navigate("/forum");
       }
 
-      alert("Gagal mempublikasikan: " + result.message);
+      alert(
+        "Gagal mempublikasikan: " +
+          (result.message || "Terjadi kesalahan internal"),
+      );
     } catch (error) {
       console.error("Error publishing forum:", error);
       alert("Gagal terhubung ke server. Pastikan backend menyala.");
+    } finally {
+      // 🚀 FIX: Mengembalikan kata kunci finally yang benar agar tidak crash
+      setIsSubmitting(false);
     }
   };
 
-  // 3. FUNGSI MANAJEMEN TAG
   const addTag = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
       if (newTag.trim() !== "" && tags.length < 5) {
-        // Otomatis tambah '#' jika belum ada
-        const formattedTag = newTag.startsWith("#")
-          ? newTag.trim()
-          : `#${newTag.trim()}`;
-        if (!tags.includes(formattedTag)) {
-          setTags([...tags, formattedTag]);
+        const cleanTag = newTag.replace(/#/g, "").trim().toLowerCase();
+        if (cleanTag && !tags.includes(cleanTag)) {
+          setTags([...tags, cleanTag]);
         }
         setNewTag("");
       }
@@ -382,56 +757,67 @@ const CreateForumPage = ({ user }) => {
   };
 
   return (
-    <div className="bg-brand-secondary-100 font-sans min-h-screen pb-10 text-brand-dark-500">
-      <div className="max-w-7xl mx-auto px-10 pt-8">
+    <div className="bg-brand-secondary-100 font-sans min-h-screen pb-16 text-brand-dark-500">
+      <div className="max-w-7xl mx-auto px-6 lg:px-10 pt-8">
         {/* HEADER HALAMAN */}
-        <header className="mb-8">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="w-10 h-10 bg-neutral-default rounded-xl flex items-center justify-center shadow-sm border border-neutral-100 text-brand-primary-300">
-              <PenTool className="w-5 h-5" />
+        <header className="mb-8 pl-2">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-9 h-9 bg-neutral-default rounded-xl flex items-center justify-center shadow-sm border border-neutral-100 text-brand-primary-300">
+              <PenTool className="w-4 h-4" />
             </div>
-            <h1 className="text-3xl font-sans text-brand-dark-500 tracking-tight">
+            <h1 className="text-2xl font-marcellus text-brand-dark-500 tracking-tight">
               Buat Diskusi Baru
             </h1>
           </div>
-          <p className="text-neutral-500 text-xs ml-14 font-medium">
-            Bagikan kontribusi ramah lingkunganmu di sini dan bangun ekosistem
-            hijau bersama.
+          <p className="text-neutral-400 text-xs pl-12 font-medium max-w-3xl leading-relaxed">
+            Bagikan rutinitas ramah lingkunganmu, minta saran, atau ulas produk
+            berkelanjutan — suaramu membantu membangun komunitas ini.
           </p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* SISI KIRI: INPUT FORM UTAMA */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 space-y-5">
             <div className="bg-neutral-default p-8 rounded-[40px] shadow-sm border border-neutral-100 space-y-6">
-              {/* Dropdown Pemilihan Kategori */}
+              {/* 1. SELEKSI KATEGORI & PIL BUTTONS */}
               <div>
-                <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-3 italic">
-                  Pilih Kategori *
+                <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-2.5">
+                  Kategori <span className="text-feedback-error-200">*</span>
                 </label>
-                <select
-                  value={forumData.kategori}
-                  onChange={(e) =>
-                    setForumData({ ...forumData, kategori: e.target.value })
-                  }
-                  className="w-full bg-neutral-50 rounded-2xl p-4 text-xs text-brand-primary-300 font-bold outline-none border border-transparent focus:border-brand-primary-100 appearance-none cursor-pointer"
-                >
-                  <option disabled>Pilih Kategori...</option>
-                  {categories.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat.label}
+                      type="button"
+                      onClick={() =>
+                        setForumData({ ...forumData, kategori: cat.label })
+                      }
+                      className={`px-4 py-1.5 rounded-full text-[10px] font-bold border transition-all flex items-center gap-1.5 uppercase tracking-wider outline-none ${
+                        forumData.kategori === cat.label
+                          ? "bg-brand-primary-300 text-neutral-default border-transparent shadow-sm"
+                          : "bg-neutral-50 text-neutral-400 border-neutral-100/70 hover:border-brand-primary-100"
+                      }`}
+                    >
+                      <span>{cat.icon}</span> {cat.label}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
-              {/* Input Field: Judul */}
+              {/* 2. FIELD JUDUL DISKUSI */}
               <div>
-                <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-3 italic">
-                  Judul Diskusi *
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest">
+                    Judul Diskusi{" "}
+                    <span className="text-feedback-error-200">*</span>
+                  </label>
+                  <span className="text-[9px] text-neutral-300 font-bold">
+                    {forumData.judul_posting.length} / 150
+                  </span>
+                </div>
                 <input
                   type="text"
+                  maxLength={150}
                   value={forumData.judul_posting}
                   onChange={(e) =>
                     setForumData({
@@ -439,43 +825,95 @@ const CreateForumPage = ({ user }) => {
                       judul_posting: e.target.value,
                     })
                   }
-                  className="w-full bg-neutral-50 rounded-2xl p-4 text-xs text-brand-dark-500 font-medium outline-none border border-transparent focus:border-brand-primary-100 placeholder-neutral-300 transition-all"
-                  placeholder="Apa topik diskusi Anda?"
+                  className="w-full bg-neutral-50 rounded-2xl p-4 text-xs text-brand-dark-500 font-medium outline-none border border-neutral-100 focus:border-brand-primary-100 placeholder-neutral-300 transition-all shadow-inner"
+                  placeholder="Contoh: Pelembab vegan terbaik untuk kulit kering saat musim dingin?"
                 />
+                <p className="text-[9px] text-neutral-400 font-medium mt-1.5 pl-1">
+                  💡 Judul yang jelas bisa mendapatkan hingga 3x lebih banyak
+                  interaksi dari komunitas.
+                </p>
               </div>
 
-              {/* Input Field: Deskripsi Isi */}
+              {/* 3. FIELD TEXTAREA DESKRIPSI */}
               <div>
-                <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-3 italic">
-                  Deskripsi *
+                <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-2">
+                  Deskripsi <span className="text-feedback-error-200">*</span>
                 </label>
-                <textarea
-                  value={forumData.isi_posting}
-                  onChange={(e) =>
-                    setForumData({ ...forumData, isi_posting: e.target.value })
-                  }
-                  className="w-full bg-neutral-50 rounded-2xl p-4 text-xs text-brand-dark-500 font-medium outline-none border border-transparent focus:border-brand-primary-100 placeholder-neutral-300 resize-none h-48 leading-relaxed transition-all"
-                  placeholder="Tulis detail pemikiran atau pertanyaan Anda di sini..."
-                />
+
+                <div className="border border-neutral-100 rounded-3xl overflow-hidden bg-neutral-50 shadow-inner">
+                  <div className="flex items-center gap-1 p-2 bg-neutral-default border-b border-neutral-100 text-neutral-400 select-none">
+                    <button
+                      type="button"
+                      className="p-1.5 hover:bg-neutral-50 hover:text-brand-dark-500 rounded transition-colors"
+                    >
+                      <Bold className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      className="p-1.5 hover:bg-neutral-50 hover:text-brand-dark-500 rounded transition-colors"
+                    >
+                      <Italic className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      className="p-1.5 hover:bg-neutral-50 hover:text-brand-dark-500 rounded transition-colors"
+                    >
+                      <Underline className="w-3.5 h-3.5" />
+                    </button>
+                    <div className="w-[1px] h-4 bg-neutral-100 mx-1"></div>
+                    <button
+                      type="button"
+                      className="p-1.5 hover:bg-neutral-50 hover:text-brand-dark-500 rounded transition-colors"
+                    >
+                      <Link2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      className="p-1.5 hover:bg-neutral-50 hover:text-brand-dark-500 rounded transition-colors"
+                    >
+                      <Code className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      className="p-1.5 hover:bg-neutral-50 hover:text-brand-dark-500 rounded transition-colors"
+                    >
+                      <List className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <textarea
+                    value={forumData.isi_posting}
+                    onChange={(e) =>
+                      setForumData({
+                        ...forumData,
+                        isi_posting: e.target.value,
+                      })
+                    }
+                    className="w-full bg-transparent p-4 text-xs text-brand-dark-500 font-medium outline-none h-48 resize-none leading-relaxed"
+                    placeholder="Bagikan pemikiran, masalah kulit, atau pertanyaanmu di sini. Jelaskan sejelas mungkin — semakin lengkap, semakin mudah komunitas membantu!"
+                  />
+                </div>
               </div>
 
-              {/* Tag Management Metadata Block */}
+              {/* 4. MANAGEMENT TAGS */}
               <div>
-                <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-3 italic">
-                  Tag (Maks. 5)
+                <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-2">
+                  Tag{" "}
+                  <span className="text-neutral-400 font-medium lowercase">
+                    (maks. 5)
+                  </span>
                 </label>
-                <div className="flex flex-wrap gap-2 p-3 bg-neutral-50 rounded-2xl border border-neutral-100/50">
+                <div className="flex flex-wrap gap-2 p-3 bg-neutral-50 rounded-2xl border border-neutral-100 shadow-inner">
                   {tags.map((tag) => (
                     <span
                       key={tag}
                       className="px-3 py-1 bg-neutral-default text-brand-primary-300 rounded-lg text-[10px] font-bold border border-neutral-100 flex items-center gap-1.5 shadow-sm"
                     >
-                      <Hash className="w-3 h-3 opacity-60" />{" "}
-                      {tag.replace("#", "")}
+                      <Hash className="w-2.5 h-2.5 opacity-50" /> {tag}
                       <button
                         type="button"
                         onClick={() => removeTag(tag)}
-                        className="text-neutral-400 hover:text-feedback-error-200 transition-colors focus:outline-none"
+                        className="text-neutral-300 hover:text-feedback-error-200 transition-colors focus:outline-none"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -486,88 +924,235 @@ const CreateForumPage = ({ user }) => {
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
                     onKeyDown={addTag}
-                    className="bg-transparent outline-none text-[10px] font-semibold flex-grow min-w-[120px] text-brand-dark-500 placeholder-neutral-300"
+                    className="bg-transparent outline-none text-[10px] font-semibold flex-grow min-w-[150px] text-brand-dark-500 placeholder-neutral-300 px-1"
                     placeholder={
                       tags.length < 5
-                        ? "Ketik tag lalu Enter..."
-                        : "Maksimal 5 tag tercapai"
+                        ? "Tambahkan tag..."
+                        : "Maksimal tag tercapai"
                     }
                     disabled={tags.length >= 5}
                   />
                 </div>
+                <p className="text-[9px] text-neutral-400 font-medium mt-1.5 pl-1">
+                  ℹ️ Tekan Enter untuk menambahkan tag ({tags.length} dari 5
+                  digunakan)
+                </p>
               </div>
             </div>
 
-            {/* Anonim Toggle Panel Container */}
-            <div className="bg-neutral-default p-6 rounded-[35px] shadow-sm border border-neutral-100">
-              <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-2xl border border-neutral-100/50">
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 text-neutral-400">
-                    {forumData.anonim ? (
-                      <EyeOff className="w-4 h-4 text-brand-primary-300" />
-                    ) : (
-                      <Eye className="w-4 h-4 text-neutral-400" />
-                    )}
-                  </div>
+            {/* PENGATURAN POSTINGAN PANEL ACTIONS */}
+            <div className="bg-neutral-default p-6 rounded-[35px] shadow-sm border border-neutral-100 space-y-3.5">
+              <p className="text-[10px] font-black text-neutral-300 uppercase tracking-[0.15em] pl-1 mb-1">
+                Pengaturan Postingan
+              </p>
+
+              <div className="flex items-center justify-between p-3.5 bg-neutral-50 rounded-2xl border border-neutral-100/60 shadow-inner">
+                <div className="flex items-center gap-3">
+                  <EyeOff className="w-4 h-4 text-neutral-400" />
                   <div>
                     <h5 className="text-[11px] font-bold text-brand-dark-500">
-                      Posting secara Anonim
+                      Posting Secara Anonim
                     </h5>
                     <p className="text-[9px] text-neutral-400 font-medium">
-                      Nama asli profil Anda tidak akan dipublikasikan ke dalam
-                      feed komunitas.
+                      Nama pengguna Anda akan disembunyikan dari diskusi ini.
                     </p>
                   </div>
                 </div>
-                {/* Custom Toggle Box */}
                 <div
                   onClick={() =>
                     setForumData({ ...forumData, anonim: !forumData.anonim })
                   }
-                  className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors duration-300 ${forumData.anonim ? "bg-brand-primary-300" : "bg-neutral-200"}`}
+                  className={`w-9 h-5 rounded-full relative cursor-pointer transition-colors duration-200 ${forumData.anonim ? "bg-brand-primary-300" : "bg-neutral-200"}`}
                 >
                   <div
-                    className={`absolute top-1 w-3 h-3 bg-neutral-default rounded-full transition-all duration-300 ${forumData.anonim ? "right-1" : "left-1"}`}
+                    className={`absolute top-0.5 w-4 h-4 bg-neutral-default rounded-full transition-all duration-200 ${forumData.anonim ? "right-0.5" : "left-0.5"}`}
                   ></div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3.5 bg-neutral-50 rounded-2xl border border-neutral-100/60 shadow-inner">
+                <div className="flex items-center gap-3">
+                  <Bell className="w-4 h-4 text-neutral-400" />
+                  <div>
+                    <h5 className="text-[11px] font-bold text-brand-dark-500">
+                      Notifikasi Email
+                    </h5>
+                    <p className="text-[9px] text-neutral-400 font-medium">
+                      Dapatkan notifikasi saat seseorang membalas postingan
+                      Anda.
+                    </p>
+                  </div>
+                </div>
+                <div className="w-9 h-5 rounded-full relative bg-brand-primary-300">
+                  <div className="absolute top-0.5 w-4 h-4 bg-neutral-default rounded-full right-0.5"></div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3.5 bg-neutral-50 rounded-2xl border border-neutral-100/60 shadow-inner">
+                <div className="flex items-center gap-3">
+                  <MessageSquare className="w-4 h-4 text-neutral-400" />
+                  <div>
+                    <h5 className="text-[11px] font-bold text-brand-dark-500">
+                      Izinkan Komentar
+                    </h5>
+                    <p className="text-[9px] text-neutral-400 font-medium">
+                      Izinkan anggota lain membalas dan berinteraksi dengan
+                      postingan Anda.
+                    </p>
+                  </div>
+                </div>
+                <div className="w-9 h-5 rounded-full relative bg-brand-primary-300">
+                  <div className="absolute top-0.5 w-4 h-4 bg-neutral-default rounded-full right-0.5"></div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Action Footer Buttons */}
-            <div className="flex justify-end gap-4 items-center">
+            {/* Action Bar Buttons */}
+            <div className="flex justify-end gap-3 items-center pr-2">
               <button
                 type="button"
                 onClick={() => navigate("/forum")}
-                className="px-8 py-3 rounded-full text-[11px] font-bold text-neutral-400 hover:text-brand-dark-500 transition-colors flex items-center gap-1 outline-none"
+                disabled={isSubmitting}
+                className="px-6 py-2.5 rounded-full text-[11px] font-bold text-neutral-400 hover:text-brand-dark-500 transition-colors flex items-center gap-1 outline-none"
               >
-                <ArrowLeft className="w-3.5 h-3.5" /> Batal
+                Batal
               </button>
               <button
                 type="button"
                 onClick={handlePublish}
-                className="px-10 py-3 rounded-full text-[11px] font-black uppercase tracking-widest bg-brand-primary-300 text-neutral-default shadow-lg hover:bg-brand-primary-500 transition-all flex items-center gap-2 outline-none active:scale-98"
+                disabled={isSubmitting}
+                className="px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest bg-brand-primary-300 text-neutral-default shadow-lg hover:bg-brand-primary-500 transition-all flex items-center gap-1.5 outline-none active:scale-98 disabled:opacity-50"
               >
-                <Send className="w-3.5 h-3.5" /> Publikasikan Diskusi
+                {isSubmitting ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Send className="w-3.5 h-3.5" />
+                )}
+                {isSubmitting ? "Mengunggah..." : "Publikasikan"}
               </button>
             </div>
           </div>
 
-          {/* SISI KANAN: PREVIEW INFO USER CARD */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="bg-neutral-default p-6 rounded-[40px] shadow-sm border border-neutral-100 flex items-center gap-4">
-              <div className="w-12 h-12 bg-brand-primary-300 rounded-2xl flex items-center justify-center text-neutral-default font-sans font-black uppercase shadow-md">
-                {user?.username?.substring(0, 2) || "U"}
-              </div>
-              <div>
-                <h4 className="text-xs font-black text-brand-dark-500 uppercase tracking-tight font-sans">
-                  {user?.username || "Guest User"}
-                </h4>
-                <div className="flex items-center gap-1 mt-0.5">
-                  <MapPin className="w-3 h-3 text-brand-primary-300" />
-                  <p className="text-[9px] text-neutral-400 font-bold uppercase tracking-wider">
-                    Bekasi Regency
+          {/* SISI KANAN: PREVIEW SIDEBAR LOGS INFO METRICS */}
+          <div className="lg:col-span-4 space-y-5">
+            <div className="bg-neutral-default p-6 rounded-[32px] shadow-sm border border-neutral-100">
+              <p className="text-[9px] font-black text-neutral-300 uppercase tracking-wider mb-4">
+                Posting Sebagai
+              </p>
+              <div className="flex items-center gap-3.5 mb-5">
+                <div className="w-11 h-11 bg-brand-secondary-300 rounded-full flex items-center justify-center text-brand-primary-500 font-marcellus font-black uppercase text-base shadow-sm border border-brand-secondary-200">
+                  {currentUsername.substring(0, 1).toUpperCase()}
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-brand-dark-500 uppercase tracking-tight font-marcellus leading-none">
+                    {currentUsername}
+                  </h4>
+                  <p className="text-[9px] text-neutral-400 mt-1 font-bold">
+                    🍀 Level 4: Pecinta Skincare
                   </p>
                 </div>
+              </div>
+
+              <div className="space-y-1.5 border-t border-neutral-50 pt-4">
+                <div className="flex justify-between text-[9px] font-bold text-neutral-400 uppercase tracking-wide">
+                  <span>Progres ke level 5</span>
+                  <span className="text-brand-primary-300 font-black">78%</span>
+                </div>
+                <div className="w-full bg-neutral-50 border border-neutral-100/50 rounded-full h-2 overflow-hidden shadow-inner">
+                  <div className="bg-brand-primary-300 h-full w-[78%] rounded-full"></div>
+                </div>
+                <p className="text-[8px] text-neutral-400 font-medium text-right pt-0.5 uppercase tracking-tighter">
+                  3.200 / 4.000 XP •{" "}
+                  <span className="text-brand-primary-300 font-bold">
+                    +50 XP
+                  </span>{" "}
+                  per posting
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-neutral-default p-6 rounded-[32px] shadow-sm border border-neutral-100">
+              <h4 className="text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-4 flex items-center gap-1">
+                <HelpCircle className="w-4 h-4 opacity-70" /> Tips Postingan
+                yang Baik
+              </h4>
+              <ul className="text-[11px] text-neutral-500 space-y-3 font-medium leading-relaxed">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-feedback-success-300 shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-brand-dark-500">
+                      Judul yang jelas:
+                    </strong>{" "}
+                    Buat judul yang ringkas dan spesifik agar orang langsung
+                    tahu topiknya.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-feedback-success-300 shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-brand-dark-500">
+                      Gunakan tag:
+                    </strong>{" "}
+                    Gunakan tag yang relevan seperti{" "}
+                    <span className="text-brand-primary-300 font-bold">
+                      #skincarehack
+                    </span>{" "}
+                    agar post mudah ditemukan.
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-feedback-success-300 shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-brand-dark-500">
+                      Format yang rapi:
+                    </strong>{" "}
+                    Berikan poin-poin and spasi antar paragraf agar mudah
+                    dibaca.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-[#3D5532]/10 p-6 rounded-[32px] border border-[#3D5532]/20 text-brand-dark-500">
+              <h4 className="text-[10px] font-black text-[#3D5532] uppercase tracking-widest mb-3.5 flex items-center gap-1">
+                <AlertCircle className="w-4 h-4 opacity-70" /> Panduan Komunitas
+              </h4>
+              <ul className="text-[11px] text-neutral-500 space-y-2 font-medium list-disc pl-4 leading-relaxed">
+                <li>Berbaik sopan dan menghargai anggota lain</li>
+                <li>Dilarang promosi atau spam</li>
+                <li>Jaga komunikasi tetap positif</li>
+                <li>Cantumkan sumber untuk klaim medis</li>
+                <li>Gunakan peringatan untuk topik sensitif</li>
+              </ul>
+              <button
+                type="button"
+                className="text-[10px] font-black text-brand-primary-300 hover:text-brand-primary-500 uppercase tracking-widest flex items-center gap-0.5 mt-4 transition-colors"
+              >
+                Baca panduan lengkap <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="bg-neutral-default p-6 rounded-[32px] shadow-sm border border-neutral-100">
+              <h4 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-4">
+                Tag Populer
+              </h4>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  "Sunscreen",
+                  "SkincareIn",
+                  "AcneProne",
+                  "CrueltyFree",
+                  "VeganBeauty",
+                  "ZeroWaste",
+                  "GlassSkin",
+                ].map((pop) => (
+                  <span
+                    key={pop}
+                    className="px-2.5 py-1 bg-neutral-50 border border-neutral-100 rounded-md text-[10px] text-neutral-400 font-bold transition-colors hover:border-brand-primary-100 hover:text-brand-primary-300 cursor-pointer"
+                  >
+                    #{pop}
+                  </span>
+                ))}
               </div>
             </div>
           </div>

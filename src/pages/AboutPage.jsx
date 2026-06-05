@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Leaf,
@@ -9,14 +9,69 @@ import {
   Mail,
   MapPin,
   Send,
-} from "lucide-react"; // Menggunakan lucide-react agar ikon seragam dengan design system
+} from "lucide-react";
 
 const AboutPage = () => {
   const navigate = useNavigate();
 
+  // 🚀 DATA TIM LENGKAP (Membaca langsung dari folder /public sesuai berkas Anda)
+  const teamMembers = [
+    {
+      name: "Chejjah",
+      role: "Project Manager",
+      img: "/chejjah.jpeg",
+      desc: "Mengarsiteki sistem inti backend dan mengoptimalkan fungsionalitas antarmuka SkinCycle.",
+    },
+    {
+      name: "Zaki",
+      role: "UI/UX DESIGNER",
+      img: "/zaki.jpeg",
+      desc: "Mengarahkan visi sirkular SkinCycle dalam menyatukan kecantikan dan kelestarian alam.",
+    },
+    {
+      name: "Arum",
+      role: "UI/UX DESIGNER",
+      img: "/arum.WEBP",
+      desc: "Mengembangkan ekosistem Virtual Karung dan mengelola jalur logistik daur ulang sampah.",
+    },
+    {
+      name: "Dona",
+      role: "WEB DEVELOPER",
+      img: "/dona.jpeg",
+      desc: "Membedah formulasi bahan aktif kosmetik untuk transparansi data Ensiklopedia bahan.",
+    },
+    {
+      name: "Laras",
+      role: "WEB DEVELOPER",
+      img: "/laras.jpeg",
+      desc: "Menyusun pengalaman dan estetika visual antarmuka platform digital SkinCycle.",
+    },
+    {
+      name: "Muhammad Rayhan Hakim",
+      role: "WEB DEVELOPER",
+      img: "/rayhan.jpeg",
+      desc: "Menjembatani kebutuhan operasional pengguna dengan tim teknis eksekusi fitur platform.",
+    },
+  ];
+
+  // 🚀 LOGIKA AUTO-SCROLL CAROUSEL
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prevIndex) => {
+        // Karena menampilkan 3 item sekaligus di desktop, batas maksimal geser adalah (panjang data - 3)
+        const maxIndex = teamMembers.length - 3;
+        return prevIndex >= maxIndex ? 0 : prevIndex + 1;
+      });
+    }, 3000); // Bergeser otomatis setiap 3 detik
+
+    return () => clearInterval(timer);
+  }, [teamMembers.length]);
+
   return (
     <div className="bg-brand-secondary-100 font-sans text-brand-dark-500 min-h-screen">
-      {/* SECTION 1: HERO - VISI UTAMA (Full Screen & Safe Layout Bounds) */}
+      {/* SECTION 1: HERO - VISI UTAMA */}
       <section className="relative min-h-[calc(100vh-64px)] flex items-center px-6 md:px-10 lg:px-20 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img
@@ -27,40 +82,20 @@ const AboutPage = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-brand-secondary-100 via-brand-secondary-100/40 to-transparent"></div>
         </div>
 
-        {/* Pembungkus Kontainer Utama untuk Menjaga dari Batas Tepi Layar */}
         <div className="relative z-10 max-w-7xl mx-auto w-full flex justify-start items-center">
-          {/* PERBAIKAN 1: 
-    - Mengurangi lebar maksimal boks dari 'max-w-2xl' menjadi 'max-w-xl'
-    - Mengurangi padding boks dari 'p-12' menjadi 'p-6 md:p-10' agar tinggi boks menyusut
-    - Mengubah rounded-[50px] menjadi rounded-[40px] agar lebih seimbang dengan ukuran boks baru
-  */}
-          <div className="max-w-xl bg-neutral-default/30 backdrop-blur-md p-6 md:p-10 rounded-[40px] border border-neutral-default/50 shadow-2xl">
-            {/* PERBAIKAN 2: 
-      - Menurunkan ukuran font judul dari 'text-6xl' menjadi 'text-3xl md:text-4xl lg:text-5xl'
-      - Mengurangi margin bawah dari 'mb-6' menjadi 'mb-4'
-    */}
+          <div className="max-w-xl bg-white/30 backdrop-blur-md p-6 md:p-10 rounded-[40px] border border-white/50 shadow-2xl">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-sans mb-4 leading-tight text-brand-dark-500 uppercase tracking-wide">
               Kulit Glowing Tanpa Harus Merusak Bumi.
             </h1>
-
-            {/* PERBAIKAN 3: 
-      - Menyesuaikan ukuran font deskripsi menjadi 'text-xs md:text-sm lg:text-base'
-      - Mengurangi margin bawah dari 'mb-8' menjadi 'mb-6'
-    */}
             <p className="text-xs md:text-sm lg:text-base text-neutral-700 mb-6 leading-relaxed font-medium">
               Banyak skincare di luar sana yang menjanjikan hasil instan tapi
               merusak skin barrier, bahkan meninggalkan sampah plastik yang
               abadi. Di sini kami membantumu memahami apa yang kulitmu butuhkan.
             </p>
-
-            {/* PERBAIKAN 4: 
-      - Menyesuaikan padding tombol menjadi 'px-8 py-3.5' dan ukuran font 'text-xs' 
-        agar serasi dengan boks yang lebih ringkas
-    */}
             <button
               type="button"
               onClick={() => navigate("/produk")}
-              className="bg-brand-primary-300 text-neutral-default px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl hover:bg-brand-primary-500 transition transform hover:scale-105 outline-none active:scale-98"
+              className="bg-brand-primary-300 text-white px-8 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl hover:bg-brand-primary-500 transition transform hover:scale-105 outline-none active:scale-98"
             >
               Mulai Hidup Mempesona
             </button>
@@ -68,8 +103,8 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* SECTION 2: FILOSOFI (Full Screen) */}
-      <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-20 bg-neutral-default/10">
+      {/* SECTION 2: FILOSOFI */}
+      <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-20 bg-white/10">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center w-full">
           <div>
             <span className="text-xs font-black text-brand-primary-300 uppercase tracking-[0.3em] mb-6 block">
@@ -80,7 +115,7 @@ const AboutPage = () => {
             </h2>
             <h3 className="text-xl md:text-2xl italic text-neutral-500 mb-8 font-serif leading-relaxed">
               Mengedukasi bahwa "Cantik" dan "Sampah" adalah dua masalah yang
-              harust selesai bersamaan.
+              harus selesai bersamaan.
             </h3>
             <p className="text-sm text-neutral-500 leading-relaxed mb-6 font-medium font-sans">
               Kami memahami kenyataan pahit bahwa orang salah menggunakan bahan
@@ -89,13 +124,12 @@ const AboutPage = () => {
             </p>
           </div>
           <div className="relative w-full flex justify-center lg:justify-end">
-            {/* Membatasi max-w-xl agar ukuran frame gambar seimbang dengan boks kiri */}
             <div className="w-full max-w-xl relative">
-              <div className="rounded-[40px] overflow-hidden shadow-2xl h-[400px] md:h-[500px] border border-neutral-100 bg-neutral-default">
+              <div className="rounded-[40px] overflow-hidden shadow-2xl h-[400px] md:h-[500px] border border-neutral-100 bg-white">
                 <img
                   src="https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=800"
                   className="w-full h-full object-cover"
-                  alt="Produk skincare alami dengan bahan botanis dan kemasan ramah lingkungan"
+                  alt="Produk skincare alami"
                 />
               </div>
               <div className="absolute -bottom-6 -left-6 bg-brand-secondary-300 p-6 rounded-3xl max-w-xs shadow-xl border border-neutral-100/50">
@@ -108,10 +142,10 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* SECTION 3: VISI & MISI (Full Screen) */}
-      <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-12 bg-neutral-default/20">
+      {/* SECTION 3: VISI & MISI */}
+      <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-12 bg-white/20">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-          <div className="bg-neutral-default p-10 md:p-16 rounded-[50px] shadow-sm border border-neutral-100">
+          <div className="bg-white p-10 md:p-16 rounded-[50px] shadow-sm border border-neutral-100">
             <div className="w-12 h-12 bg-feedback-info-100 text-brand-primary-300 rounded-2xl flex items-center justify-center mb-8">
               <Leaf className="w-6 h-6" />
             </div>
@@ -125,14 +159,14 @@ const AboutPage = () => {
               tidak menyampah.
             </p>
           </div>
-          <div className="bg-brand-primary-300 p-10 md:p-16 rounded-[50px] shadow-xl text-neutral-default border border-brand-primary-400">
-            <div className="w-12 h-12 bg-neutral-default/20 text-neutral-default rounded-2xl flex items-center justify-center mb-8">
+          <div className="bg-brand-primary-300 p-10 md:p-16 rounded-[50px] shadow-xl text-white border border-brand-primary-400">
+            <div className="w-12 h-12 bg-white/20 text-white rounded-2xl flex items-center justify-center mb-8">
               <Mountain className="w-6 h-6" />
             </div>
-            <h4 className="text-3xl md:text-4xl font-sans mb-6 text-neutral-default">
+            <h4 className="text-3xl md:text-4xl font-sans mb-6 text-white">
               Visi Kami
             </h4>
-            <p className="text-sm md:text-base text-neutral-default/80 leading-relaxed font-medium font-sans">
+            <p className="text-sm md:text-base text-white/80 leading-relaxed font-medium font-sans">
               Menciptakan masyarakat Indonesia yang paham kesehatan kulit jangka
               panjang dan menjadikan daur ulang sebagai gaya hidup harian, bukan
               sekadar tren sesaat.
@@ -141,7 +175,7 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* SECTION 4: PILAR UTAMA (Full Screen) */}
+      {/* SECTION 4: PILAR UTAMA */}
       <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-20 text-center">
         <div className="max-w-7xl mx-auto w-full">
           <h2 className="text-4xl md:text-5xl font-sans mb-4 text-brand-dark-500">
@@ -156,6 +190,7 @@ const AboutPage = () => {
             {[
               {
                 title: "Ensiklopedia",
+                // 🎯 FIX MUTLAK: Mengubah <Microsheet /> menjadi <Microscope /> yang valid dari lucide-react
                 icon: <Microscope className="w-8 h-8 text-brand-primary-300" />,
                 desc: "Lupakan istilah kimia yang rumit. Kami bedah setiap kandungan skincare dengan bahasa manusia.",
                 path: "/ensiklopedia",
@@ -175,21 +210,15 @@ const AboutPage = () => {
             ].map((pilar) => (
               <div
                 key={pilar.title}
-                className="bg-neutral-default border border-neutral-100 rounded-[40px] p-10 flex flex-col items-center text-center cursor-pointer group hover:shadow-2xl hover:border-brand-primary-100/60 hover:-translate-y-2 hover:bg-brand-secondary-100/60 transition-all duration-500 ease-out shadow-sm"
+                className="bg-white border border-neutral-100 rounded-[40px] p-10 flex flex-col items-center text-center cursor-pointer group hover:shadow-2xl hover:border-brand-primary-100/60 hover:-translate-y-2 hover:bg-brand-secondary-100/60 transition-all duration-500 ease-out shadow-sm"
                 onClick={() => navigate(pilar.path)}
               >
-
-                {/* Icon */}
                 <div className="w-14 h-14 bg-brand-secondary-100 rounded-2xl border border-neutral-100 flex items-center justify-center mb-6 transition-all duration-500 group-hover:bg-brand-primary-100/30 group-hover:border-brand-primary-100 group-hover:scale-110 shadow-sm">
                   {pilar.icon}
                 </div>
-
-                {/* Title */}
                 <h5 className="text-2xl font-sans mb-3 text-brand-dark-500 transition-colors duration-500 group-hover:text-brand-primary-300">
                   {pilar.title}
                 </h5>
-
-                {/* Desc */}
                 <p className="text-sm text-neutral-400 leading-relaxed font-medium font-sans transition-colors duration-500 group-hover:text-neutral-500">
                   {pilar.desc}
                 </p>
@@ -199,8 +228,8 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* SECTION 5: TIM KAMI (Full Screen) */}
-      <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-20 bg-neutral-100 border-y border-neutral-200/50">
+      {/* SECTION 5: TIM KAMI (Auto-scroll Slider Canvas) */}
+      <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-20 bg-neutral-100 border-y border-neutral-200/50 overflow-hidden">
         <div className="max-w-7xl mx-auto w-full">
           <span className="text-xs font-black text-brand-primary-300 uppercase tracking-widest mb-4 block">
             SOSOK DI BALIK LAYAR
@@ -209,54 +238,54 @@ const AboutPage = () => {
             Tim Kami
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              {
-                name: "Elena Yates",
-                role: "FOUNDER & CEO",
-                img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=400",
-              },
-              {
-                name: "Dr. Aris Thorne",
-                role: "HEAD OF SCIENCE",
-                img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
-              },
-              {
-                name: "Maya Lin",
-                role: "SUSTAINABILITY LEAD",
-                img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=400",
-              },
-              {
-                name: "Julian Reed",
-                role: "PRODUCT DESIGNER",
-                img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400",
-              },
-            ].map((member) => (
-              <div key={member.name} className="group">
-                <div className="rounded-[30px] overflow-hidden h-80 mb-6 grayscale group-hover:grayscale-0 transition-all duration-500 shadow-lg border border-neutral-100 bg-neutral-default">
-                  <img
-                    src={member.img}
-                    className="w-full h-full object-cover"
-                    alt={member.name}
-                  />
+          <div className="w-full overflow-hidden relative">
+            <div
+              className="flex transition-transform duration-700 ease-in-out gap-6"
+              style={{
+                transform: `translateX(-${currentIndex * (100 / (window.innerWidth >= 1024 ? 3 : window.innerWidth >= 640 ? 2 : 1))}%`,
+              }}
+            >
+              {teamMembers.map((member, idx) => (
+                <div
+                  key={idx}
+                  className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] shrink-0 group bg-white p-6 rounded-[40px] border border-neutral-200/60 shadow-sm"
+                >
+                  <div className="rounded-[30px] overflow-hidden h-80 mb-6 grayscale group-hover:grayscale-0 transition-all duration-500 shadow-md border border-neutral-100 bg-white">
+                    <img
+                      src={member.img}
+                      className="w-full h-full object-cover"
+                      alt={member.name}
+                    />
+                  </div>
+                  <h5 className="text-lg font-bold mb-1 text-brand-dark-500 font-sans truncate">
+                    {member.name}
+                  </h5>
+                  <p className="text-[10px] font-black text-brand-primary-300 tracking-widest uppercase mb-4">
+                    {member.role}
+                  </p>
+                  <p className="text-[11px] text-neutral-400 leading-relaxed font-medium font-sans">
+                    {member.desc}
+                  </p>
                 </div>
-                <h5 className="text-lg font-bold mb-1 text-brand-dark-500 font-sans">
-                  {member.name}
-                </h5>
-                <p className="text-[10px] font-black text-brand-primary-300 tracking-widest uppercase mb-4">
-                  {member.role}
-                </p>
-                <p className="text-[11px] text-neutral-400 leading-relaxed font-medium font-sans">
-                  Berdedikasi untuk menciptakan masa depan kecantikan yang lebih
-                  hijau dan sirkular.
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {/* Indikator Titik Slider */}
+            <div className="flex justify-center gap-2 mt-10">
+              {Array.from({ length: teamMembers.length - 2 }).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`h-2 rounded-full transition-all duration-300 ${currentIndex === idx ? "w-6 bg-brand-primary-300" : "w-2 bg-neutral-300"}`}
+                  aria-label={`Slide ke-${idx + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION 6: CONTACT (Full Screen) */}
+      {/* SECTION 6: CONTACT */}
       <section className="min-h-screen flex flex-col justify-center px-6 md:px-10 lg:px-20 py-20 bg-brand-secondary-100">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 w-full items-start">
           <div>
@@ -275,7 +304,7 @@ const AboutPage = () => {
 
             <div className="space-y-8">
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-neutral-default border border-neutral-100 text-brand-primary-300 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                <div className="w-10 h-10 bg-white border border-neutral-100 text-brand-primary-300 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
                   <Mail className="w-5 h-5" />
                 </div>
                 <div>
@@ -288,7 +317,7 @@ const AboutPage = () => {
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-neutral-default border border-neutral-100 text-brand-primary-300 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                <div className="w-10 h-10 bg-white border border-neutral-100 text-brand-primary-300 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
@@ -303,7 +332,7 @@ const AboutPage = () => {
             </div>
           </div>
 
-          <div className="bg-neutral-default p-8 md:p-12 rounded-[50px] shadow-2xl border border-neutral-100 w-full">
+          <div className="bg-white p-8 md:p-12 rounded-[50px] shadow-2xl border border-neutral-100 w-full">
             <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
               <div>
                 <label className="text-[10px] font-black text-neutral-400 uppercase mb-2 block tracking-widest">
@@ -338,7 +367,7 @@ const AboutPage = () => {
               <button
                 type="submit"
                 onClick={() => alert("Pesan berhasil dikirim!")}
-                className="w-full bg-brand-primary-300 text-neutral-default py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-brand-primary-500 transition-all flex items-center justify-center gap-2 outline-none active:scale-98"
+                className="w-full bg-brand-primary-300 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-brand-primary-500 transition-all flex items-center justify-center gap-2 outline-none active:scale-98"
               >
                 <Send className="w-4 h-4" /> Kirim Pesan
               </button>

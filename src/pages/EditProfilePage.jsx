@@ -1,30 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   X,
-  User,
   Bell,
   Shield,
   Eye,
-  CheckCircle2,
   Save,
   Trash2,
   Camera,
   UserCheck,
   Sparkles,
-} from "lucide-react"; // Menggunakan lucide-react untuk konsistensi ikon design system
+} from "lucide-react";
 
 const EditProfilePage = ({ user, setUser }) => {
-  // Inisialisasi navigate untuk kembali ke halaman profil
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
-  // State untuk form (Disinkronkan dengan data user yang login)
+  // State form terikat langsung dengan data prop 'user'
   const [formData, setFormData] = useState({
     username: user?.username || "",
     email: user?.email || "",
-    phone: user?.phone || "0812-3456-7890",
-    bio: "Penggemar skincare yang sedang menjalani gaya hidup hijau zero-waste. Mari bersama membuat kecantikan lebih baik untuk bumi.",
+    bio: user?.bio || "",
   });
+
+  // State untuk kontrol manajemen upload gambar baru
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState("");
+
+  // Inisialisasi data form ketika prop user berhasil termuat
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        username: user.username || "",
+        email: user.email || "",
+        bio: user.bio || "",
+      });
+      if (user.foto_profil) {
+        setAvatarPreview(`http://localhost:5000/uploads/${user.foto_profil}`);
+      }
+    }
+  }, [user]);
 
   // State untuk Skin Profile Tags
   const [skinTags, setSkinTags] = useState([
@@ -43,10 +58,136 @@ const EditProfilePage = ({ user, setUser }) => {
     );
   };
 
-  const handleSave = () => {
-    // Di sini nantinya akan memanggil fetch ke API Backend
-    alert("Profil Berhasil Diperbarui!");
-    navigate("/profil");
+  // Menangani penangkapan file saat user memilih foto dari komputernya
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file)); // Tampilkan preview lokal instan
+    }
+  };
+
+  // Menghapus foto pratinjau yang baru dipilih
+  const handleRemovePhoto = async () => {
+    if (!user?.foto_profil && !avatarFile) {
+      alert("Anda belum mengunggah foto profil apapun.");
+      return;
+    }
+
+    const profileId = user?.id_profil || user?.id;
+    if (!profileId) {
+      alert("Sesi tidak valid, ID tidak ditemukan.");
+      return;
+    }
+
+    if (window.confirm("Apakah Anda yakin ingin menghapus foto profil ini?")) {
+      try {
+        const token = localStorage.getItem("token");
+        // 🔗 PASTIKAN url menembak endpoint baru ini dengan benar:
+        const response = await fetch(
+          `http://localhost:5000/api/profile/${profileId}/photo`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const result = await response.json();
+
+        if (response.ok || result.status === "success") {
+          alert("🗑️ Foto profil berhasil dihapus!");
+
+          setAvatarFile(null);
+          setAvatarPreview("");
+          if (fileInputRef.current) fileInputRef.current.value = "";
+
+          const updatedUser = {
+            ...user,
+            foto_profil: null, // Berubah menjadi null agar kembali memicu render inisial huruf "A"
+          };
+
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+
+          if (setUser) {
+            setUser(updatedUser);
+          }
+        } else {
+          alert("Gagal menghapus foto profil: " + result.message);
+        }
+      } catch (error) {
+        console.error("Error saat menghapus foto profil:", error);
+        alert("Terjadi kesalahan sistem, pastikan server backend Anda aktif.");
+      }
+    }
+  };
+
+  // EKSEKUSI SAVE: Mengirim seluruh data ke Backend database via FormData
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!formData.username.trim()) {
+      alert("Username tidak boleh kosong!");
+      return;
+    }
+
+    // Ambil ID Akun/Profil pengguna aktif
+    const profileId = user?.id_profil || user?.id;
+    if (!profileId) {
+      alert("Sesi pengguna tidak valid, ID tidak ditemukan.");
+      return;
+    }
+
+    try {
+      const dataPayload = new FormData();
+      dataPayload.append("username", formData.username);
+      dataPayload.append("bio", formData.bio);
+
+      if (avatarFile) {
+        dataPayload.append("foto_profil", avatarFile);
+      }
+
+      const response = await fetch(
+        `http://localhost:5000/api/profile/${profileId}`,
+        {
+          method: "PUT",
+          body: dataPayload, // Otomatis multipart/form-data
+        },
+      );
+
+      const result = await response.json();
+
+      if (response.ok || result.status === "success") {
+        alert("🎉 Profil Berhasil Diperbarui!");
+
+        // 1. Susun data user terbaru berdasarkan respons database
+        const updatedUser = {
+          ...user,
+          username: result.data.username,
+          bio: result.data.bio,
+          foto_profil: result.data.foto_profil, // Nama file gambar baru dari backend
+        };
+
+        // 2. ✨ SOLUSI UTAMA: Perbarui localStorage agar saat di-refresh data tidak hilang!
+        // Catatan: Sesuaikan nama key localStorage Anda jika bukan bernama "user" (misal: "userData", dll)
+        const localUserData = localStorage.getItem("user");
+        if (localUserData) {
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+        }
+
+        // 3. Perbarui global state React agar komponen Navbar & Profile langsung berganti instan
+        if (setUser) {
+          setUser(updatedUser);
+        }
+
+        navigate("/profil");
+      } else {
+        alert("Gagal memperbarui profil: " + result.message);
+      }
+    } catch (error) {
+      console.error("Error update profile:", error);
+      alert("Terjadi masalah jaringan ke server backend.");
+    }
   };
 
   return (
@@ -75,11 +216,30 @@ const EditProfilePage = ({ user, setUser }) => {
           {/* SIDEBAR KIRI: KREDENSIAL AVATAR & NAVIGATION */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-neutral-default rounded-[40px] p-8 shadow-sm border border-neutral-100 text-center">
+              {/* INPUT FILE TERSEMBUNYI */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+
+              {/* TAMPILAN FOTO AVATAR (IMG / INITIAL) */}
               <div className="w-32 h-32 bg-brand-primary-300 rounded-full mx-auto flex items-center justify-center text-neutral-default text-4xl font-sans font-bold border-4 border-brand-secondary-100 shadow-lg mb-6 overflow-hidden uppercase">
-                {formData.username.charAt(0)}
+                {avatarPreview ? (
+                  <img
+                    src={avatarPreview}
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  formData.username.charAt(0) || "U"
+                )}
               </div>
+
               <h3 className="text-xl font-sans font-black text-brand-dark-500 uppercase tracking-tight">
-                {formData.username}
+                {formData.username || "Guest"}
               </h3>
               <p className="text-[10px] text-brand-primary-300 mt-1 uppercase tracking-widest font-black flex items-center justify-center gap-1">
                 <Sparkles className="w-3 h-3" /> Pahlawan Hijau
@@ -88,12 +248,14 @@ const EditProfilePage = ({ user, setUser }) => {
               <div className="flex gap-2 mt-8">
                 <button
                   type="button"
+                  onClick={() => fileInputRef.current.click()}
                   className="flex-1 bg-brand-primary-300 text-neutral-default py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-brand-primary-500 transition-colors flex items-center justify-center gap-1 outline-none shadow-sm"
                 >
                   <Camera className="w-3.5 h-3.5" /> Ganti Foto
                 </button>
                 <button
                   type="button"
+                  onClick={handleRemovePhoto}
                   className="flex-1 border border-neutral-100 bg-neutral-50 text-neutral-400 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-neutral-100 hover:text-feedback-error-200 transition-colors flex items-center justify-center gap-1 outline-none"
                 >
                   <Trash2 className="w-3.5 h-3.5" /> Hapus
@@ -145,7 +307,7 @@ const EditProfilePage = ({ user, setUser }) => {
               </span>
             </div>
 
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-6" onSubmit={handleSave}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Input Field: Username */}
                 <div>
@@ -159,10 +321,11 @@ const EditProfilePage = ({ user, setUser }) => {
                       setFormData({ ...formData, username: e.target.value })
                     }
                     className="w-full bg-neutral-50 border border-neutral-100 text-brand-dark-500 rounded-2xl p-4 text-xs font-medium focus:ring-2 focus:ring-brand-primary-300 outline-none transition-all"
+                    required
                   />
                 </div>
 
-                {/* Input Field: Email Locked */}
+                {/* Input Field: Email Locked (Sesuai Desain & Keamanan Auth, Email Tidak Bisa Diubah Kasat Mata) */}
                 <div>
                   <label className="text-[10px] font-black text-brand-primary-300 uppercase mb-2 block tracking-widest">
                     Email
@@ -219,13 +382,12 @@ const EditProfilePage = ({ user, setUser }) => {
                 <button
                   type="button"
                   onClick={() => navigate("/profil")}
-                  className="px-8 py-4 text-[10px] font-bold text-neutral-400 uppercase tracking-widest hover:text-brand-dark-500 transition-colors outline-none"
+                  className="px-8 py-4 bg-neutral-default text-neutral-400 border border-neutral-100 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:border-[#3a5b22]/30 hover:text-[#3a5b22] transition-all outline-none"
                 >
                   Batalkan
                 </button>
                 <button
-                  type="button"
-                  onClick={handleSave}
+                  type="submit"
                   className="px-10 py-4 bg-brand-primary-300 text-neutral-default rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-brand-primary-500 transition-all flex items-center gap-1.5 outline-none active:scale-98"
                 >
                   <Save className="w-3.5 h-3.5" /> Simpan Perubahan

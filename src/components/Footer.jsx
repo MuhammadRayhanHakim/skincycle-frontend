@@ -20,7 +20,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-[#3D5532] text-[#F2EDE4] py-20 px-10">
+    <footer className="bg-[#193505] text-[#F2EDE4] py-20 px-10">
       <div className="max-w-7xl mx-auto">
         {/* Bagian Atas: Sosmed, Logo Tengah, Newsletter */}
         <div className="grid grid-cols-1 md:grid-cols-3 items-center mb-16 gap-8">
@@ -49,7 +49,7 @@ const Footer = () => {
                 placeholder="Masukkan email kamu..."
                 className="bg-white text-black px-4 py-2 rounded-l-md w-full text-xs outline-none"
               />
-              <button className="bg-[#5F7454] px-4 py-2 rounded-r-md text-xs font-bold">
+              <button className="bg-[#4f6e39] px-4 py-2 rounded-r-md text-xs font-bold">
                 Langganan
               </button>
             </div>
@@ -114,7 +114,10 @@ const Footer = () => {
               Diskusi Terbaru
             </h4>
             <div className="space-y-4">
-              <Link to="/forum" className="flex gap-3 hover:opacity-100 opacity-80 transition-opacity">
+              <Link
+                to="/forum"
+                className="flex gap-3 hover:opacity-100 opacity-80 transition-opacity"
+              >
                 <div className="w-8 h-8 bg-gray-300 rounded-full shrink-0"></div>
                 <div>
                   <p className="text-[10px] opacity-60">28 April 2026</p>
@@ -123,7 +126,10 @@ const Footer = () => {
                   </p>
                 </div>
               </Link>
-              <Link to="/forum" className="flex gap-3 hover:opacity-100 opacity-80 transition-opacity">
+              <Link
+                to="/forum"
+                className="flex gap-3 hover:opacity-100 opacity-80 transition-opacity"
+              >
                 <div className="w-8 h-8 bg-gray-300 rounded-full shrink-0"></div>
                 <div>
                   <p className="text-[10px] opacity-60">24 April 2026</p>

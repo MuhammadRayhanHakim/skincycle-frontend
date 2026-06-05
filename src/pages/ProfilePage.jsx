@@ -1,4 +1,4 @@
-// import React from "react";
+// import React, { useState, useEffect, useCallback } from "react";
 // import { useNavigate } from "react-router-dom";
 // import {
 //   Wallet,
@@ -13,10 +13,47 @@
 //   MessageSquare,
 //   History,
 //   Package,
-// } from "lucide-react"; // Menggunakan lucide-react untuk konsistensi design system
+//   Loader2,
+//   ArrowUpRight,
+// } from "lucide-react";
 
 // const ProfilePage = ({ user }) => {
-//   const navigate = useNavigate(); // Hook untuk navigasi
+//   const navigate = useNavigate();
+
+//   // --- STATE MANAJEMEN DATA RIIL DATABASE ---
+//   const [laporanDaurUlang, setLaporanDaurUlang] = useState([]);
+//   const [isLoading, setIsLoading] = useState(true);
+
+//   // --- AMBIL DATA RIWAYAT ASLI DARI BACKEND SKINCYCLE ---
+//   const fetchProfileHistory = useCallback(async () => {
+//     try {
+//       const token = localStorage.getItem("token");
+//       const response = await fetch(
+//         "http://localhost:5000/api/recycle/user-history",
+//         {
+//           method: "GET",
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${token}`,
+//           },
+//         },
+//       );
+
+//       const result = await response.json();
+//       if (result.status === "success") {
+//         // Menyimpan data laporan fisik sampah asli dari database
+//         setLaporanDaurUlang(result.data.laporan || []);
+//       }
+//     } catch (error) {
+//       console.error("Gagal sinkronisasi data riwayat di profil:", error);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   }, []);
+
+//   useEffect(() => {
+//     fetchProfileHistory();
+//   }, [fetchProfileHistory]);
 
 //   const formatRupiah = (number) => {
 //     return new Intl.NumberFormat("id-ID", {
@@ -31,7 +68,7 @@
 //       <div className="max-w-7xl mx-auto space-y-8">
 //         {/* ROW 1: STATS CARD OVERVIEW */}
 //         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-//           {/* 1. Saldo Utama Wallet Card */}
+//           {/* Saldo Utama Wallet Card */}
 //           <div className="bg-brand-primary-300 rounded-[40px] p-8 text-neutral-default relative overflow-hidden shadow-xl border border-brand-primary-400">
 //             <div className="relative z-10">
 //               <p className="text-[10px] font-black uppercase tracking-widest opacity-80 flex items-center gap-1.5">
@@ -63,7 +100,7 @@
 //             </div>
 //           </div>
 
-//           {/* 2. Level Progress Gamification Card */}
+//           {/* Level Progress Gamification Card */}
 //           <div className="bg-neutral-default rounded-[40px] p-8 shadow-sm border border-neutral-100 flex flex-col justify-between">
 //             <div>
 //               <div className="flex justify-between items-center mb-6">
@@ -88,7 +125,6 @@
 //               </div>
 //             </div>
 
-//             {/* Step badges progress node */}
 //             <div className="flex justify-between mt-8">
 //               {["Tunas", "Hijau", "Eco", "Penjaga"].map((lvl, i) => (
 //                 <div key={i} className="flex flex-col items-center gap-2">
@@ -105,7 +141,7 @@
 //             </div>
 //           </div>
 
-//           {/* 3. Pencapaian Badges Terbaru Card */}
+//           {/* Pencapaian Badges Terbaru Card */}
 //           <div className="bg-neutral-default rounded-[40px] p-8 shadow-sm border border-neutral-100">
 //             <h4 className="text-xs font-black uppercase tracking-widest mb-6 text-neutral-400 flex items-center gap-1">
 //               <Award className="w-4 h-4 text-brand-primary-300" /> Pencapaian
@@ -143,7 +179,6 @@
 
 //         {/* ROW 2: PROFILE DETAILS & SOCIAL ACTIONS */}
 //         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-//           {/* Core Profile Credentials */}
 //           <div className="lg:col-span-2 bg-neutral-default rounded-[40px] p-8 shadow-sm border border-neutral-100">
 //             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
 //               <div className="flex gap-5 items-center">
@@ -166,7 +201,7 @@
 //               <button
 //                 type="button"
 //                 onClick={() => navigate("/profil/edit")}
-//                 className="px-6 py-2.5 rounded-full border-2 border-brand-primary-300 text-[11px] font-black uppercase tracking-widest text-brand-primary-300 bg-neutral-default transition-all hover:bg-brand-primary-300 hover:text-neutral-default active:scale-95 outline-none text-center"
+//                 className="text-[10px] bg-brand-primary-300 text-neutral-default px-6 py-3 rounded-full font-black uppercase tracking-widest shadow-md hover:bg-brand-primary-500 transition-all outline-none text-center"
 //               >
 //                 Edit Profil
 //               </button>
@@ -174,13 +209,12 @@
 
 //             <p className="text-xs text-neutral-400 leading-relaxed italic mb-8 font-medium border-l-4 border-brand-primary-100/40 pl-4">
 //               "Mari bersama membuat kecantikan lebih baik untuk bumi dengan
-//               mendaur ulang kemasan skincare secara tertatur."
+//               mendaur ulang kemasan skincare secara teratur."
 //             </p>
 
-//             {/* Quick Summary Numerik */}
 //             <div className="grid grid-cols-3 gap-4">
 //               {[
-//                 { n: "42 Unit", t: "Item Disetor" },
+//                 { n: `${laporanDaurUlang.length} Kali`, t: "Setor Sampah" },
 //                 {
 //                   n: formatRupiah(user?.total_saldo || 0),
 //                   t: "Total Pendapatan",
@@ -202,7 +236,6 @@
 //             </div>
 //           </div>
 
-//           {/* Community Social Stats Card */}
 //           <div className="bg-neutral-default rounded-[40px] p-8 shadow-sm border border-neutral-100 h-full flex flex-col justify-between">
 //             <div>
 //               <h4 className="text-xs font-black uppercase tracking-widest mb-6 text-neutral-400">
@@ -229,14 +262,15 @@
 //                 </div>
 //               </div>
 //             </div>
-//             <div className="text-[9px] text-neutral-300 font-bold text-center mt-6 uppercase tracking-widest flex items-center justify-center gap-1">
-//               <UserCheck className="w-3.5 h-3.5 text-brand-primary-300/50" />{" "}
+//             <div className="text-[9px] text-neutral-300 font-bold text-center mt-6 uppercase tracking-widest">
 //               Peringkat Kontribusi Ke-45
 //             </div>
 //           </div>
 //         </div>
 
-//         {/* ROW 3: RECENT ACTIVITIES LIST */}
+//         {/* ========================================================================= */}
+//         {/* ROW 3: FIX DYNAMIC RECENT ACTIVITIES (SINKRON DENGAN DATABASE UTAMA) */}
+//         {/* ========================================================================= */}
 //         <div className="bg-neutral-default rounded-[50px] p-10 shadow-sm border border-neutral-100">
 //           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
 //             <div className="flex items-center gap-3">
@@ -248,7 +282,7 @@
 //                   Riwayat Terbaru
 //                 </h4>
 //                 <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider mt-0.5">
-//                   Siklus transaksi setoran botol kosmetik
+//                   Log aktivitas sirkular penyerahan sampah kosmetik Anda
 //                 </p>
 //               </div>
 //             </div>
@@ -262,26 +296,54 @@
 //             </button>
 //           </div>
 
-//           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-//             {["Serum", "Toner", "Minyak", "Botol Kaca", "Plastik"].map(
-//               (item, i) => (
+//           {/* Render Loading State khusus area riwayat */}
+//           {isLoading ? (
+//             <div className="py-12 flex justify-center items-center gap-2 text-neutral-400 text-xs font-bold">
+//               <Loader2 className="w-4 h-4 animate-spin text-brand-primary-300" />{" "}
+//               Sinkronisasi data aktivitas...
+//             </div>
+//           ) : laporanDaurUlang.length > 0 ? (
+//             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+//               {/* Ambil maksimal 5 data transaksi teratas/terbaru dari database */}
+//               {laporanDaurUlang.slice(0, 5).map((item, i) => (
 //                 <div
-//                   key={i}
-//                   className="bg-neutral-50 p-5 rounded-[30px] border border-neutral-100 text-center flex flex-col justify-between items-center relative group hover:border-brand-primary-100 transition-all"
+//                   key={item.id_laporan || i}
+//                   className="bg-neutral-50 p-5 rounded-[30px] border border-neutral-100 text-center flex flex-col justify-between items-center relative group hover:border-brand-primary-200 transition-all shadow-sm"
 //                 >
-//                   <span className="text-[8px] bg-neutral-default border border-neutral-100 px-2 py-1 rounded-full font-black text-brand-primary-300 shadow-sm uppercase block tracking-wider">
-//                     + Rp 5.000
+//                   <span
+//                     className={`text-[9px] border px-2 py-1 rounded-full font-black shadow-sm uppercase block tracking-wider ${
+//                       item.status_jemput === "selesai"
+//                         ? "bg-neutral-default border-neutral-100 text-feedback-success-300"
+//                         : "bg-feedback-warning-100 border-transparent text-feedback-warning-300 animate-pulse"
+//                     }`}
+//                   >
+//                     {item.status_jemput === "selesai"
+//                       ? `+ Rp ${parseInt(item.saldo_cair || 0).toLocaleString("id-ID")}`
+//                       : "Jemput/Pending"}
 //                   </span>
-//                   <div className="mt-5 mb-3 text-2xl group-hover:scale-110 transition-transform">
-//                     <Package className="w-8 h-8 text-brand-primary-300/40 mx-auto" />
+
+//                   <div className="mt-5 mb-3 text-brand-primary-300/40 group-hover:scale-105 transition-transform">
+//                     <Package className="w-8 h-8 mx-auto" />
 //                   </div>
-//                   <p className="text-[11px] font-bold text-brand-dark-500 uppercase tracking-tight leading-none">
-//                     {item}
-//                   </p>
+
+//                   <div className="space-y-0.5">
+//                     <p className="text-[11px] font-black text-brand-dark-500 uppercase tracking-tight">
+//                       Berat: {item.estimasi_berat} KG
+//                     </p>
+//                     <p className="text-[8px] text-neutral-400 font-black uppercase tracking-widest flex items-center justify-center gap-0.5">
+//                       <ArrowUpRight className="w-2.5 h-2.5" />{" "}
+//                       {item.status_jemput?.replace("_", " ")}
+//                     </p>
+//                   </div>
 //                 </div>
-//               ),
-//             )}
-//           </div>
+//               ))}
+//             </div>
+//           ) : (
+//             <div className="py-12 border border-dashed border-neutral-200 rounded-3xl text-center text-neutral-400 text-xs italic font-medium">
+//               Belum ada aktivitas penyetoran sampah daur ulang yang tercatat di
+//               database.
+//             </div>
+//           )}
 //         </div>
 //       </div>
 //     </div>
@@ -333,7 +395,6 @@ const ProfilePage = ({ user }) => {
 
       const result = await response.json();
       if (result.status === "success") {
-        // Menyimpan data laporan fisik sampah asli dari database
         setLaporanDaurUlang(result.data.laporan || []);
       }
     } catch (error) {
@@ -474,9 +535,23 @@ const ProfilePage = ({ user }) => {
           <div className="lg:col-span-2 bg-neutral-default rounded-[40px] p-8 shadow-sm border border-neutral-100">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div className="flex gap-5 items-center">
-                <div className="w-20 h-20 bg-brand-primary-300 rounded-full flex items-center justify-center text-neutral-default text-3xl font-sans font-bold border-4 border-brand-secondary-100 uppercase shadow-md">
-                  {user?.username?.charAt(0) || "U"}
+                {/* 🖼️ PERBAIKAN SINKRONISASI: SEKARANG MEMBACA FOTO PROFIL ASLI DARI DATABASE */}
+                <div className="w-20 h-20 bg-brand-primary-300 rounded-full flex items-center justify-center text-neutral-default text-3xl font-sans font-bold border-4 border-brand-secondary-100 uppercase shadow-md overflow-hidden shrink-0">
+                  {user?.foto_profil ? (
+                    <img
+                      src={`http://localhost:5000/uploads/${user.foto_profil}`}
+                      alt={user.username}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = `https://placehold.co/80x80/3d5532/ffffff?text=${user.username?.charAt(0).toUpperCase()}`;
+                      }}
+                    />
+                  ) : (
+                    <span>{user?.username?.charAt(0) || "U"}</span>
+                  )}
                 </div>
+
                 <div>
                   <h3 className="text-2xl font-sans font-black text-brand-dark-500 uppercase tracking-tight">
                     {user?.username || "Guest"}
@@ -493,15 +568,17 @@ const ProfilePage = ({ user }) => {
               <button
                 type="button"
                 onClick={() => navigate("/profil/edit")}
-                className="px-6 py-2.5 rounded-full border-2 border-brand-primary-300 text-[11px] font-black uppercase tracking-widest text-brand-primary-300 bg-neutral-default transition-all hover:bg-brand-primary-300 hover:text-neutral-default active:scale-95 outline-none text-center"
+                className="text-[10px] bg-brand-primary-300 text-neutral-default px-6 py-3 rounded-full font-black uppercase tracking-widest shadow-md hover:bg-brand-primary-500 transition-all outline-none text-center"
               >
                 Edit Profil
               </button>
             </div>
 
             <p className="text-xs text-neutral-400 leading-relaxed italic mb-8 font-medium border-l-4 border-brand-primary-100/40 pl-4">
-              "Mari bersama membuat kecantikan lebih baik untuk bumi dengan
-              mendaur ulang kemasan skincare secara teratur."
+              "
+              {user?.bio ||
+                "Mari bersama membuat kecantikan lebih baik untuk bumi dengan mendaur ulang kemasan skincare secara teratur."}
+              "
             </p>
 
             <div className="grid grid-cols-3 gap-4">
@@ -560,9 +637,7 @@ const ProfilePage = ({ user }) => {
           </div>
         </div>
 
-        {/* ========================================================================= */}
-        {/* ROW 3: FIX DYNAMIC RECENT ACTIVITIES (SINKRON DENGAN DATABASE UTAMA) */}
-        {/* ========================================================================= */}
+        {/* ROW 3: RIWAYAT AKTIVITAS */}
         <div className="bg-neutral-default rounded-[50px] p-10 shadow-sm border border-neutral-100">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div className="flex items-center gap-3">
@@ -588,7 +663,6 @@ const ProfilePage = ({ user }) => {
             </button>
           </div>
 
-          {/* Render Loading State khusus area riwayat */}
           {isLoading ? (
             <div className="py-12 flex justify-center items-center gap-2 text-neutral-400 text-xs font-bold">
               <Loader2 className="w-4 h-4 animate-spin text-brand-primary-300" />{" "}
@@ -596,7 +670,6 @@ const ProfilePage = ({ user }) => {
             </div>
           ) : laporanDaurUlang.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {/* Ambil maksimal 5 data transaksi teratas/terbaru dari database */}
               {laporanDaurUlang.slice(0, 5).map((item, i) => (
                 <div
                   key={item.id_laporan || i}
