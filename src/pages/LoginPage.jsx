@@ -150,8 +150,9 @@ const LoginPage = ({ setUser }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch(`${baseUrl}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
