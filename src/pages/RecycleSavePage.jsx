@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -412,14 +410,14 @@ const RecycleSavePage = () => {
               <button
                 type="button"
                 onClick={() => setShowInfoModal(false)}
-                className="px-8 py-4 bg-neutral-default text-neutral-400 border border-neutral-100 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:border-[#3a5b22]/30 hover:text-[#3a5b22] transition-all outline-none"
+                className="px-8 py-4 bg-neutral-default text-neutral-400 border border-neutral-100 rounded-2xl text-[10px] font-bold uppercase tracking-widest  hover:bg-brand-dark-500 hover:text-white transition-all outline-none"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleConfirmNavigate}
-                className="flex-1 py-3.5 bg-brand-primary-300 text-neutral-default rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-brand-primary-500 transition-all outline-none active:scale-98"
+                className="flex-1 py-3.5 bg-brand-primary-300 text-neutral-default rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-brand-dark-500 transition-all outline-none active:scale-98"
               >
                 Setuju & Lanjutkan
               </button>

@@ -671,7 +671,7 @@ const RecycleDropPage = () => {
               <button
                 type="button"
                 onClick={() => navigate("/daur-ulang/simpan")}
-                className="w-full bg-neutral-default text-brand-primary-300 py-5 rounded-[25px] font-black text-xs uppercase tracking-[0.2em] border border-neutral-100 shadow-sm hover:bg-neutral-50 active:scale-95 transition-all outline-none flex items-center justify-center gap-1"
+                className="w-full bg-neutral-default text-brand-primary-300 py-5 rounded-[25px] font-black text-xs uppercase tracking-[0.2em] border border-neutral-100 shadow-sm hover:bg-brand-primary-500 hover:text-white active:scale-95 transition-all outline-none flex items-center justify-center gap-1"
               >
                 <ArrowLeft className="w-4 h-4" /> Kembali Ke Karung
               </button>

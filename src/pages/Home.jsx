@@ -7,6 +7,8 @@ import {
   MessageSquare,
   ArrowRight,
   TrendingUp,
+  Fingerprint, // 🌟 IMPOR BARU: Menggantikan ikon DNA lama sesuai Figma
+  FlaskConical, // 🌟 IMPOR BARU: Menggantikan ikon lab lama sesuai Figma
 } from "lucide-react"; // Menggunakan lucide-react untuk ikon yang konsisten
 
 const Home = () => {
@@ -118,7 +120,8 @@ const Home = () => {
                 <h3 className="text-2xl font-bold text-brand-dark-500">
                   Struktur Jenis Kulit
                 </h3>
-                <span className="text-3xl text-brand-primary-300">🧬</span>
+                {/* 🌟 FIX IKON 1: Mengganti emoji 🧬 lama menjadi komponen Fingerprint Lucide sesuai desain Figma */}
+                <Fingerprint className="w-8 h-8 text-brand-primary-300" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {["Berminyak", "Kering", "Kombinasi", "Sensitif"].map(
@@ -158,10 +161,16 @@ const Home = () => {
                 </p>
                 <div className="space-y-4">
                   {[
-                    { n: "Aloe Vera", i: "🌿", s: "Menenangkan & Menghidrasi" },
+                    {
+                      n: "Aloe Vera",
+                      i: <Award className="w-5 h-5 text-brand-primary-300" />,
+                      s: "Menenangkan & Menghidrasi",
+                    },
                     {
                       n: "Niacinamide",
-                      i: "🧪",
+                      i: (
+                        <FlaskConical className="w-5 h-5 text-brand-primary-300" />
+                      ), // 🌟 Menyelaraskan estetika ikon kimia di dalam list card
                       s: "Memperbaiki Skin Barrier",
                     },
                   ].map((b) => (
@@ -185,11 +194,13 @@ const Home = () => {
                   ))}
                 </div>
               </div>
+
+              {/* 🌟 FIX IKON 2: Menggunakan komponen FlaskConical besar Lucide sebagai tombol utama Perpustakaan Bahan Alami */}
               <button
                 onClick={() => navigate("/ensiklopedia/kandungan")} // Langsung mengarah ke KandunganPage user yang baru
                 className="w-full mt-8 py-5 border-2 border-brand-primary-500 text-brand-primary-300 rounded-3xl font-black text-xs uppercase tracking-[0.2em] hover:bg-brand-primary-500 hover:text-neutral-default transition-all shadow-lg flex items-center justify-center gap-2"
               >
-                <BookOpen className="w-4 h-4" /> Cari semua kandungan
+                <FlaskConical className="w-4 h-4" /> Cari semua kandungan
               </button>
             </div>
           </div>
@@ -288,7 +299,7 @@ const Home = () => {
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Card Preview Forum */}
-          <div className="bg-neutral-default p-10 rounded-[50px] shadow-sm border border-neutral-100 shadow-sm border-gray-100 flex flex-col justify-between hover:shadow-xl transition-all">
+          <div className="bg-neutral-default p-10 rounded-[50px] shadow-sm border border-neutral-100 flex flex-col justify-between hover:shadow-xl transition-all">
             <div>
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-brand-primary-300 rounded-full flex items-center justify-center text-neutral-default font-bold">
