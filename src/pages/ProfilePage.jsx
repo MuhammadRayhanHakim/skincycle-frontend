@@ -41,7 +41,6 @@
 
 //       const result = await response.json();
 //       if (result.status === "success") {
-//         // Menyimpan data laporan fisik sampah asli dari database
 //         setLaporanDaurUlang(result.data.laporan || []);
 //       }
 //     } catch (error) {
@@ -182,9 +181,23 @@
 //           <div className="lg:col-span-2 bg-neutral-default rounded-[40px] p-8 shadow-sm border border-neutral-100">
 //             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
 //               <div className="flex gap-5 items-center">
-//                 <div className="w-20 h-20 bg-brand-primary-300 rounded-full flex items-center justify-center text-neutral-default text-3xl font-sans font-bold border-4 border-brand-secondary-100 uppercase shadow-md">
-//                   {user?.username?.charAt(0) || "U"}
+//                 {/* 🖼️ PERBAIKAN SINKRONISASI: SEKARANG MEMBACA FOTO PROFIL ASLI DARI DATABASE */}
+//                 <div className="w-20 h-20 bg-brand-primary-300 rounded-full flex items-center justify-center text-neutral-default text-3xl font-sans font-bold border-4 border-brand-secondary-100 uppercase shadow-md overflow-hidden shrink-0">
+//                   {user?.foto_profil ? (
+//                     <img
+//                       src={`http://localhost:5000/uploads/${user.foto_profil}`}
+//                       alt={user.username}
+//                       className="w-full h-full object-cover"
+//                       onError={(e) => {
+//                         e.target.onerror = null;
+//                         e.target.src = `https://placehold.co/80x80/3d5532/ffffff?text=${user.username?.charAt(0).toUpperCase()}`;
+//                       }}
+//                     />
+//                   ) : (
+//                     <span>{user?.username?.charAt(0) || "U"}</span>
+//                   )}
 //                 </div>
+
 //                 <div>
 //                   <h3 className="text-2xl font-sans font-black text-brand-dark-500 uppercase tracking-tight">
 //                     {user?.username || "Guest"}
@@ -208,8 +221,10 @@
 //             </div>
 
 //             <p className="text-xs text-neutral-400 leading-relaxed italic mb-8 font-medium border-l-4 border-brand-primary-100/40 pl-4">
-//               "Mari bersama membuat kecantikan lebih baik untuk bumi dengan
-//               mendaur ulang kemasan skincare secara teratur."
+//               "
+//               {user?.bio ||
+//                 "Mari bersama membuat kecantikan lebih baik untuk bumi dengan mendaur ulang kemasan skincare secara teratur."}
+//               "
 //             </p>
 
 //             <div className="grid grid-cols-3 gap-4">
@@ -268,9 +283,7 @@
 //           </div>
 //         </div>
 
-//         {/* ========================================================================= */}
-//         {/* ROW 3: FIX DYNAMIC RECENT ACTIVITIES (SINKRON DENGAN DATABASE UTAMA) */}
-//         {/* ========================================================================= */}
+//         {/* ROW 3: RIWAYAT AKTIVITAS */}
 //         <div className="bg-neutral-default rounded-[50px] p-10 shadow-sm border border-neutral-100">
 //           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
 //             <div className="flex items-center gap-3">
@@ -296,7 +309,6 @@
 //             </button>
 //           </div>
 
-//           {/* Render Loading State khusus area riwayat */}
 //           {isLoading ? (
 //             <div className="py-12 flex justify-center items-center gap-2 text-neutral-400 text-xs font-bold">
 //               <Loader2 className="w-4 h-4 animate-spin text-brand-primary-300" />{" "}
@@ -304,7 +316,6 @@
 //             </div>
 //           ) : laporanDaurUlang.length > 0 ? (
 //             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-//               {/* Ambil maksimal 5 data transaksi teratas/terbaru dari database */}
 //               {laporanDaurUlang.slice(0, 5).map((item, i) => (
 //                 <div
 //                   key={item.id_laporan || i}
@@ -378,24 +389,46 @@ const ProfilePage = ({ user }) => {
   const [laporanDaurUlang, setLaporanDaurUlang] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // State penampung akumulasi angka statistik riil dari server
+  const [profileStats, setProfileStats] = useState({
+    total_berat_recycle: 0,
+    total_thread: 0,
+    total_likes_received: 0,
+    riwayat_pembelian_count: 0,
+  });
+
+  const baseUrl = "http://localhost:5000";
+
   // --- AMBIL DATA RIWAYAT ASLI DARI BACKEND SKINCYCLE ---
   const fetchProfileHistory = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        "http://localhost:5000/api/recycle/user-history",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+
+      // 1. Ambil data riwayat setoran daur ulang
+      const response = await fetch(`${baseUrl}/api/recycle/user-history`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       const result = await response.json();
       if (result.status === "success") {
         setLaporanDaurUlang(result.data.laporan || []);
+      }
+
+      // 2. Ambil data statistik akumulasi level, thread, dan upvote
+      const statsResponse = await fetch(`${baseUrl}/api/profile/stats`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const statsResult = await statsResponse.json();
+      if (statsResult.status === "success") {
+        setProfileStats(statsResult.data);
       }
     } catch (error) {
       console.error("Gagal sinkronisasi data riwayat di profil:", error);
@@ -407,6 +440,61 @@ const ProfilePage = ({ user }) => {
   useEffect(() => {
     fetchProfileHistory();
   }, [fetchProfileHistory]);
+
+  // ─── 🧪 LOGIKA GAMIFIKASI 4 TIER LEVEL (TARGET 30KG PER LEVEL) ───
+  const KATEGORI_LEVEL = [
+    { name: "Tunas", min: 0, max: 30 },
+    { name: "Hijau", min: 30, max: 60 },
+    { name: "Eco", min: 60, max: 90 },
+    { name: "Penjaga", min: 90, max: Infinity },
+  ];
+
+  const beratTotal = profileStats.total_berat_recycle || 0;
+
+  // Menentukan indeks tingkatan level user saat ini berdasarkan berat sampah
+  const currentLevelIndex = KATEGORI_LEVEL.findIndex(
+    (lvl) => beratTotal >= lvl.min && beratTotal < lvl.max,
+  );
+  const activeLevelIdx = currentLevelIndex === -1 ? 3 : currentLevelIndex;
+  const currentLevelName = KATEGORI_LEVEL[activeLevelIdx].name;
+
+  // Hitung persentase bar progress hijau (Max 100% per level dari target 30kg)
+  let progressPersen = 0;
+  if (KATEGORI_LEVEL[activeLevelIdx].max === Infinity) {
+    progressPersen = 100;
+  } else {
+    const beratDiLevelIni = beratTotal - KATEGORI_LEVEL[activeLevelIdx].min;
+    progressPersen = Math.min(100, Math.floor((beratDiLevelIni / 30) * 100));
+  }
+
+  // ─── 🏆 LOGIKA SISTEM SELEKSI LENCANA PENCAPAIAN TERBARU ───
+  const daftarPencapaianSistem = [
+    {
+      title: "Daur Ulang Pertama",
+      icon: <Wallet className="w-4 h-4 text-brand-primary-300" />,
+      isUnlocked: beratTotal > 0,
+    },
+    {
+      title: "Level Pahlawan Eco",
+      icon: <Star className="w-4 h-4 text-brand-primary-300" />,
+      isUnlocked: beratTotal >= 30,
+    },
+    {
+      title: "Bintang Komunitas",
+      icon: <Award className="w-4 h-4 text-brand-primary-300" />,
+      isUnlocked: (profileStats.total_likes_received || 0) >= 5,
+    },
+    {
+      title: "Konsumen Berkelanjutan",
+      icon: <Trophy className="w-4 h-4 text-brand-primary-300" />,
+      isUnlocked: (profileStats.riwayat_pembelian_count || 0) > 0,
+    },
+  ];
+
+  // Menyaring array untuk hanya menampilkan lencana yang sudah terbuka (isUnlocked = true)
+  const pencapaianTerbuka = daftarPencapaianSistem.filter(
+    (ach) => ach.isUnlocked,
+  );
 
   const formatRupiah = (number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -466,31 +554,45 @@ const ProfilePage = ({ user }) => {
                     Pahlawan Eco
                   </h3>
                   <p className="text-[10px] text-brand-primary-300 font-black uppercase tracking-wider mt-0.5">
-                    {user?.level_pengguna || "Level 1"}
+                    Tingkat: {currentLevelName} ({beratTotal} Kg)
                   </p>
                 </div>
                 <span className="text-2xl font-sans font-black text-brand-primary-300">
-                  75%
+                  {progressPersen}%
                 </span>
               </div>
               <div className="w-full bg-neutral-100 h-2.5 rounded-full overflow-hidden shadow-inner">
-                <div className="bg-brand-primary-300 h-full w-[75%] rounded-full transition-all duration-500"></div>
+                <div
+                  className="bg-brand-primary-300 h-full rounded-full transition-all duration-700 ease-out"
+                  style={{ width: `${progressPersen}%` }}
+                ></div>
               </div>
             </div>
 
             <div className="flex justify-between mt-8">
-              {["Tunas", "Hijau", "Eco", "Penjaga"].map((lvl, i) => (
-                <div key={i} className="flex flex-col items-center gap-2">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs shadow-sm font-bold ${i <= 2 ? "bg-brand-primary-300 text-neutral-default" : "bg-neutral-50 border border-neutral-100 text-neutral-400"}`}
-                  >
-                    {i === 3 ? "🔒" : "✓"}
+              {["Tunas", "Hijau", "Eco", "Penjaga"].map((lvl, i) => {
+                const isPassed =
+                  beratTotal >= KATEGORI_LEVEL[i].max || activeLevelIdx > i;
+                const isActive = activeLevelIdx === i;
+
+                return (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs shadow-sm font-bold ${
+                        isPassed || isActive
+                          ? "bg-brand-primary-300 text-neutral-default"
+                          : "bg-neutral-50 border border-neutral-100 text-neutral-400"
+                      }`}
+                    >
+                      {/* 🌟 SELESAI: Mengubah 'idx' menjadi 'i' untuk memperbaiki crash/blank page */}
+                      {isPassed ? "✓" : isActive ? i + 1 : "🔒"}
+                    </div>
+                    <span className="text-[8px] font-black uppercase tracking-wider text-neutral-400">
+                      {lvl}
+                    </span>
                   </div>
-                  <span className="text-[8px] font-black uppercase tracking-wider text-neutral-400">
-                    {lvl}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -500,32 +602,29 @@ const ProfilePage = ({ user }) => {
               <Award className="w-4 h-4 text-brand-primary-300" /> Pencapaian
               Terbaru
             </h4>
-            <div className="space-y-4">
-              {[
-                {
-                  title: "Daur Ulang Pertama",
-                  icon: <Wallet className="w-4 h-4 text-brand-primary-300" />,
-                },
-                {
-                  title: "Level Pahlawan Eco",
-                  icon: <Star className="w-4 h-4 text-brand-primary-300" />,
-                },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-4 p-3 rounded-2xl border border-neutral-50 bg-neutral-50/50"
-                >
-                  <div className="w-10 h-10 bg-neutral-default rounded-xl flex items-center justify-center border border-neutral-100 shadow-sm">
-                    {item.icon}
+            <div className="space-y-4 max-h-[160px] overflow-y-auto pr-1">
+              {pencapaianTerbuka.length > 0 ? (
+                pencapaianTerbuka.slice(0, 2).map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-4 p-3 rounded-2xl border border-neutral-50 bg-neutral-50/50"
+                  >
+                    <div className="w-10 h-10 bg-neutral-default rounded-xl flex items-center justify-center border border-neutral-100 shadow-sm">
+                      {item.icon}
+                    </div>
+                    <p className="text-[11px] font-bold flex-1 text-brand-dark-500">
+                      {item.title}
+                    </p>
+                    <span className="text-[9px] bg-brand-primary-100/30 text-brand-primary-300 px-2 py-0.5 rounded-full font-black">
+                      ✓
+                    </span>
                   </div>
-                  <p className="text-[11px] font-bold flex-1 text-brand-dark-500">
-                    {item.title}
-                  </p>
-                  <span className="text-[9px] bg-brand-primary-100/30 text-brand-primary-300 px-2 py-0.5 rounded-full font-black">
-                    ✓
-                  </span>
+                ))
+              ) : (
+                <div className="py-6 text-center text-[11px] text-neutral-400 italic">
+                  Belum ada lencana pencapaian terbuka.
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -535,11 +634,10 @@ const ProfilePage = ({ user }) => {
           <div className="lg:col-span-2 bg-neutral-default rounded-[40px] p-8 shadow-sm border border-neutral-100">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div className="flex gap-5 items-center">
-                {/* 🖼️ PERBAIKAN SINKRONISASI: SEKARANG MEMBACA FOTO PROFIL ASLI DARI DATABASE */}
                 <div className="w-20 h-20 bg-brand-primary-300 rounded-full flex items-center justify-center text-neutral-default text-3xl font-sans font-bold border-4 border-brand-secondary-100 uppercase shadow-md overflow-hidden shrink-0">
                   {user?.foto_profil ? (
                     <img
-                      src={`http://localhost:5000/uploads/${user.foto_profil}`}
+                      src={`${baseUrl}/uploads/${user.foto_profil}`}
                       alt={user.username}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -584,11 +682,11 @@ const ProfilePage = ({ user }) => {
             <div className="grid grid-cols-3 gap-4">
               {[
                 { n: `${laporanDaurUlang.length} Kali`, t: "Setor Sampah" },
+                { n: `${beratTotal} Kg`, t: "Total Berat Kontribusi" },
                 {
-                  n: formatRupiah(user?.total_saldo || 0),
-                  t: "Total Pendapatan",
+                  n: `${pencapaianTerbuka.length} Lencana`,
+                  t: "Koleksi Reward",
                 },
-                { n: "8 Lencana", t: "Koleksi Reward" },
               ].map((stat, i) => (
                 <div
                   key={i}
@@ -614,7 +712,7 @@ const ProfilePage = ({ user }) => {
                 <div className="bg-brand-primary-100/10 p-6 rounded-[30px] text-center border border-brand-primary-100/20 flex flex-col items-center justify-center gap-1">
                   <MessageSquare className="w-5 h-5 text-brand-primary-300" />
                   <p className="text-3xl font-sans font-black text-brand-primary-500 leading-none mt-1">
-                    12
+                    {profileStats.total_thread}
                   </p>
                   <p className="text-[9px] font-black text-brand-primary-300 uppercase tracking-wider mt-1">
                     Thread Forum
@@ -623,7 +721,7 @@ const ProfilePage = ({ user }) => {
                 <div className="bg-brand-secondary-100/40 p-6 rounded-[30px] text-center border border-brand-secondary-300/30 flex flex-col items-center justify-center gap-1">
                   <Heart className="w-5 h-5 text-brand-primary-300" />
                   <p className="text-3xl font-sans font-black text-brand-dark-500 leading-none mt-1">
-                    48
+                    {profileStats.total_likes_received}
                   </p>
                   <p className="text-[9px] font-black text-neutral-400 uppercase tracking-wider mt-1">
                     Upvote Suka
@@ -677,12 +775,14 @@ const ProfilePage = ({ user }) => {
                 >
                   <span
                     className={`text-[9px] border px-2 py-1 rounded-full font-black shadow-sm uppercase block tracking-wider ${
-                      item.status_jemput === "selesai"
+                      item.status_jemput === "selesai" ||
+                      item.status_jemput === "Sukses"
                         ? "bg-neutral-default border-neutral-100 text-feedback-success-300"
                         : "bg-feedback-warning-100 border-transparent text-feedback-warning-300 animate-pulse"
                     }`}
                   >
-                    {item.status_jemput === "selesai"
+                    {item.status_jemput === "selesai" ||
+                    item.status_jemput === "Sukses"
                       ? `+ Rp ${parseInt(item.saldo_cair || 0).toLocaleString("id-ID")}`
                       : "Jemput/Pending"}
                   </span>
@@ -693,7 +793,7 @@ const ProfilePage = ({ user }) => {
 
                   <div className="space-y-0.5">
                     <p className="text-[11px] font-black text-brand-dark-500 uppercase tracking-tight">
-                      Berat: {item.estimasi_berat} KG
+                      Berat: {item.estimasi_berat}
                     </p>
                     <p className="text-[8px] text-neutral-400 font-black uppercase tracking-widest flex items-center justify-center gap-0.5">
                       <ArrowUpRight className="w-2.5 h-2.5" />{" "}

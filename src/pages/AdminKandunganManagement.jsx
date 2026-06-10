@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback } from "react";
 import SidebarAdmin from "../components/SidebarAdmin";
 import { Beaker, Eye, Plus, ShieldCheck, X, Edit2, Trash2 } from "lucide-react"; // Menggunakan lucide-react agar ikon seragam
@@ -149,7 +147,7 @@ const AdminKandunganManagement = () => {
       <main className="flex-1 ml-64 p-10">
         <header className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-3xl font-sans text-brand-dark-500">
+            <h1 className="text-3xl font-sans text-brand-dark-500 font-bold">
               Manajemen Bahan Skincare
             </h1>
             <p className="text-xs text-neutral-400 mt-1 font-medium">

@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -9,8 +5,10 @@ import {
   Route,
   Navigate,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
+import { Lock, X } from "lucide-react";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -46,7 +44,7 @@ import AdminKandunganManagement from "./pages/AdminKandunganManagement";
 import AdminArticleManagement from "./pages/AdminArticleManagement";
 import AdminOrderManagement from "./pages/AdminOrderManagement";
 
-// Fitur: Scroll To Top saat berpindah halaman
+// KOMPONEN AUTO RESET SCROLL TO TOP
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -55,53 +53,176 @@ function ScrollToTop() {
   return null;
 }
 
-// 🚀 LAYOUT CONTENT WRAPPER: Mengontrol render Navbar & Footer secara dinamis
-function AppContent({ user, setUser, handleLogout, isLoading }) {
-  const location = useLocation();
+function App() {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Menentukan apakah rute aktif saat ini membutuhkan pembersihan layout komponen
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
+    if (storedUser && storedToken) {
+      setUser(JSON.parse(storedUser));
+    }
+    setIsLoading(false);
+  }, []);
+
+  return (
+    <Router>
+      <ScrollToTop />
+      <AppContent user={user} setUser={setUser} isLoading={isLoading} />
+    </Router>
+  );
+}
+
+function AppContent({ user, setUser, isLoading }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // STATE MANAJEMEN CUSTOM TOAST
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+  });
+
+  // 🌟 STATE BARU: Menandai apakah pengguna sedang dalam proses logout
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const triggerToast = (msg) => {
+    setToast({ show: true, message: msg });
+  };
+
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast({ show: false, message: "" });
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
+
+  // 🌟 REVISI LOGIKA LOGOUT: Set tanda isLoggingOut menjadi true terlebih dahulu
+  const handleLogout = () => {
+    setIsLoggingOut(true); // Mengunci guard agar tidak memicu alert salah
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+
+    triggerToast(
+      "Anda telah berhasil keluar dari akun. Sampai jumpa kembali! 🍃",
+    );
+
+    navigate("/");
+
+    // Kembalikan status guard setelah navigasi rute utama selesai aman diakses
+    setTimeout(() => {
+      setIsLoggingOut(false);
+    }, 500);
+  };
+
   const isAuthPage = ["/masuk", "/daftar"].includes(location.pathname);
   const isAdminPage = location.pathname.startsWith("/admin");
 
-  // Aturan penyembunyian komponen komprehensif
-  const shouldHideNavbar = isAuthPage; 
+  const shouldHideNavbar = isAuthPage;
   const shouldHideFooter = isAuthPage || isAdminPage;
 
+  // 🔐 ROUTE GUARD YANG SUDAH DIPERBAIKI SINKRONISASINYA
   const ProtectedRoute = ({ children, adminOnly = false }) => {
-    if (isLoading) return null;
+    if (isLoading) {
+      return <div className="opacity-0 min-h-screen bg-[#F2EDE4]" />;
+    }
+
+    // 🌟 REVISI UTAMA: Jika status sedang logout, abaikan pengecekan rute agar toast logout tidak tertimpa
+    if (isLoggingOut) {
+      return <div className="opacity-0 min-h-screen bg-[#F2EDE4]" />;
+    }
+
     if (!user) {
+      triggerToast("Silakan masuk ke akun Anda terlebih dahulu.");
       return <Navigate to="/masuk" replace />;
     }
+
     if (adminOnly && user.role !== "admin") {
-      alert("Akses Ditolak! Anda bukan Administrator.");
+      triggerToast("Akses ditolak! Khusus halaman Administrator.");
       return <Navigate to="/" replace />;
     }
+
     return children;
   };
 
   return (
-    <div className="min-h-screen bg-[#F2EDE4] flex flex-col">
-      {/* ⚙️ Pengecualian Navbar: Sembunyikan jika berada di rute login/register */}
+    <div className="min-h-screen bg-[#F2EDE4] flex flex-col relative">
+      {/* UI COMPONENT: KUSTOM TOAST NOTIFICATION PREMIUM */}
+      {toast.show && (
+        <div className="fixed top-24 right-6 z-[99999] flex items-center gap-3 bg-brand-dark-500/95 text-white backdrop-blur px-4 py-3 rounded-xl shadow-xl border border-white/10 max-w-sm animate-in slide-in-from-right-5 fade-in duration-300">
+          <Lock className="w-4 h-4 text-[#8EA883] shrink-0" />
+          <p className="text-[11px] font-bold tracking-wide text-neutral-100 leading-none">
+            {toast.message}
+          </p>
+          <button
+            type="button"
+            onClick={() => setToast({ show: false, message: "" })}
+            className="text-neutral-400 hover:text-white transition-colors ml-2 p-0.5 outline-none shrink-0"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      )}
+
+      {/* Navbar Tunggal */}
       {!shouldHideNavbar && <Navbar user={user} onLogout={handleLogout} />}
 
-      <main className="flex-grow">
+      {/* Main Content Area */}
+      <main
+        key={location.pathname}
+        className={`flex-grow animate-in fade-in zoom-in-95 duration-300 ease-out ${isAuthPage ? "pt-0" : "pt-16"}`}
+      >
         <Routes>
           {/* PUBLIC ROUTES */}
           <Route path="/" element={<Home />} />
           <Route path="/ensiklopedia" element={<EnsiklopediaPage />} />
           <Route path="/ensiklopedia/kumpulan" element={<ArtikelListPage />} />
-          <Route path="/ensiklopedia/detail/:id" element={<ArtikelDetailPage />} />
+          <Route
+            path="/ensiklopedia/detail/:id"
+            element={<ArtikelDetailPage />}
+          />
           <Route path="/ensiklopedia/kandungan" element={<KandunganPage />} />
-          <Route path="/produk" element={<ProductPage user={user} />} />
-          <Route path="/produk/detail/:id" element={<ProductDetailPage user={user} />} />
-          <Route path="/tentang-kami" element={<AboutPage />} />
           <Route path="/daur-ulang" element={<RecyclePage user={user} />} />
+          <Route
+            path="/produk"
+            element={<ProductPage user={user} triggerToast={triggerToast} />}
+          />
+          <Route
+            path="/produk/detail/:id"
+            element={<ProductDetailPage user={user} />}
+          />
+          <Route path="/tentang-kami" element={<AboutPage />} />
 
           {/* AUTH ROUTES */}
-          <Route path="/masuk" element={<LoginPage setUser={setUser} />} />
+          <Route
+            path="/masuk"
+            element={
+              <LoginPage setUser={setUser} triggerToast={triggerToast} />
+            }
+          />
           <Route path="/daftar" element={<RegisterPage />} />
 
-          {/* PROTECTED ROUTES USER */}
+          {/* PROTECTED USER ROUTES */}
+          <Route
+            path="/forum"
+            element={
+              <ProtectedRoute>
+                <ForumPage user={user} triggerToast={triggerToast} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/forum/buat"
+            element={
+              <ProtectedRoute>
+                <CreateForumPage user={user} />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/daur-ulang/simpan"
             element={
@@ -127,38 +248,6 @@ function AppContent({ user, setUser, handleLogout, isLoading }) {
             }
           />
           <Route
-            path="/forum"
-            element={
-              <ProtectedRoute>
-                <ForumPage user={user} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/forum/buat"
-            element={
-              <ProtectedRoute>
-                <CreateForumPage user={user} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profil"
-            element={
-              <ProtectedRoute>
-                <ProfilePage user={user} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profil/edit"
-            element={
-              <ProtectedRoute>
-                <EditProfilePage user={user} setUser={setUser} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/keranjang"
             element={
               <ProtectedRoute>
@@ -174,8 +263,28 @@ function AppContent({ user, setUser, handleLogout, isLoading }) {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/profil"
+            element={
+              <ProtectedRoute>
+                <ProfilePage user={user} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profil/edit"
+            element={
+              <ProtectedRoute>
+                <EditProfilePage
+                  user={user}
+                  setUser={setUser}
+                  triggerToast={triggerToast}
+                />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* ADMIN ROUTES */}
+          {/* PROTECTED ADMIN ROUTES */}
           <Route
             path="/admin/dashboard"
             element={
@@ -225,69 +334,13 @@ function AppContent({ user, setUser, handleLogout, isLoading }) {
             }
           />
 
-          {/* FALLBACK 404 */}
+          {/* Fallback Route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
-      {/* ⚙️ Pengecualian Footer: Sembunyikan penuh jika di rute login, register, maupun halaman admin */}
       {!shouldHideFooter && <Footer />}
     </div>
-  );
-}
-
-function App() {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const checkAuth = () => {
-      try {
-        const savedUser = localStorage.getItem("user");
-        const token = localStorage.getItem("token");
-
-        if (savedUser && !token) {
-          localStorage.removeItem("user");
-          setUser(null);
-        } else if (savedUser) {
-          setUser(JSON.parse(savedUser));
-        }
-      } catch (e) {
-        localStorage.clear();
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    alert("Anda telah berhasil keluar dari SkinCycle. Sampai jumpa!");
-    setUser(null);
-    window.location.href = "/";
-  };
-
-  if (isLoading)
-    return (
-      <div className="min-h-screen bg-[#F2EDE4] flex items-center justify-center text-[#3D5532] font-bold">
-        Memuat SkinCycle...
-      </div>
-    );
-
-  return (
-    <Router>
-      <ScrollToTop />
-      <AppContent 
-        user={user} 
-        setUser={setUser} 
-        handleLogout={handleLogout} 
-        isLoading={isLoading} 
-      />
-    </Router>
   );
 }
 

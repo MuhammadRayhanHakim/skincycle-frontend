@@ -43,89 +43,133 @@ const CheckoutPage = ({ user, setUser }) => {
   const totalPembayaran = Math.max(0, totalBiayaFisik - saldoTerpakai);
 
   // LOGIKA HANDLER PEMBAYARAN KETIKA DI-SUBMIT
+  // 🌟 REVISI LOGIKA HANDLER PEMBAYARAN DENGAN MIDTRANS INTEGRATED
   const handleProcessCheckout = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) {
-      alert("Daftar pesanan anda kosong.");
+      if (triggerToast) triggerToast("Daftar pesanan anda kosong.");
       return;
     }
 
-    // 🎯 VALIDASI MASALAH 2: Blokir transaksi di frontend jika milih "Pakai Saldo" tapi saldo tidak cukup/kosong
+    // Validasi saldo lokal tetap dipertahankan
     if (purchaseMethod === "saldo") {
       if (userWallet === 0) {
-        alert(
-          "Gagal memproses pesanan! Saldo dompet Anda Rp 0. Silakan pilih opsi 'Harga Penuh' untuk melanjutkan pembelian produk.",
-        );
-        return;
-      }
-      if (userWallet < totalBiayaFisik) {
-        alert(
-          `Gagal memproses pesanan! Sisa saldo Anda (Rp ${userWallet.toLocaleString("id-ID")}) tidak mencukupi total tagihan (Rp ${totalBiayaFisik.toLocaleString("id-ID")}). Silakan klik opsi 'Harga Penuh'.`,
-        );
+        if (triggerToast)
+          triggerToast(
+            "Gagal memproses! Saldo dompet Anda Rp 0. Silakan pilih 'Harga Penuh'.",
+          );
         return;
       }
     }
 
     const token = localStorage.getItem("token");
     const listNamaProduk = cartItems.map((item) => item.nama_produk).join(", ");
+    const baseUrl = "http://localhost:5000";
 
     try {
-      // 🚀 API checkout sekarang selalu tertembak untuk kedua opsi metode pembelian!
-      const response = await fetch("http://localhost:5000/api/checkout", {
+      const response = await fetch(`${baseUrl}/api/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          total_bayar: purchaseMethod === "saldo" ? saldoTerpakai : 0, // Mengirim 0 jika memilih Harga Penuh
+          total_bayar: purchaseMethod === "saldo" ? saldoTerpakai : 0,
           item_deskripsi: listNamaProduk,
           nomor_telepon: formData.telepon,
           alamat_rumah:
             shippingMethod === "kurir"
               ? formData.alamat
               : `Ambil di Toko (${formData.kota})`,
-          jenis_pembelian: purchaseMethod, // Mengirim data metode "saldo" atau "penuh"
+          jenis_pembelian: purchaseMethod,
+          total_pembayaran_gateway: totalPembayaran, // 🌟 Mengirim total tagihan bersih ke backend
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok || result.status === "error") {
-        alert("Gagal memproses pesanan: " + result.message);
+        if (triggerToast)
+          triggerToast("Gagal memproses pesanan: " + result.message);
         return;
       }
 
-      // Amankan Sisa Saldo Terbaru ke Browser Cache Session agar data awet saat direfresh
-      const updatedUser = {
-        ...user,
-        total_saldo: result.data.total_saldo_sekarang,
-      };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      // 🛑 KONDISI A: Jika terbayar lunas menggunakan saldo internal (Rp 0)
+      if (result.payment_type === "saldo_internal") {
+        const updatedUser = {
+          ...user,
+          total_saldo: result.data.total_saldo_sekarang,
+        };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        if (setUser) setUser(updatedUser);
 
-      // Perbarui navbar seketika
-      if (setUser) setUser(updatedUser);
+        if (triggerToast)
+          triggerToast("Pemesanan berhasil! Saldo Anda telah dipotong.");
+        bersihkanLocalStorageCheckout();
+        navigate("/riwayat");
+        return;
+      }
 
-      alert(
-        `Pemesanan berhasil! Pembayaran diproses dengan sukses. Total bayar tunai/gateway: Rp ${totalPembayaran.toLocaleString("id-ID")}`,
-      );
-
-      // Bersihkan sisa item keranjang utama di local storage
-      const mainCart = JSON.parse(localStorage.getItem("cart")) || [];
-      const checkoutIds = cartItems.map((item) => item.id_produk);
-      const remainingCart = mainCart.filter(
-        (item) => !checkoutIds.includes(item.id_produk),
-      );
-
-      localStorage.setItem("cart", JSON.stringify(remainingCart));
-      localStorage.removeItem("checkout_items");
-
-      // Arahkan ke halaman riwayat agar user dapat melihat catatan transaksi terbaru mereka
-      navigate("/riwayat");
+      // 💳 KONDISI B: Jika ada sisa tagihan tunai, panggil Snap Midtrans Pop-up!
+      // 💳 KONDISI B: Jika ada sisa tagihan tunai, panggil Snap Midtrans Pop-up!
+      if (result.payment_type === "midtrans" && result.snapToken) {
+        window.snap.pay(result.snapToken, {
+          onSuccess: function (snapResult) {
+            // 🌟 SUNTIKKAN ALERTOAST DI SINI SAAT TRANSAKSI SUKSES
+            if (triggerToast) {
+              triggerToast(
+                "Pemesanan Berhasil! Silakan cek berkala status pelacakan Anda. 🍃",
+              );
+            }
+            bersihkanLocalStorageCheckout();
+            navigate("/riwayat");
+          },
+          onPending: function (snapResult) {
+            // 🌟 SUNTIKKAN ALERTOAST DI SINI SAAT TRANSAKSI PENDING (TRANSFER BANK/VA)
+            if (triggerToast) {
+              triggerToast(
+                "Pesanan Dicatat! Segera selesaikan pembayaran sesuai instruksi Virtual Account. 📑",
+              );
+            }
+            bersihkanLocalStorageCheckout();
+            navigate("/riwayat");
+          },
+          onError: function (snapResult) {
+            if (triggerToast) {
+              triggerToast(
+                "Waduh, Pembayaran gagal diproses. Silakan coba beberapa saat lagi.",
+              );
+            }
+          },
+          onClose: function () {
+            // Jika user menutup pop-up tetapi backend sudah terlanjur mencatat status PENDING,
+            // lebih baik kita arahkan juga ke halaman riwayat agar mereka bisa bayar nanti lewat riwayat.
+            if (triggerToast) {
+              triggerToast(
+                "Anda menutup halaman pembayaran. Transaksi disimpan sebagai pending.",
+              );
+            }
+            bersihkanLocalStorageCheckout();
+            navigate("/riwayat");
+          },
+        });
+      }
     } catch (error) {
       console.error("Gagal eksekusi pembayaran:", error);
-      alert("Terjadi kesalahan sistem internal pada server checkout.");
+      if (triggerToast)
+        triggerToast("Terjadi kesalahan sistem pada server checkout.");
     }
+  };
+
+  // Fungsi pembantu tambahan untuk merapikan local storage
+  const bersihkanLocalStorageCheckout = () => {
+    const mainCart = JSON.parse(localStorage.getItem("cart")) || [];
+    const checkoutIds = cartItems.map((item) => item.id_produk);
+    const remainingCart = mainCart.filter(
+      (item) => !checkoutIds.includes(item.id_produk),
+    );
+    localStorage.setItem("cart", JSON.stringify(remainingCart));
+    localStorage.removeItem("checkout_items");
   };
 
   return (

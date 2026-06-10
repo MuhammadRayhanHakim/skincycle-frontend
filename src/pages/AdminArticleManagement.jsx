@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SidebarAdmin from "../components/SidebarAdmin";
+
 import {
   Plus,
   Search,
@@ -16,7 +17,6 @@ import {
   Link,
   Image,
   X,
-  Download,
 } from "lucide-react";
 
 const AdminArticleManagement = () => {
@@ -201,17 +201,18 @@ const AdminArticleManagement = () => {
   ).length;
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex font-sans text-brand-dark-500 relative">
-      {/* SIDEBAR PANEL KIRI */}
+    // 🌟 PERBAIKAN STRUKTUR LAYOUT: Menyelaraskan flex-row & margin kiri ml-64 agar sejajar rapi di bawah Fixed NavbarAdmin global
+    <div className="flex min-h-screen bg-neutral-50 font-sans text-brand-dark-500 relative">
+      {/* SIDEBAR PANEL KIRI (Mengunci di tempat) */}
       <SidebarAdmin />
 
-      {/* AREA UTAMA PANEL KANAN */}
+      {/* AREA UTAMA PANEL KANAN (Mengalir scroll normal secara independen) */}
       <div className="flex-1 ml-64 p-10">
         <div className="max-w-7xl mx-auto space-y-10">
           {/* HEADER SEKSI */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-sans text-brand-dark-500 tracking-tight">
+              <h1 className="text-3xl font-sans text-brand-dark-500 font-bold">
                 Manajemen Artikel
               </h1>
               <p className="text-neutral-400 text-xs mt-1 font-medium">
@@ -282,15 +283,6 @@ const AdminArticleManagement = () => {
                     className="w-full bg-neutral-50 border border-neutral-100 text-xs font-medium rounded-xl pl-9 pr-4 py-2.5 outline-none focus:border-brand-primary-300 text-brand-dark-500"
                   />
                 </div>
-
-                {/* 🗑️ FILTER DROPDOWN "SEMUA STATUS" TELAH DIHAPUS SESUAI REVISI */}
-
-                {/* <button
-                  onClick={() => alert("Spreadsheet diekspor...")}
-                  className="bg-neutral-default border border-neutral-100 text-neutral-500 px-4 py-2.5 rounded-xl text-xs font-bold uppercase flex items-center gap-1.5 hover:bg-neutral-50 transition-colors"
-                >
-                  <Download className="w-3.5 h-3.5 text-neutral-400" /> Ekspor
-                </button> */}
               </div>
             </div>
 
@@ -341,7 +333,6 @@ const AdminArticleManagement = () => {
                           className="hover:bg-neutral-50/40 transition-colors"
                         >
                           <td className="px-8 py-4 flex items-center gap-4 font-bold text-brand-dark-500 tracking-tight">
-                            {/* 🖼️ MENAMPILKAN GAMBAR ASLI SESUAI REVISI */}
                             {gambar ? (
                               <img
                                 src={`http://localhost:5000/uploads/${gambar}`}
@@ -365,14 +356,12 @@ const AdminArticleManagement = () => {
                             </div>
                           </td>
 
-                          {/* 🗳️ BADGE KATEGORI DIKEMBALIKAN SESUAI TAMPILAN AWAL */}
                           <td className="px-8 py-4 text-neutral-400 font-medium">
                             <span className="bg-neutral-100 border border-neutral-100 text-neutral-500 px-2.5 py-1 rounded text-[10px] font-bold uppercase">
                               {kategori}
                             </span>
                           </td>
 
-                          {/* 🗳️ BADGE STATUS DIKEMBALIKAN SESUAI TAMPILAN AWAL */}
                           <td className="px-8 py-4">
                             <span
                               className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
@@ -449,6 +438,7 @@ const AdminArticleManagement = () => {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setIsModalOpen(false)}
                 className="text-gray-400 hover:text-gray-700 transition-colors p-1.5 hover:bg-gray-50 rounded-full outline-none"
               >

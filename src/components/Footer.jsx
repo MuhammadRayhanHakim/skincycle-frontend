@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
-  // Menu Utama — disesuaikan dengan navigasi di Navbar
   const menuUtama = [
     { label: "Tentang Kami", to: "/tentang-kami" },
     { label: "Ensiklopedia", to: "/ensiklopedia" },
@@ -11,7 +10,6 @@ const Footer = () => {
     { label: "Produk", to: "/produk" },
   ];
 
-  // Topik Skincare — sub-menu Ensiklopedia dari Navbar
   const topikSkincare = [
     { label: "Artikel Edukasi", to: "/ensiklopedia/kumpulan" },
     { label: "Kandungan Bahan", to: "/ensiklopedia/kandungan" },
@@ -19,10 +17,28 @@ const Footer = () => {
     { label: "Kulit Sensitif", to: "/ensiklopedia/kandungan?q=sensitif" },
   ];
 
+  const [recentDiscussions, setRecentDiscussions] = useState([]);
+  const baseUrl = "http://localhost:5000";
+
+  useEffect(() => {
+    const fetchRecentFooterPosts = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/api/forum/recent-footer`);
+        const result = await response.json();
+        if (result.status === "success") {
+          setRecentDiscussions(result.data);
+        }
+      } catch (error) {
+        console.error("Gagal memuat diskusi terbaru pada footer:", error);
+      }
+    };
+
+    fetchRecentFooterPosts();
+  }, []);
+
   return (
     <footer className="bg-[#193505] text-[#F2EDE4] py-20 px-10">
       <div className="max-w-7xl mx-auto">
-        {/* Bagian Atas: Sosmed, Logo Tengah, Newsletter */}
         <div className="grid grid-cols-1 md:grid-cols-3 items-center mb-16 gap-8">
           <div className="flex gap-4">
             {["ig", "fb", "tw", "in"].map((icon) => (
@@ -34,6 +50,7 @@ const Footer = () => {
               </div>
             ))}
           </div>
+  
           <div className="text-center">
             <img
               src="/logo.png"
@@ -56,7 +73,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bagian Bawah: Link Kolom */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-sm">
           <div>
             <h4 className="font-bold border-b border-white/20 pb-2 mb-4">
@@ -71,7 +87,6 @@ const Footer = () => {
             </p>
           </div>
 
-          {/* Menu Utama — sinkron dengan Navbar */}
           <div>
             <h4 className="font-bold border-b border-white/20 pb-2 mb-4">
               Menu Utama
@@ -90,7 +105,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Topik Skincare — sub-menu Ensiklopedia dari Navbar */}
           <div>
             <h4 className="font-bold border-b border-white/20 pb-2 mb-4">
               Topik Skincare
@@ -114,30 +128,54 @@ const Footer = () => {
               Diskusi Terbaru
             </h4>
             <div className="space-y-4">
-              <Link
-                to="/forum"
-                className="flex gap-3 hover:opacity-100 opacity-80 transition-opacity"
-              >
-                <div className="w-8 h-8 bg-gray-300 rounded-full shrink-0"></div>
-                <div>
-                  <p className="text-[10px] opacity-60">28 April 2026</p>
-                  <p className="text-[11px] font-medium">
-                    Niacinamide bikin breakout?
-                  </p>
+              {recentDiscussions.length > 0 ? (
+                recentDiscussions.map((post) => {
+                  const fotoProfilUrl = post.anonim || !post.penulis?.foto_profil 
+                    ? null 
+                    : `${baseUrl}/uploads/${post.penulis.foto_profil}`;
+
+                  return (
+                    <Link
+                      key={post.id_posting}
+                      to={`/forum?search=${encodeURIComponent(post.judul_posting)}`}
+                      className="flex gap-3 hover:opacity-100 opacity-80 transition-opacity items-center group"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gray-300 shrink-0 overflow-hidden border border-white/10 flex items-center justify-center text-[#193505] font-bold text-xs uppercase bg-white">
+                        {fotoProfilUrl ? (
+                          <img
+                            src={fotoProfilUrl}
+                            alt="Penulis"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = `https://placehold.co/32x32/3d5532/ffffff?text=${post.penulis?.username?.charAt(0).toUpperCase() || "U"}`;
+                            }}
+                          />
+                        ) : (
+                          <span>{post.anonim ? "A" : post.penulis?.username?.charAt(0) || "U"}</span>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] opacity-60">
+                          {new Date(post.tanggal_posting).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric"
+                          })}
+                        </p>
+                        <p className="text-[11px] font-medium truncate group-hover:text-brand-primary-100 transition-colors">
+                          {post.judul_posting}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })
+              ) : (
+                <div className="text-[11px] opacity-50 italic py-2">
+                  Belum ada diskusi komunitas aktif.
                 </div>
-              </Link>
-              <Link
-                to="/forum"
-                className="flex gap-3 hover:opacity-100 opacity-80 transition-opacity"
-              >
-                <div className="w-8 h-8 bg-gray-300 rounded-full shrink-0"></div>
-                <div>
-                  <p className="text-[10px] opacity-60">24 April 2026</p>
-                  <p className="text-[11px] font-medium">
-                    Cara daur ulang botol skincare?
-                  </p>
-                </div>
-              </Link>
+              )}
             </div>
           </div>
         </div>

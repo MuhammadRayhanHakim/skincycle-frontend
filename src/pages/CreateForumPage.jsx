@@ -1,4 +1,4 @@
-// import React, { useState, useRef } from "react";
+// import React, { useState, useEffect, useRef } from "react";
 // import { useNavigate } from "react-router-dom";
 // import {
 //   PenTool,
@@ -13,7 +13,6 @@
 //   Italic,
 //   Underline,
 //   Link2,
-//   Image,
 //   Code,
 //   List,
 //   HelpCircle,
@@ -28,27 +27,21 @@
 // const CreateForumPage = ({ user }) => {
 //   const navigate = useNavigate();
 
-//   // --- REF UNTUK INPUT FILE TERSEMBUNYI ---
-//   const fileInputRef = useRef(null);
-
 //   // Jalankan ekstraksi nama aman
 //   const currentUsername = user?.username || user?.penulis?.username || "User";
 
-//   // --- STATE FORUM & MEDIA ---
+//   // --- STATE FORUM ---
 //   const [forumData, setForumData] = useState({
 //     judul_posting: "",
 //     isi_posting: "",
 //     kategori: "Ulasan Produk",
 //     anonim: false,
 //   });
-//   const [selectedFile, setSelectedFile] = useState(null);
-//   const [imagePreview, setImagePreview] = useState(null);
 //   const [isSubmitting, setIsSubmitting] = useState(false);
 
 //   const categories = [
 //     { label: "Rekomendasi", icon: "🌱" },
 //     { label: "Daur Ulang", icon: "♻️" },
-
 //     { label: "Kandungan", icon: "🧪" },
 //     { label: "Tips & Trik", icon: "💡" },
 //     { label: "Produk", icon: "📦" },
@@ -61,33 +54,7 @@
 //   ]);
 //   const [newTag, setNewTag] = useState("");
 
-//   // --- HANDLER TRIGGER KLIK SELEKSI FILE ---
-//   const handleDropzoneClick = () => {
-//     fileInputRef.current.click();
-//   };
-
-//   // --- HANDLER SAAT USER SELESAI MEMILIH GAMBAR ---
-//   const handleFileChange = (e) => {
-//     const file = e.target.files[0];
-//     if (file) {
-//       if (file.size > 10 * 1024 * 1024) {
-//         alert("Ukuran file terlalu besar! Maksimal batas berkas adalah 10MB.");
-//         return;
-//       }
-//       setSelectedFile(file);
-//       setImagePreview(URL.createObjectURL(file)); // Bikin URL lokal untuk pratinjau gambar
-//     }
-//   };
-
-//   // --- HANDLER HAPUS PREVIEW GAMBAR ---
-//   const handleRemoveImage = (e) => {
-//     e.stopPropagation(); // Mencegah trigger klik dropzone ulang
-//     setSelectedFile(null);
-//     setImagePreview(null);
-//     fileInputRef.current.value = ""; // Reset input file
-//   };
-
-//   // --- FUNGSI PUBLISH (MENGGUNAKAN FORMDATA UNTUK UNGGUH GAMBAR KE BACKEND) ---
+//   // --- FUNGSI PUBLISH ---
 //   const handlePublish = async () => {
 //     if (!forumData.judul_posting.trim() || !forumData.isi_posting.trim()) {
 //       alert("Mohon lengkapi Judul dan Deskripsi diskusi Anda.");
@@ -99,27 +66,20 @@
 
 //     setIsSubmitting(true);
 
-//     // KARENA ADA FILE GAMBAR, WAJIB MENGGUNAKAN FORMDATA BUKAN JSON STRING biasa
-//     const formDataPayload = new FormData();
-//     formDataPayload.append("judul_posting", forumData.judul_posting.trim());
-//     formDataPayload.append("isi_posting", forumData.isi_posting.trim());
-//     formDataPayload.append("kategori", forumData.kategori);
-//     formDataPayload.append("anonim", forumData.anonim);
-//     formDataPayload.append("tags", tags.map((t) => `#${t.trim()}`).join(","));
-
-//     // Jika user memilih file, kirimkan file fisik ke backend
-//     if (selectedFile) {
-//       formDataPayload.append("media", selectedFile); // Key 'media' disesuaikan dengan handler multer backend
-//     }
-
 //     try {
 //       const response = await fetch("http://localhost:5000/api/forum", {
 //         method: "POST",
 //         headers: {
+//           "Content-Type": "application/json",
 //           Authorization: `Bearer ${token}`,
-//           // CATATAN: Jangan tulis Content-Type application/json jika mengirim FormData! Browser akan mengaturnya secara otomatis.
 //         },
-//         body: formDataPayload,
+//         body: JSON.stringify({
+//           judul_posting: forumData.judul_posting.trim(),
+//           isi_posting: forumData.isi_posting.trim(),
+//           kategori: forumData.kategori,
+//           anonim: forumData.anonim,
+//           tags: tags.map((t) => `#${t.trim()}`).join(","),
+//         }),
 //       });
 
 //       const result = await response.json();
@@ -137,6 +97,7 @@
 //       console.error("Error publishing forum:", error);
 //       alert("Gagal terhubung ke server. Pastikan backend menyala.");
 //     } finally {
+//       // 🚀 FIX: Mengembalikan kata kunci finally yang benar agar tidak crash
 //       setIsSubmitting(false);
 //     }
 //   };
@@ -340,65 +301,6 @@
 //                   digunakan)
 //                 </p>
 //               </div>
-
-//               {/* 5. UPLOAD MEDIA DROPOUT ZONE (SEKARANG BERFUNGSI AKTIF) */}
-//               <div>
-//                 <label className="block text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-2">
-//                   Media{" "}
-//                   <span className="text-neutral-400 font-medium lowercase">
-//                     (Opsional)
-//                   </span>
-//                 </label>
-
-//                 {/* Tag Input File Fisik Sembunyi */}
-//                 <input
-//                   type="file"
-//                   ref={fileInputRef}
-//                   onChange={handleFileChange}
-//                   accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
-//                   className="hidden"
-//                 />
-
-//                 <div
-//                   onClick={handleDropzoneClick}
-//                   className="border-2 border-dashed border-neutral-200 bg-neutral-50 rounded-2xl p-6 text-center shadow-inner group hover:border-brand-primary-200 transition-colors cursor-pointer relative overflow-hidden min-h-[160px] flex flex-col justify-center items-center"
-//                 >
-//                   {imagePreview ? (
-//                     /* JIKA GAMBAR TERPILIH: TAMPILKAN PREVIEW DAN TOMBOL HAPUS */
-//                     <div className="absolute inset-0 w-full h-full bg-neutral-900/5 group/preview flex items-center justify-center">
-//                       <img
-//                         src={imagePreview}
-//                         alt="Preview Unggahan"
-//                         className="w-full h-full object-contain"
-//                       />
-//                       <button
-//                         type="button"
-//                         onClick={handleRemoveImage}
-//                         className="absolute top-3 right-3 bg-brand-dark-500/80 hover:bg-feedback-error-200 text-neutral-default p-2 rounded-full shadow-md transition-colors opacity-0 group-hover/preview:opacity-100 outline-none"
-//                         title="Hapus Gambar"
-//                       >
-//                         <X className="w-4 h-4" />
-//                       </button>
-//                     </div>
-//                   ) : (
-//                     /* JIKA BELUM ADA GAMBAR: TAMPILKAN RETORIKA KOSONG */
-//                     <>
-//                       <div className="w-10 h-10 bg-neutral-default rounded-xl flex items-center justify-center mx-auto text-neutral-300 shadow-sm group-hover:text-brand-primary-300 mb-2 transition-colors">
-//                         <Image className="w-5 h-5" />
-//                       </div>
-//                       <p className="text-xs text-neutral-500 font-medium">
-//                         <span className="text-brand-primary-300 font-bold underline">
-//                           Klik untuk mengunggah
-//                         </span>{" "}
-//                         atau seret & lepas
-//                       </p>
-//                       <p className="text-[9px] text-neutral-400 mt-1 font-semibold uppercase tracking-wider">
-//                         PNG, JPG, GIF, WEBP — Maks. 10MB per file
-//                       </p>
-//                     </>
-//                   )}
-//                 </div>
-//               </div>
 //             </div>
 
 //             {/* PENGATURAN POSTINGAN PANEL ACTIONS */}
@@ -567,18 +469,8 @@
 //                     <strong className="text-brand-dark-500">
 //                       Format yang rapi:
 //                     </strong>{" "}
-//                     Berikan poin-poin dan spasi antar paragraf agar mudah
+//                     Berikan poin-poin and spasi antar paragraf agar mudah
 //                     dibaca.
-//                   </span>
-//                 </li>
-//                 <li className="flex items-start gap-2">
-//                   <CheckCircle2 className="w-3.5 h-3.5 text-feedback-success-300 shrink-0 mt-0.5" />
-//                   <span>
-//                     <strong className="text-brand-dark-500">
-//                       Tambahkan visual:
-//                     </strong>{" "}
-//                     Foto produk atau tekstur skincare bisa membuat review lebih
-//                     menarik.
 //                   </span>
 //                 </li>
 //               </ul>
@@ -661,7 +553,8 @@ import {
   Loader2,
 } from "lucide-react";
 
-const CreateForumPage = ({ user }) => {
+// 🌟 REVISI: Menangkap prop 'triggerToast' dari App.jsx
+const CreateForumPage = ({ user, triggerToast }) => {
   const navigate = useNavigate();
 
   // Jalankan ekstraksi nama aman
@@ -691,15 +584,20 @@ const CreateForumPage = ({ user }) => {
   ]);
   const [newTag, setNewTag] = useState("");
 
-  // --- FUNGSI PUBLISH ---
+  // --- FUNGSI PUBLISH DENGAN INTEGRASI TOAST ---
   const handlePublish = async () => {
     if (!forumData.judul_posting.trim() || !forumData.isi_posting.trim()) {
-      alert("Mohon lengkapi Judul dan Deskripsi diskusi Anda.");
+      // 🌟 REVISI: Mengganti alert kaku menjadi kustom Toast peringatan
+      if (triggerToast)
+        triggerToast("Mohon lengkapi Judul dan Deskripsi diskusi Anda.");
       return;
     }
 
     const token = localStorage.getItem("token");
-    if (!token) return alert("Sesi berakhir, silakan login kembali.");
+    if (!token) {
+      if (triggerToast) triggerToast("Sesi berakhir, silakan login kembali.");
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -722,19 +620,25 @@ const CreateForumPage = ({ user }) => {
       const result = await response.json();
 
       if (response.ok || result.status === "success") {
-        alert("🚀 Diskusi Anda telah berhasil dipublikasikan!");
+        // 🌟 REVISI: Mengganti alert kaku menjadi kustom Toast sukses
+        if (triggerToast) {
+          triggerToast("🚀 Diskusi Anda telah berhasil dipublikasikan!");
+        }
         return navigate("/forum");
       }
 
-      alert(
-        "Gagal mempublikasikan: " +
-          (result.message || "Terjadi kesalahan internal"),
-      );
+      if (triggerToast) {
+        triggerToast(
+          "Gagal mempublikasikan: " +
+            (result.message || "Terjadi kesalahan internal"),
+        );
+      }
     } catch (error) {
       console.error("Error publishing forum:", error);
-      alert("Gagal terhubung ke server. Pastikan backend menyala.");
+      if (triggerToast) {
+        triggerToast("Gagal terhubung ke server. Pastikan backend menyala.");
+      }
     } finally {
-      // 🚀 FIX: Mengembalikan kata kunci finally yang benar agar tidak crash
       setIsSubmitting(false);
     }
   };
