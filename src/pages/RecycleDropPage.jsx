@@ -1,5 +1,5 @@
 // import React, { useState, useEffect, useRef } from "react";
-// import { useNavigate, useLocation } from "react-router-dom"; // Menambahkan useLocation untuk membaca kiriman data state
+// import { useNavigate, useLocation } from "react-router-dom";
 // import {
 //   MapContainer,
 //   TileLayer,
@@ -21,6 +21,7 @@
 
 // import markerIcon from "leaflet/dist/images/marker-icon.png";
 // import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
 // let DefaultIcon = L.icon({
 //   iconUrl: markerIcon,
 //   shadowUrl: markerShadow,
@@ -31,7 +32,7 @@
 
 // const RecycleDropPage = () => {
 //   const navigate = useNavigate();
-//   const location = useLocation(); // Hook pembaca data router state
+//   const location = useLocation();
 //   const fileInputRef = useRef(null);
 
 //   const [address, setAddress] = useState("");
@@ -41,6 +42,7 @@
 //   const [previews, setPreviews] = useState([]);
 //   const [estimatedBalance, setEstimatedBalance] = useState(7500);
 
+//   const [showSuccessModal, setShowSuccessModal] = useState(false);
 //   const [position, setPosition] = useState([-6.261, 107.152]);
 //   const [showMap, setShowMap] = useState(false);
 //   const [isDetecting, setIsDetecting] = useState(false);
@@ -50,7 +52,6 @@
 //     if (location.state?.automaticWeight) {
 //       const weight = location.state.automaticWeight;
 
-//       // Auto-select pil boks berdasarkan berat asli kilogram dari halaman karung
 //       if (weight <= 2) {
 //         setSelectedSize("1-2 kg");
 //         setEstimatedBalance(3000);
@@ -67,7 +68,6 @@
 //     }
 
 //     if (location.state?.detailedSummary) {
-//       // Mengisi boks input "Detail kemasan" secara otomatis
 //       setDetailTrash(location.state.detailedSummary);
 //     }
 //   }, [location.state]);
@@ -124,7 +124,7 @@
 //     setPreviews([...previews, ...newPreviews]);
 //   };
 
-//   // --- LOGIKA CLEAN UP LOCALSTORAGE SAAT TRANSAKSI SUKSES ---
+//   // --- LOGIKA SETORAN SAMPAH DAUR ULANG DENGAN MODAL KUSTOM ---
 //   const handleConfirm = async () => {
 //     if (!address.trim()) return alert("Mohon tentukan lokasi penjemputan.");
 //     if (imageFiles.length === 0) return alert("Mohon unggah foto dokumentasi.");
@@ -142,7 +142,6 @@
 //         JSON.stringify({ detail: detailTrash }),
 //       );
 
-//       // 🚀 SINKRONISASI AKTIF: Menyisipkan data titik koordinat lintang & bujur secara aman ke backend
 //       if (position && position.length === 2) {
 //         formData.append("latitude", position[0]);
 //         formData.append("longitude", position[1]);
@@ -157,14 +156,14 @@
 //         headers: { Authorization: `Bearer ${token}` },
 //         body: formData,
 //       });
+
 //       const res = await response.json();
 //       if (response.ok) {
-//         alert("🚀 Berhasil! " + res.message);
-
 //         localStorage.removeItem("sc_recycle_counts");
 //         localStorage.removeItem("sc_recycle_dropped_items");
 
-//         navigate("/");
+//         // 🟢 FIX UTAMA: Jangan langsung navigate, melainkan munculkan modal pop-up kustom terlebih dahulu
+//         setShowSuccessModal(true);
 //       } else {
 //         alert("Gagal: " + res.message);
 //       }
@@ -174,11 +173,11 @@
 //   };
 
 //   return (
-//     <div className="bg-brand-secondary-100 font-sans min-h-screen overflow-y-auto text-brand-dark-500">
+//     <div className="bg-brand-secondary-100 font-sans min-h-screen overflow-y-auto text-brand-dark-500 relative">
 //       <div className="max-w-7xl mx-auto px-10 flex flex-col justify-center py-10">
 //         <header className="mb-6">
 //           <h1 className="text-4xl font-sans text-brand-dark-500 mb-2 tracking-tight">
-//             Antar & Verifikasi
+//             Antar &amp; Verifikasi
 //           </h1>
 //           <p className="text-neutral-500 text-sm font-medium">
 //             Selesaikan langkah akhir untuk mendapatkan reward dompet elektronik
@@ -188,6 +187,7 @@
 
 //         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 //           <div className="lg:col-span-8 space-y-4">
+//             {/* Lokasi Penjemputan Card */}
 //             <div className="bg-neutral-default p-6 rounded-[35px] shadow-sm border border-neutral-100">
 //               <label className="flex items-center gap-2 text-xs font-black text-brand-primary-300 uppercase mb-3 tracking-wider">
 //                 <MapPin className="w-3.5 h-3.5" /> Lokasi Penjemputan
@@ -203,7 +203,9 @@
 //                 onClick={handleDetectLocation}
 //                 className="mb-4 bg-brand-secondary-300 text-brand-primary-500 border border-brand-primary-100/10 px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-wider hover:bg-brand-secondary-200 transition-all outline-none"
 //               >
-//                 {isDetecting ? "Mendeteksi..." : "Deteksi Lokasi & Buka Peta"}
+//                 {isDetecting
+//                   ? "Mendeteksi..."
+//                   : "Deteksi Lokasi &amp; Buka Peta"}
 //               </button>
 
 //               {showMap && (
@@ -221,6 +223,7 @@
 //               )}
 //             </div>
 
+//             {/* Informasi Sampah Card */}
 //             <div className="bg-neutral-default p-6 rounded-[35px] shadow-sm border border-neutral-100">
 //               <label className="flex items-center gap-2 text-xs font-black text-brand-primary-300 uppercase mb-4 tracking-wider">
 //                 <Package className="w-3.5 h-3.5" /> Informasi Sampah
@@ -256,6 +259,7 @@
 //               />
 //             </div>
 
+//             {/* Dokumentasi Paket Card */}
 //             <div className="bg-neutral-default p-6 rounded-[35px] shadow-sm border border-neutral-100">
 //               <label className="flex items-center gap-2 text-xs font-black text-brand-primary-300 uppercase mb-4 tracking-wider">
 //                 <Camera className="w-3.5 h-3.5" /> Dokumentasi Paket
@@ -290,7 +294,8 @@
 //             </div>
 //           </div>
 
-//           <div className="lg:col-span-4 flex flex-col gap-4">
+//           {/* SISI KANAN PANEL REWARD (STICKY LOCK MELAYANG) */}
+//           <div className="lg:col-span-4 lg:sticky lg:top-24 flex flex-col gap-4 w-full">
 //             <div className="bg-brand-primary-300 p-8 rounded-[50px] shadow-xl text-center flex-grow flex flex-col justify-center border border-brand-primary-400">
 //               <p className="text-neutral-default/60 text-xs font-black uppercase tracking-widest mb-6 italic flex items-center justify-center gap-1">
 //                 <Banknote className="w-4 h-4" /> Estimasi Saldo
@@ -321,12 +326,12 @@
 //                 onClick={handleConfirm}
 //                 className="w-full bg-brand-primary-300 text-neutral-default py-5 rounded-[25px] font-black text-xs uppercase tracking-[0.2em] shadow-lg hover:bg-brand-primary-500 active:scale-95 transition-all outline-none"
 //               >
-//                 KONFIRMASI & KIRIM
+//                 KONFIRMASI &amp; KIRIM
 //               </button>
 //               <button
 //                 type="button"
 //                 onClick={() => navigate("/daur-ulang/simpan")}
-//                 className="w-full bg-neutral-default text-brand-primary-300 py-5 rounded-[25px] font-black text-xs uppercase tracking-[0.2em] border border-neutral-100 shadow-sm hover:bg-neutral-50 active:scale-95 transition-all outline-none flex items-center justify-center gap-1"
+//                 className="w-full bg-neutral-default text-brand-primary-300 py-5 rounded-[25px] font-black text-xs uppercase tracking-[0.2em] border border-neutral-100 shadow-sm hover:bg-brand-primary-500 hover:text-white active:scale-95 transition-all outline-none flex items-center justify-center gap-1"
 //               >
 //                 <ArrowLeft className="w-4 h-4" /> Kembali Ke Karung
 //               </button>
@@ -334,6 +339,53 @@
 //           </div>
 //         </div>
 //       </div>
+
+//       {/* 🟢 MODAL SUKSES KUSTOM SKINCYCLE STYLE */}
+//       {showSuccessModal && (
+//         <div className="fixed inset-0 bg-brand-dark-500/80 backdrop-blur-md flex items-center justify-center z-[9999] animate-fade-in">
+//           <div className="bg-neutral-default rounded-[40px] p-10 max-w-md w-full mx-4 text-center shadow-2xl border border-neutral-100 flex flex-col items-center justify-center relative transform scale-100 transition-transform duration-300">
+//             {/* Visual Lingkaran Ikon Sukses */}
+//             <div className="w-20 h-20 bg-brand-secondary-300 rounded-full flex items-center justify-center text-brand-primary-300 mb-6 border border-brand-primary-100/20 shadow-sm">
+//               <svg
+//                 className="w-10 h-10"
+//                 fill="none"
+//                 viewBox="0 0 24 24"
+//                 stroke="currentColor"
+//                 strokeWidth={3}
+//               >
+//                 <path
+//                   strokeLinecap="round"
+//                   strokeLinejoin="round"
+//                   d="M5 13l4 4L19 7"
+//                 />
+//               </svg>
+//             </div>
+
+//             {/* Konten Teks Pesan - Kontras Putih Bersih */}
+//             <h3 className="text-2xl font-sans font-black text-brand-dark-500 uppercase tracking-tight">
+//               Laporan Terkirim!
+//             </h3>
+
+//             <p className="text-xs text-neutral-400 font-medium mt-3 leading-relaxed px-4">
+//               🚀 Berhasil! Laporan setoran daur ulang Anda telah tercatat di
+//               sistem. Kurir kami akan segera memverifikasi lokasi penjemputan
+//               Anda.
+//             </p>
+
+//             {/* Tombol Aksi Konfirmasi Tutup */}
+//             <button
+//               type="button"
+//               onClick={() => {
+//                 setShowSuccessModal(false);
+//                 navigate("/riwayat");
+//               }}
+//               className="mt-8 w-full text-[10px] bg-brand-primary-300 text-neutral-default py-4 rounded-full font-black uppercase tracking-widest shadow-md hover:bg-brand-primary-500 active:scale-95 transition-all outline-none"
+//             >
+//               Selesai &amp; Cek Riwayat
+//             </button>
+//           </div>
+//         </div>
+//       )}
 //     </div>
 //   );
 // };
@@ -341,7 +393,7 @@
 // export default RecycleDropPage;
 
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // Menambahkan useLocation untuk membaca kiriman data state
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   MapContainer,
   TileLayer,
@@ -363,6 +415,7 @@ import {
 
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
 let DefaultIcon = L.icon({
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
@@ -373,7 +426,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 const RecycleDropPage = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // Hook pembaca data router state
+  const location = useLocation();
   const fileInputRef = useRef(null);
 
   const [address, setAddress] = useState("");
@@ -383,6 +436,7 @@ const RecycleDropPage = () => {
   const [previews, setPreviews] = useState([]);
   const [estimatedBalance, setEstimatedBalance] = useState(7500);
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [position, setPosition] = useState([-6.261, 107.152]);
   const [showMap, setShowMap] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
@@ -392,7 +446,6 @@ const RecycleDropPage = () => {
     if (location.state?.automaticWeight) {
       const weight = location.state.automaticWeight;
 
-      // Auto-select pil boks berdasarkan berat asli kilogram dari halaman karung
       if (weight <= 2) {
         setSelectedSize("1-2 kg");
         setEstimatedBalance(3000);
@@ -409,7 +462,6 @@ const RecycleDropPage = () => {
     }
 
     if (location.state?.detailedSummary) {
-      // Mengisi boks input "Detail kemasan" secara otomatis
       setDetailTrash(location.state.detailedSummary);
     }
   }, [location.state]);
@@ -466,7 +518,7 @@ const RecycleDropPage = () => {
     setPreviews([...previews, ...newPreviews]);
   };
 
-  // --- LOGIKA SETORAN SAMPAH DAUR ULANG DAN PENGALIHAN RUTE OTOMATIS ---
+  // --- LOGIKA SETORAN SAMPAH DAUR ULANG DENGAN MODAL KUSTOM ---
   const handleConfirm = async () => {
     if (!address.trim()) return alert("Mohon tentukan lokasi penjemputan.");
     if (imageFiles.length === 0) return alert("Mohon unggah foto dokumentasi.");
@@ -498,15 +550,12 @@ const RecycleDropPage = () => {
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
+
       const res = await response.json();
       if (response.ok) {
-        alert("🚀 Berhasil! " + res.message);
-
         localStorage.removeItem("sc_recycle_counts");
         localStorage.removeItem("sc_recycle_dropped_items");
-
-        // 🚀 FIX UTAMA: Pengalihan rute instan langsung menuju halaman riwayat transaksi dompet sirkular pengguna
-        navigate("/riwayat");
+        setShowSuccessModal(true);
       } else {
         alert("Gagal: " + res.message);
       }
@@ -516,9 +565,9 @@ const RecycleDropPage = () => {
   };
 
   return (
-    <div className="bg-brand-secondary-100 font-sans min-h-screen overflow-y-auto text-brand-dark-500">
-      <div className="max-w-7xl mx-auto px-10 flex flex-col justify-center py-10">
-        <header className="mb-6">
+    <div className="bg-brand-secondary-100 font-sans min-h-screen text-brand-dark-500 relative">
+      <div className="max-w-7xl mx-auto px-10 py-10">
+        <header className="mb-8">
           <h1 className="text-4xl font-sans text-brand-dark-500 mb-2 tracking-tight">
             Antar &amp; Verifikasi
           </h1>
@@ -528,8 +577,11 @@ const RecycleDropPage = () => {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* 🚀 REFACTOR TERKUNCI: Ditambahkan h-full dan items-start agar kolom lengket berfungsi 100% */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start h-full w-full">
+          {/* SISI KIRI: INPUT FORMULIR ALAMAT DAN DATA PAKET */}
           <div className="lg:col-span-8 space-y-4">
+            {/* Lokasi Penjemputan Card */}
             <div className="bg-neutral-default p-6 rounded-[35px] shadow-sm border border-neutral-100">
               <label className="flex items-center gap-2 text-xs font-black text-brand-primary-300 uppercase mb-3 tracking-wider">
                 <MapPin className="w-3.5 h-3.5" /> Lokasi Penjemputan
@@ -565,6 +617,7 @@ const RecycleDropPage = () => {
               )}
             </div>
 
+            {/* Informasi Sampah Card */}
             <div className="bg-neutral-default p-6 rounded-[35px] shadow-sm border border-neutral-100">
               <label className="flex items-center gap-2 text-xs font-black text-brand-primary-300 uppercase mb-4 tracking-wider">
                 <Package className="w-3.5 h-3.5" /> Informasi Sampah
@@ -600,6 +653,7 @@ const RecycleDropPage = () => {
               />
             </div>
 
+            {/* Dokumentasi Paket Card */}
             <div className="bg-neutral-default p-6 rounded-[35px] shadow-sm border border-neutral-100">
               <label className="flex items-center gap-2 text-xs font-black text-brand-primary-300 uppercase mb-4 tracking-wider">
                 <Camera className="w-3.5 h-3.5" /> Dokumentasi Paket
@@ -634,9 +688,9 @@ const RecycleDropPage = () => {
             </div>
           </div>
 
-          {/* SISI KANAN PANEL REWARD (STICKY LOCK MELAYANG) */}
-          <div className="lg:col-span-4 lg:sticky lg:top-24 flex flex-col gap-4 w-full">
-            <div className="bg-brand-primary-300 p-8 rounded-[50px] shadow-xl text-center flex-grow flex flex-col justify-center border border-brand-primary-400">
+          {/* 🚀 SISI KANAN PANEL REWARD: SEKARANG TERKUNCI STICKY SEMPURNA DENGAN TOP COORD */}
+          <div className="lg:col-span-4 lg:sticky lg:top-6 flex flex-col gap-4 w-full">
+            <div className="bg-brand-primary-300 p-8 rounded-[50px] shadow-xl text-center flex-col justify-center border border-brand-primary-400">
               <p className="text-neutral-default/60 text-xs font-black uppercase tracking-widest mb-6 italic flex items-center justify-center gap-1">
                 <Banknote className="w-4 h-4" /> Estimasi Saldo
               </p>
@@ -679,6 +733,47 @@ const RecycleDropPage = () => {
           </div>
         </div>
       </div>
+
+      {/* --- MODAL SUKSES KUSTOM --- */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-brand-dark-500/80 backdrop-blur-md flex items-center justify-center z-[9999] animate-fade-in">
+          <div className="bg-neutral-default rounded-[40px] p-10 max-w-md w-full mx-4 text-center shadow-2xl border border-neutral-100 flex flex-col items-center justify-center relative transform scale-100 transition-transform duration-300">
+            <div className="w-20 h-20 bg-brand-secondary-300 rounded-full flex items-center justify-center text-brand-primary-300 mb-6 border border-brand-primary-100/20 shadow-sm">
+              <svg
+                className="w-10 h-10"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={3}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-sans font-black text-brand-dark-500 uppercase tracking-tight">
+              Laporan Terkirim!
+            </h3>
+            <p className="text-xs text-neutral-400 font-medium mt-3 leading-relaxed px-4">
+              🚀 Berhasil! Laporan setoran daur ulang Anda telah tercatat di
+              sistem. Kurir kami akan segera memverifikasi lokasi penjemputan
+              Anda.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setShowSuccessModal(false);
+                navigate("/riwayat");
+              }}
+              className="mt-8 w-full text-[10px] bg-brand-primary-300 text-neutral-default py-4 rounded-full font-black uppercase tracking-widest shadow-md hover:bg-brand-primary-500 active:scale-95 transition-all outline-none"
+            >
+              Selesai &amp; Cek Riwayat
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,7 +1,6 @@
-
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import Swal from "sweetalert2";
 import {
   Search,
   PlusCircle,
@@ -14,13 +13,19 @@ import {
   Flame,
   Bookmark,
   Target,
-  Shield, // 🚀 FIX MUTLAK: Menyertakan ikon Shield ke dalam daftar import lucide-react
-} from "lucide-react"; // Menggunakan lucide-react agar ikon seragam dengan design system
+  Wallet,
+  BookOpen,
+  CheckCircle2,
+  AlertCircle,
+  ArrowUpRight,
+} from "lucide-react";
 
 const ForumPage = ({ user }) => {
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showGuidelineModal, setShowGuidelineModal] = useState(false);
   const [discussions, setDiscussions] = useState([]);
+  const [activeTab, setActiveTab] = useState("all");
   const [selectedPost, setSelectedPost] = useState(null);
   const [commentText, setCommentText] = useState("");
   const [isAnon, setIsAnon] = useState(false);
@@ -32,11 +37,15 @@ const ForumPage = ({ user }) => {
     isi_posting: "",
   });
 
+  // STATE SINKRONISASI: Penampung data riwayat live transaksi dari database
+  const [transactions, setTransactions] = useState([]);
+  const [walletBalance, setWalletBalance] = useState(0);
+
   const navigate = useNavigate();
   const { search } = useLocation();
   const feedRef = useRef(null);
 
-  // --- 1. FETCH DATA ---
+  // --- 1. FETCH DATA DISKUSI FORUM ---
   const fetchDiscussions = async () => {
     try {
       const response = await fetch(
@@ -51,11 +60,43 @@ const ForumPage = ({ user }) => {
     }
   };
 
+  // --- 2. FETCH DATA STATISTIK TRANSAKSI & SALDO LIVE ---
+  const fetchUserStatsData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch(
+        "http://localhost:5000/api/recycle/user-history",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const result = await response.json();
+      if (result.status === "success") {
+        setTransactions(result.data.riwayat || result.data.laporan || []);
+        setWalletBalance(result.data.total_saldo || 0);
+      }
+    } catch (err) {
+      console.error("Gagal sinkronisasi data metrik forum:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserStatsData();
+    fetchDiscussions();
+  }, []);
+
   useEffect(() => {
     fetchDiscussions();
   }, [search]);
 
-  // --- 2. SEARCH & SCROLL ---
+  // --- 3. SEARCH & SCROLL ---
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchInput.trim()) {
@@ -68,7 +109,7 @@ const ForumPage = ({ user }) => {
     }
   };
 
-  // --- 3. LOGIKA CRUD ---
+  // --- 4. LOGIKA CRUD & INTERAKSI FORUM ---
   const toggleComments = (id_posting) => {
     setExpandedComments((prev) =>
       prev.includes(id_posting)
@@ -98,6 +139,7 @@ const ForumPage = ({ user }) => {
     if (!commentText.trim()) return alert("Isi balasan kosong!");
     const token = localStorage.getItem("token");
     try {
+      // 🟢 FIX COUPLING AMAN: Mengambil id_posting murni dari property selectedPost secara independen
       const response = await fetch(
         `http://localhost:5000/api/forum/comment/${selectedPost.id_posting}`,
         {
@@ -106,11 +148,15 @@ const ForumPage = ({ user }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ isi_komentar: commentText, anonim: isAnon }),
+          body: JSON.stringify({
+            isi_komentar: commentText,
+            anonim: isAnon,
+            // Mengirim id_komentar_induk yang valid ke backend untuk mengunci posisi sub-level
+            id_komentar_induk: selectedPost.id_komentar_induk || null,
+          }),
         },
       );
       if (response.ok) {
-        alert("Balasan terkirim!");
         setShowReplyModal(false);
         setCommentText("");
         fetchDiscussions();
@@ -141,7 +187,6 @@ const ForumPage = ({ user }) => {
         },
       );
       if (response.ok) {
-        alert("✅ Perubahan disimpan!");
         setShowEditModal(false);
         fetchDiscussions();
       }
@@ -174,10 +219,182 @@ const ForumPage = ({ user }) => {
     setActiveDropdown(null);
   };
 
+  // LOGIKA EXTRACTOR BERAT FISIK RECYCLE
+  const totalBeratLive = (transactions || []).reduce((acc, item) => {
+    const statusAktif = (
+      item.status ||
+      item.status_jemput ||
+      item.detail_laporan?.status_jemput ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+    if (statusAktif === "SELESAI") {
+      let berat = parseFloat(
+        item.berat_asli || item.detail_laporan?.berat_asli || 0,
+      );
+      if (berat === 0 && item.aktivitas) {
+        const match = item.aktivitas.match(/(\d+(?:\.\d+)?)\s*kg/i);
+        if (match && match[1]) berat = parseFloat(match[1]);
+      }
+      return acc + berat;
+    }
+    return acc;
+  }, 0);
+
+  let levelNama = "Tunas";
+  let levelAngka = "Lv. 1";
+  let targetBatasAtas = 30;
+  let minimalLevelSekarang = 0;
+
+  if (totalBeratLive >= 90) {
+    levelNama = "Penjaga";
+    levelAngka = "Lv. 4 (Max)";
+    targetBatasAtas = 90;
+    minimalLevelSekarang = 90;
+  } else if (totalBeratLive >= 60) {
+    levelNama = "Eco";
+    levelAngka = "Lv. 3";
+    targetBatasAtas = 90;
+    minimalLevelSekarang = 60;
+  } else if (totalBeratLive >= 30) {
+    levelNama = "Pahlawan Hijau";
+    levelAngka = "Lv. 2";
+    targetBatasAtas = 60;
+    minimalLevelSekarang = 30;
+  }
+
+  const sisaSampahKeTarget = targetBatasAtas - totalBeratLive;
+  const selisihBobot = targetBatasAtas - minimalLevelSekarang;
+  const progressMurni = totalBeratLive - minimalLevelSekarang;
+  const persentaseProgress =
+    totalBeratLive > 0 && selisihBobot > 0
+      ? Math.min(
+          100,
+          Math.max(0, Math.round((progressMurni / selisihBobot) * 100)),
+        )
+      : 0;
+
+  const dapatkanNamaLevelTujuan = (target) => {
+    if (target === 30) return "Pahlawan Hijau";
+    if (target === 60) return "Eco";
+    return "Penjaga";
+  };
+
+  // ENGINE STRATEGI FILTERISASI FEED TENGAH
+  const dapatkanDataFeedFiltered = () => {
+    let copyDiscussions = [...discussions];
+    if (activeTab === "mine") {
+      return copyDiscussions.filter(
+        (post) => post.id_profil === user?.id_profil,
+      );
+    }
+    if (activeTab === "popular") {
+      return copyDiscussions.sort((a, b) => {
+        const totalInteraksiA =
+          (a.likes?.length || 0) + (a.komentar?.length || 0);
+        const totalInteraksiB =
+          (b.likes?.length || 0) + (b.komentar?.length || 0);
+        return totalInteraksiB - totalInteraksiA;
+      });
+    }
+    return copyDiscussions;
+  };
+
+  const filteredFeedData = dapatkanDataFeedFiltered();
+
+  // ENGINE TOPIK TERATAS KANAN
+  const dapatkanTopikTeratasDinamis = () => {
+    return [...discussions]
+      .sort((a, b) => {
+        const interaksiA = (a.likes?.length || 0) + (a.komentar?.length || 0);
+        const interaksiB = (b.likes?.length || 0) + (b.komentar?.length || 0);
+        return interaksiB - interaksiA;
+      })
+      .slice(0, 7);
+  };
+
+  const topTopicsData = dapatkanTopikTeratasDinamis();
+
   return (
     <div
-      className={`bg-brand-secondary-100 font-sans text-brand-dark-500 min-h-screen ${showReplyModal || showEditModal ? "overflow-hidden" : ""}`}
+      className={`bg-brand-secondary-100 font-sans text-brand-dark-500 min-h-screen ${showReplyModal || showEditModal || showGuidelineModal ? "overflow-hidden" : ""}`}
     >
+      {/* --- POPUP COMPONENT: PANDUAN KOMUNITAS KUSTOM --- */}
+      {showGuidelineModal && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-brand-dark-500/60 backdrop-blur-sm"
+            onClick={() => setShowGuidelineModal(false)}
+          ></div>
+          <div className="relative bg-white w-full max-w-lg rounded-[40px] shadow-2xl p-8 space-y-6 z-[1001] border border-neutral-100 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center pb-2 border-b border-neutral-100">
+              <h3 className="font-sans text-lg font-black text-brand-dark-500 flex items-center gap-2 uppercase tracking-tight">
+                <BookOpen className="w-5 h-5 text-brand-primary-300" /> Panduan
+                Komunitas
+              </h3>
+              <button
+                onClick={() => setShowGuidelineModal(false)}
+                className="text-neutral-400 hover:text-brand-dark-500 font-bold outline-none"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="bg-neutral-50 p-5 rounded-3xl border border-neutral-100 space-y-3">
+              <h4 className="text-[10px] font-black text-brand-primary-300 uppercase tracking-widest flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Tips Postingan Yang
+                Baik
+              </h4>
+              <ul className="text-xs text-neutral-500 space-y-2 font-medium leading-relaxed">
+                <li>
+                  <strong className="text-brand-dark-500">
+                    Judul yang jelas:
+                  </strong>{" "}
+                  Buat judul yang ringkas dan spesifik agar orang langsung tahu
+                  topiknya.
+                </li>
+                <li>
+                  <strong className="text-brand-dark-500">Gunakan tag:</strong>{" "}
+                  Gunakan tag yang relevan seperti{" "}
+                  <span className="text-brand-primary-300 font-bold">
+                    #skincarehack
+                  </span>{" "}
+                  agar post mudah ditemukan.
+                </li>
+                <li>
+                  <strong className="text-brand-dark-500">
+                    Format yang rapi:
+                  </strong>{" "}
+                  Berikan poin-poin dan spasi antar paragraf agar mudah dibaca.
+                </li>
+              </ul>
+            </div>
+            <div className="bg-neutral-50 p-5 rounded-3xl border border-neutral-100 space-y-3">
+              <h4 className="text-[10px] font-black text-feedback-error-200 uppercase tracking-widest flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5" /> Aturan Komunitas Forum
+              </h4>
+              <ul className="text-xs text-neutral-500 space-y-1.5 list-disc list-inside font-medium leading-relaxed">
+                <li>Berbaik sopan dan menghargai anggota lain</li>
+                <li>
+                  Dilarang keras melakukan promosi jualan ilegal atau spam
+                </li>
+                <li>Jaga komunikasi tetap positif dan sirkular</li>
+                <li>
+                  Cantumkan sumber terpercaya untuk klaim medis bahan aktif
+                </li>
+                <li>Gunakan fitur peringatan sensor untuk topik sensitif</li>
+              </ul>
+            </div>
+            <button
+              onClick={() => setShowGuidelineModal(false)}
+              className="w-full bg-[#3D5532] text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest shadow-md hover:bg-[#22351c] transition-all outline-none"
+            >
+              Saya Paham &amp; Mengerti
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* --- POPUP COMPONENT: EDIT DISKUSI --- */}
       {showEditModal && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
@@ -309,7 +526,6 @@ const ForumPage = ({ user }) => {
             Berinteraksi dengan 15.000+ member komunitas. Tanya, bagikan
             pengalaman, dan cari solusi tentang skincare berkelanjutan bersama.
           </p>
-
           <form
             onSubmit={handleSearchSubmit}
             className="flex max-w-2xl mx-auto gap-3 items-center w-full"
@@ -339,13 +555,13 @@ const ForumPage = ({ user }) => {
           </form>
         </header>
 
-        {/* --- KATEGORI --- */}
+        {/* --- KATEGORI GRID --- */}
         <div className="w-full grid grid-cols-2 md:grid-cols-5 gap-4 mt-8">
           {[
             { label: "Rekomendasi", icon: "🌱", count: "1.2K" },
             { label: "Daur Ulang", icon: "♻️", count: "850" },
             { label: "Kandungan", icon: "🧪", count: "2.1K" },
-            { label: "Tips & Trik", icon: "💡", count: "3.4K" },
+            { label: "Tips &amp; Trik", icon: "💡", count: "3.4K" },
             { label: "Produk", icon: "📦", count: "500" },
           ].map((cat) => (
             <div
@@ -367,86 +583,110 @@ const ForumPage = ({ user }) => {
         </div>
       </section>
 
-      {/* --- FEED CONTENT --- */}
+      {/* --- MAIN FEED CONTAINER --- */}
       <main
         ref={feedRef}
         className="max-w-7xl mx-auto px-6 lg:px-10 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
       >
-        {/* 🌟 REVISI STICKY ASIDE KIRI: Mengunci posisi Navigasi Kiri saat feed diturunkan */}
+        {/* ASIDE KIRI */}
         <aside className="lg:col-span-3 lg:sticky lg:top-6 h-fit space-y-6 z-10">
-          {/* Box 1: Navigasi Dasar */}
-          <div className="bg-neutral-default rounded-[35px] p-6 shadow-sm border border-neutral-100">
+          <div className="bg-white rounded-[35px] p-6 shadow-sm border border-neutral-100">
             <nav className="space-y-2">
               <button
-                onClick={() => navigate("/forum")}
-                className="w-full flex items-center gap-3 bg-brand-primary-300 text-neutral-default p-4 rounded-2xl text-sm font-bold shadow-md hover:bg-brand-primary-500 transition-colors"
+                type="button"
+                onClick={() => {
+                  setActiveTab("all");
+                  navigate("/forum");
+                }}
+                className={`w-full flex items-center gap-3 p-4 rounded-2xl text-sm font-bold transition-all ${activeTab === "all" ? "bg-brand-primary-300 text-white shadow-md" : "bg-white text-neutral-400 hover:bg-neutral-50"}`}
               >
                 <Home className="w-4 h-4" /> Forum Diskusi
               </button>
-              <button className="w-full flex items-center gap-3 hover:bg-neutral-50 p-4 rounded-2xl text-sm text-neutral-400 font-bold transition-colors">
+              <button
+                type="button"
+                onClick={() => setActiveTab("popular")}
+                className={`w-full flex items-center gap-3 p-4 rounded-2xl text-sm font-bold transition-all ${activeTab === "popular" ? "bg-brand-primary-300 text-white shadow-md" : "bg-white text-neutral-400 hover:bg-neutral-50"}`}
+              >
                 <Flame className="w-4 h-4" /> Diskusi Populer
               </button>
-              <button className="w-full flex items-center gap-3 hover:bg-neutral-50 p-4 rounded-2xl text-sm text-neutral-400 font-bold transition-colors">
+              <button
+                type="button"
+                onClick={() => setActiveTab("mine")}
+                className={`w-full flex items-center gap-3 p-4 rounded-2xl text-sm font-bold transition-all ${activeTab === "mine" ? "bg-brand-primary-300 text-white shadow-md" : "bg-white text-neutral-400 hover:bg-neutral-50"}`}
+              >
                 <Bookmark className="w-4 h-4" /> Topik Saya
               </button>
-              <button className="w-full flex items-center gap-3 hover:bg-neutral-50 p-4 rounded-2xl text-sm text-neutral-400 font-bold transition-colors">
-                <Bookmark className="w-4 h-4" /> Panduan Diskusi
+              <button
+                type="button"
+                onClick={() => setShowGuidelineModal(true)}
+                className="w-full flex items-center gap-3 bg-white text-neutral-400 p-4 rounded-2xl text-sm font-bold hover:bg-neutral-50 transition-all border border-transparent"
+              >
+                <BookOpen className="w-4 h-4" /> Panduan Diskusi
               </button>
             </nav>
           </div>
-
-          {/* Box 2: CARD PAHLAWAN HIJAU */}
-          <div className="bg-[#3D5532] text-white rounded-[35px] p-6 shadow-xl border border-neutral-800/10 space-y-5">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-brand-primary-100" />
-                <span className="text-[9px] font-black uppercase tracking-wider text-brand-primary-100">
-                  Level Anda
+          <div className="bg-[#3d5532] rounded-[40px] p-8 text-white space-y-6 shadow-xl">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-lg font-bold text-white uppercase shrink-0">
+                {user?.username ? user.username.charAt(0) : "U"}
+              </div>
+              <div>
+                <h4 className="text-base font-sans font-bold capitalize leading-tight">
+                  {user?.username || "Rayhan"}
+                </h4>
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mt-0.5">
+                  {levelNama} • {levelAngka}
+                </p>
+              </div>
+            </div>
+            <hr className="border-white/10" />
+            <div className="space-y-2">
+              <div className="flex justify-between items-baseline">
+                <span className="text-5xl font-sans font-black tracking-tight">
+                  {totalBeratLive}
+                </span>
+                <span className="text-sm font-bold text-white/40">
+                  / {targetBatasAtas} KG
                 </span>
               </div>
-              <span className="bg-white/20 text-white font-mono font-bold text-[10px] px-2 py-0.5 rounded-full">
-                Lv. 4
-              </span>
-            </div>
-            <div>
-              <h4 className="text-xl font-sans font-bold leading-tight">
-                Pahlawan Hijau
-              </h4>
-              <p className="text-[11px] text-white/70 mt-1">
-                5KG sampah lagi menuju Penjaga Alam
+              <p className="text-xs font-medium text-white/80">
+                {sisaSampahKeTarget > 0 ? (
+                  <>
+                    <strong>{sisaSampahKeTarget} KG</strong> sampah lagi menuju{" "}
+                    {dapatkanNamaLevelTujuan(targetBatasAtas)}
+                  </>
+                ) : (
+                  "Tingkat kontribusi maksimal telah tercapai! 🎉"
+                )}
               </p>
             </div>
-            {/* Progress Bar */}
-            <div className="space-y-1.5">
-              <div className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden shadow-inner">
-                <div className="bg-brand-primary-100 h-full w-[76%] rounded-full transition-all"></div>
-              </div>
-              <div className="flex justify-between text-[9px] font-mono text-white/60">
-                <span>Pahlawan Hijau</span>
-                <span>Penjaga Alam</span>
-              </div>
+            <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden shadow-inner">
+              <div
+                className="bg-white/40 h-full rounded-full transition-all duration-700 ease-out"
+                style={{ width: `${persentaseProgress}%` }}
+              ></div>
             </div>
-            {/* Poin Badge */}
-            <div className="bg-white/10 rounded-2xl p-3 flex justify-between items-center border border-white/5">
-              <span className="text-[11px] font-medium text-white/80">
-                ⚡ Rp5.000 Saldo
+            <div className="bg-white/10 rounded-2xl p-4 flex items-center gap-2 border border-white/5 shadow-inner">
+              <Wallet className="w-4 h-4 text-white/60" />
+              <span className="text-xs font-bold tracking-wide">
+                Rp {walletBalance.toLocaleString("id-ID")} Saldo
               </span>
             </div>
           </div>
         </aside>
 
-        {/* List Diskusi Tengah (lg:col-span-6) -> Tetap dinamis mengalir normal */}
+        {/* LIST DISKUSI TENGAH */}
         <div className="lg:col-span-6 space-y-6">
-          {discussions.length === 0 ? (
-            <div className="bg-neutral-default p-16 rounded-[50px] border border-neutral-50 text-center text-neutral-400 italic font-medium">
-              Belum ada postingan diskusi aktif pada kategori ini.
+          {filteredFeedData.length === 0 ? (
+            <div className="bg-white p-16 rounded-[50px] border border-neutral-100 text-center text-neutral-400 italic font-medium shadow-sm">
+              Tidak ada postingan diskusi aktif pada kategori tab ini.
             </div>
           ) : (
-            discussions.map((post) => (
+            filteredFeedData.map((post) => (
               <div
                 key={post.id_posting}
                 id={`post-${post.id_posting}`}
-                className="bg-neutral-default p-10 rounded-[50px] border border-neutral-50 shadow-sm relative group"
+                className="bg-white p-10 rounded-[50px] border border-neutral-50 shadow-sm relative group"
               >
                 {user && user.id_profil === post.id_profil && (
                   <div className="absolute top-10 right-10">
@@ -504,7 +744,7 @@ const ForumPage = ({ user }) => {
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h5 className="text-sm font-bold text-brand-dark-500">
+                      <h5 className="text-sm font-bold text-brand-dark-500 capitalize">
                         {post.anonim
                           ? "User Anonim"
                           : post.penulis?.username || "Akun SkinCycle"}
@@ -520,7 +760,10 @@ const ForumPage = ({ user }) => {
                   </div>
                 </div>
                 <h3 className="text-2xl font-marcellus mb-4 leading-tight group-hover:text-brand-primary-300 transition-colors">
-                  {post.judul_posting}
+                  {post.judul_posting
+                    ? post.judul_posting.charAt(0).toUpperCase() +
+                      post.judul_posting.slice(1)
+                    : ""}
                 </h3>
                 <p className="text-sm text-neutral-500 mb-4 leading-relaxed font-medium">
                   {post.isi_posting}
@@ -555,8 +798,9 @@ const ForumPage = ({ user }) => {
                         Balasan Komunitas ({post.komentar.length})
                       </p>
 
+                      {/* 🟢 KOMENTAR UTAMA */}
                       {post.komentar
-                        .filter((k) => !k.isi_komentar.startsWith("@"))
+                        .filter((k) => !k.isi_komentar.trim().startsWith("@"))
                         .map((mainKom) => (
                           <div key={mainKom.id_komentar} className="space-y-3">
                             <div className="flex gap-3 bg-neutral-50 p-4 rounded-3xl border border-neutral-100">
@@ -584,10 +828,11 @@ const ForumPage = ({ user }) => {
                               </div>
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <h6 className="text-[11px] font-bold text-brand-dark-500">
+                                  <h6 className="text-[11px] font-bold text-brand-dark-500 capitalize">
                                     {mainKom.anonim
                                       ? "User Anonim"
-                                      : mainKom.pemberi_komentar?.username}
+                                      : mainKom.pemberi_komentar?.username ||
+                                        "User SkinCycle"}
                                   </h6>
                                   <span className="text-[8px] text-neutral-400 uppercase">
                                     {new Date(
@@ -600,36 +845,69 @@ const ForumPage = ({ user }) => {
                                 </p>
                                 <div className="flex gap-4 items-center">
                                   <button
+                                    type="button"
                                     onClick={() => {
-                                      setSelectedPost(post);
+                                      // 🟢 FIX AMAN: Simpan id_posting asli DAN id_komentar induk murni tanpa menimpa parameter global
+                                      setSelectedPost({
+                                        id_posting: post.id_posting,
+                                        id_komentar_induk: mainKom.id_komentar,
+                                        judul_posting: post.judul_posting,
+                                        isi_posting: post.isi_posting,
+                                      });
                                       setCommentText(
-                                        `@${mainKom.pemberi_komentar?.username} `,
+                                        `@${mainKom.pemberi_komentar?.username || "user"} `,
                                       );
                                       setShowReplyModal(true);
                                     }}
-                                    className="text-[9px] font-black text-neutral-400 uppercase tracking-widest hover:text-brand-primary-300 transition-colors"
+                                    className="text-[9px] font-black text-neutral-400 uppercase tracking-widest hover:text-brand-primary-300 transition-colors outline-none"
                                   >
                                     Balas
                                   </button>
-                                  <button className="text-[9px] font-black text-neutral-400 uppercase tracking-widest hover:text-feedback-success-300 transition-colors">
+                                  <button
+                                    type="button"
+                                    className="text-[9px] font-black text-neutral-400 uppercase tracking-widest hover:text-feedback-success-300 transition-colors outline-none"
+                                  >
                                     Suka
                                   </button>
                                 </div>
                               </div>
                             </div>
 
-                            {/* Indentasi Balasan Nested Mentions */}
-                            <div className="ml-10 space-y-3 border-l-2 border-neutral-100 pl-4">
+                            {/* Indentasi Balasan Bertingkat / Children Replies */}
+                            <div className="ml-10 space-y-3 border-l-2 border-neutral-100/70 pl-4">
                               {post.komentar
-                                .filter((r) =>
-                                  r.isi_komentar.startsWith(
-                                    `@${mainKom.pemberi_komentar?.username}`,
-                                  ),
-                                )
+                                .filter((r) => {
+                                  // 🚀 LOGIKA ADAPTIF KAKU ANTI-DUPLIKAT DATA LAMA:
+                                  // 1. Cek berdasarkan ID unik database jika ada data baru
+                                  if (
+                                    r.id_komentar_induk !== null &&
+                                    r.id_komentar_induk !== undefined
+                                  ) {
+                                    return (
+                                      Number(r.id_komentar_induk) ===
+                                      Number(mainKom.id_komentar)
+                                    );
+                                  }
+                                  // 2. Jika data lama / fallback, gunakan kecocokan string teks bersyarat id_posting
+                                  const teksMurni = r.isi_komentar
+                                    .trim()
+                                    .toLowerCase();
+                                  const tagUsername =
+                                    `@${mainKom.pemberi_komentar?.username}`.toLowerCase();
+                                  return (
+                                    teksMurni.startsWith(tagUsername) &&
+                                    Number(r.id_posting) ===
+                                      Number(post.id_posting) &&
+                                    Number(r.id_komentar) !==
+                                      Number(mainKom.id_komentar) &&
+                                    (mainKom.id_komentar_induk === null ||
+                                      mainKom.id_komentar_induk === undefined)
+                                  );
+                                })
                                 .map((reply) => (
                                   <div
                                     key={reply.id_komentar}
-                                    className="flex gap-3 bg-neutral-default/60 p-3 rounded-2xl border border-neutral-50"
+                                    className="flex gap-3 bg-neutral-default/60 p-3 rounded-2xl border border-neutral-50 shadow-sm"
                                   >
                                     <div className="w-6 h-6 bg-brand-primary-100/30 rounded-full flex-shrink-0 flex items-center justify-center text-[8px] font-bold text-brand-primary-300 uppercase overflow-hidden border border-neutral-100">
                                       {!reply.anonim &&
@@ -653,15 +931,58 @@ const ForumPage = ({ user }) => {
                                         </span>
                                       )}
                                     </div>
-                                    <div className="flex-1">
-                                      <h6 className="text-[10px] font-bold text-brand-dark-500">
-                                        {reply.anonim
-                                          ? "User Anonim"
-                                          : reply.pemberi_komentar?.username}
-                                      </h6>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-0.5">
+                                        <h6 className="text-[10px] font-bold text-brand-dark-500 capitalize">
+                                          {reply.anonim
+                                            ? "User Anonim"
+                                            : reply.pemberi_komentar?.username}
+                                        </h6>
+                                        <span className="text-[7px] text-neutral-400 uppercase">
+                                          {new Date(
+                                            reply.tanggal_komentar,
+                                          ).toLocaleDateString()}
+                                        </span>
+                                      </div>
                                       <p className="text-[10px] text-neutral-600 leading-relaxed">
-                                        {reply.isi_komentar}
+                                        <span className="text-brand-primary-300 font-bold mr-1">
+                                          @{mainKom.pemberi_komentar?.username}
+                                        </span>
+                                        {/* Menampilkan isi teks murni balasan tanpa merusak struktur visual */}
+                                        {reply.isi_komentar
+                                          .trim()
+                                          .toLowerCase()
+                                          .startsWith(
+                                            `@${mainKom.pemberi_komentar?.username}`.toLowerCase(),
+                                          )
+                                          ? reply.isi_komentar.substring(
+                                              `@${mainKom.pemberi_komentar?.username}`
+                                                .length + 1,
+                                            )
+                                          : reply.isi_komentar}
                                       </p>
+                                      <div className="flex gap-4 items-center mt-1.5">
+                                        {/* 🚀 FITUR SELEKTIF: Mengunci fungsi Balas di dalam Sub-Balasan anak komentar secara dinamis */}
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setSelectedPost({
+                                              id_posting: post.id_posting,
+                                              id_komentar_induk:
+                                                mainKom.id_komentar, // Mengunci id induk mengarah ke boks root (mainKom)
+                                              judul_posting: post.judul_posting,
+                                              isi_posting: post.isi_posting,
+                                            });
+                                            setCommentText(
+                                              `@${reply.pemberi_komentar?.username || "user"} `,
+                                            );
+                                            setShowReplyModal(true);
+                                          }}
+                                          className="text-[9px] font-black text-neutral-400 uppercase tracking-widest hover:text-brand-primary-300 transition-colors outline-none"
+                                        >
+                                          Balas
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
                                 ))}
@@ -705,41 +1026,46 @@ const ForumPage = ({ user }) => {
           )}
         </div>
 
-        {/* 🌟 REVISI STICKY ASIDE KANAN: Mengunci posisi Topik Teratas saat feed diturunkan */}
+        {/* ASIDE KANAN (TOPIK TERATAS - LIVE DYNAMIC RANKING 1-7) */}
         <aside className="lg:col-span-3 lg:sticky lg:top-6 h-fit z-10">
-          <div className="bg-neutral-default rounded-[45px] p-8 shadow-sm border border-neutral-100">
+          <div className="bg-white rounded-[45px] p-8 shadow-sm border border-neutral-100">
             <h4 className="flex items-center gap-2 text-sm font-bold mb-8 text-brand-dark-500">
               <Target className="w-4 h-4 text-brand-primary-300" /> Topik
               Teratas
             </h4>
             <div className="space-y-8">
-              {[
-                { id: "01", t: "Bahan Berbahaya Skincare" },
-                { id: "02", t: "Tips Daur Ulang Kemasan" },
-                { id: "03", t: "Zero Waste Routine" },
-                { id: "04", t: "Facial Wash yang bagus" },
-                { id: "05", t: "Pelembab Yang Ampuh" },
-                { id: "06", t: "Cara Memahami Kandungan" },
-                { id: "07", t: "Produk Apa Yang terbaik?" },
-              ].map((topic) => (
-                <div
-                  key={topic.id}
-                  className="flex gap-4 group cursor-pointer"
-                  onClick={() => navigate(`/forum?search=${topic.t}`)}
-                >
-                  <span className="text-lg font-sans font-black text-neutral-300 group-hover:text-brand-primary-300 transition-colors">
-                    {topic.id}
-                  </span>
-                  <div>
-                    <h5 className="text-xs font-bold leading-snug mb-1 text-brand-dark-500 group-hover:text-brand-primary-300 transition-colors">
-                      {topic.t}
-                    </h5>
-                    <p className="text-[9px] text-neutral-400 font-bold uppercase tracking-tighter">
-                      124 Diskusi Hari ini
-                    </p>
-                  </div>
-                </div>
-              ))}
+              {topTopicsData.length === 0 ? (
+                <p className="text-xs text-neutral-400 italic text-center py-4">
+                  Belum ada data topik.
+                </p>
+              ) : (
+                topTopicsData.map((topic, index) => {
+                  const totalLikes = topic.likes?.length || 0;
+                  const totalComments = topic.komentar?.length || 0;
+                  const totalInteraksi = totalLikes + totalComments;
+                  return (
+                    <div
+                      key={topic.id_posting}
+                      className="flex gap-4 group cursor-pointer"
+                      onClick={() =>
+                        navigate(`/forum?search=${topic.judul_posting}`)
+                      }
+                    >
+                      <span className="text-lg font-sans font-black text-neutral-300 group-hover:text-brand-primary-300 transition-colors">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h5 className="text-xs font-bold leading-snug mb-1 text-brand-dark-500 group-hover:text-brand-primary-300 transition-colors truncate uppercase">
+                          {topic.judul_posting}
+                        </h5>
+                        <p className="text-[9px] text-neutral-400 font-bold uppercase tracking-tighter">
+                          {totalInteraksi} Interaksi • {totalComments} Balasan
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </aside>

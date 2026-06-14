@@ -1,4 +1,5 @@
 // import React, { useState, useEffect, useCallback } from "react";
+// import { useNavigate } from "react-router-dom"; // 🚀 FIX MUTLAK 1: Impor hook useNavigate dari react-router-dom
 // import {
 //   Search,
 //   Loader2,
@@ -11,6 +12,8 @@
 // } from "lucide-react";
 
 // const RiwayatPage = () => {
+//   const navigate = useNavigate(); // 🚀 FIX MUTLAK 2: Inisialisasi hook navigate di dalam komponen utama
+
 //   // State dinamis untuk menampung data riil dari database
 //   const [transactions, setTransactions] = useState([]);
 //   const [walletBalance, setWalletBalance] = useState(0);
@@ -56,7 +59,6 @@
 //   }, [fetchUserHistory]);
 
 //   // --- 2. LOGIKA SEARCH FILTER ---
-//   // 🛠️ PERBAIKAN: Menambahkan safety check string agar tidak crash saat membaca riwayat Belanja Checkout
 //   const filteredTransactions = transactions.filter((item) => {
 //     const aktivitasTeks = (
 //       item.aktivitas ||
@@ -142,8 +144,7 @@
 //               <div className="flex gap-3">
 //                 <button
 //                   type="button"
-//                   // 🚀 3. Tambahkan handler onClick untuk berpindah halaman secara otomatis
-//                   onClick={() => navigate("/produk")}
+//                   onClick={() => navigate("/produk")} // 🚀 SEKARANG SUDAH AKTIF BERFUNGSI: Berpindah rute ke halaman katalog produk
 //                   className="bg-brand-primary-300 text-white px-6 py-2.5 rounded-full text-[10px] font-bold shadow-md hover:bg-brand-primary-500 transition-colors outline-none"
 //                 >
 //                   Belanja
@@ -214,7 +215,6 @@
 //                       item.tipe_transaksi === "keluar" ||
 //                       parseInt(item.jumlah_saldo) < 0;
 
-//                     // 🛠️ FIX DATA GANDA: Memastikan status membaca property gabungan secara runtut
 //                     const statusAktif =
 //                       item.status ||
 //                       item.status_jemput ||
@@ -241,7 +241,6 @@
 //                           </div>
 //                         </td>
 
-//                         {/* Status Pelacakan Dinamis */}
 //                         <td className="py-4 px-2">
 //                           {renderTrackingStatus(statusAktif)}
 //                         </td>
@@ -301,12 +300,12 @@
 // export default RiwayatPage;
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom"; // 🚀 FIX MUTLAK 1: Impor hook useNavigate dari react-router-dom
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Loader2,
   Wallet,
-  Leaf,
+  Trophy,
   Clock,
   Truck,
   CheckCircle2,
@@ -314,7 +313,7 @@ import {
 } from "lucide-react";
 
 const RiwayatPage = () => {
-  const navigate = useNavigate(); // 🚀 FIX MUTLAK 2: Inisialisasi hook navigate di dalam komponen utama
+  const navigate = useNavigate();
 
   // State dinamis untuk menampung data riil dari database
   const [transactions, setTransactions] = useState([]);
@@ -341,9 +340,7 @@ const RiwayatPage = () => {
       const result = await response.json();
 
       if (result.status === "success") {
-        // 🎯 FIX UTAMA FRONTEND: Dahulukan membaca properti array 'riwayat' dari server
         setTransactions(result.data.riwayat || result.data.laporan || []);
-        // Menyimpan total saldo riil pengguna
         setWalletBalance(result.data.total_saldo || 0);
       }
     } catch (error) {
@@ -355,7 +352,6 @@ const RiwayatPage = () => {
 
   useEffect(() => {
     fetchUserHistory();
-    // Polling interval 10 detik agar status berubah real-time ketika diubah oleh admin
     const interval = setInterval(fetchUserHistory, 10000);
     return () => clearInterval(interval);
   }, [fetchUserHistory]);
@@ -398,7 +394,7 @@ const RiwayatPage = () => {
     ) {
       return (
         <span className="text-[9px] font-black uppercase px-3 py-1.5 rounded-full bg-blue-50 text-blue-500 border border-blue-200/40 flex items-center gap-1 w-fit">
-          <Truck className="w-3 h-3" /> Dalam Pengiriman / Perjalanan
+          <Truck className="w-3 h-3" /> Dalam Pengiriman
         </span>
       );
     }
@@ -416,6 +412,69 @@ const RiwayatPage = () => {
     return new Date(dateString).toLocaleDateString("id-ID", options);
   };
 
+  // 🚀 LOGIKA KALKULASI BERAT & PROGRES LEVEL DINAMIS UNTUK CARD
+  // 🚀 SINKRONISASI MUTLAK: Mendeteksi berat_asli atau mengekstrak string teks aktivitas secara cerdas
+  const totalBeratLive = (transactions || []).reduce((acc, item) => {
+    const statusAktif = (
+      item.status ||
+      item.status_jemput ||
+      item.detail_laporan?.status_jemput ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+
+    if (statusAktif === "SELESAI") {
+      // 1. Coba ambil dari properti murni database dulu
+      let berat = parseFloat(
+        item.berat_asli || item.detail_laporan?.berat_asli || 0,
+      );
+
+      // 2. Jika bernilai 0, lakukan ekstraksi teks otomatis dari string aktivitas (Contoh: "Recycling: 4kg Sampah")
+      if (berat === 0 && item.aktivitas) {
+        const match = item.aktivitas.match(/(\d+(?:\.\d+)?)\s*kg/i);
+        if (match && match[1]) {
+          berat = parseFloat(match[1]);
+        }
+      }
+      return acc + berat;
+    }
+    return acc;
+  }, 0);
+
+  // Seleksi Tier Level berdasarkan akumulasi bobot riil
+  let levelNama = "Tunas";
+  let levelAngka = "Lv. 1";
+  let targetBerikutnya = 30;
+  let minimalLevelSekarang = 0;
+
+  if (totalBeratLive >= 90) {
+    levelNama = "Penjaga";
+    levelAngka = "Lv. 4 (Max)";
+    targetBerikutnya = 90;
+    minimalLevelSekarang = 90;
+  } else if (totalBeratLive >= 60) {
+    levelNama = "Eco";
+    levelAngka = "Lv. 3";
+    targetBerikutnya = 90;
+    minimalLevelSekarang = 60;
+  } else if (totalBeratLive >= 30) {
+    levelNama = "Pahlawan Hijau";
+    levelAngka = "Lv. 2";
+    targetBerikutnya = 60;
+    minimalLevelSekarang = 30;
+  }
+
+  const selisihBobot = targetBerikutnya - minimalLevelSekarang;
+  const progressMurni = totalBeratLive - minimalLevelSekarang;
+  const persentaseProgress =
+    totalBeratLive > 0 && selisihBobot > 0
+      ? Math.min(
+          100,
+          Math.max(0, Math.round((progressMurni / selisihBobot) * 100)),
+        )
+      : 0;
+
   if (isLoading && transactions.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-brand-secondary-100 font-sans">
@@ -432,56 +491,85 @@ const RiwayatPage = () => {
   return (
     <div className="bg-brand-secondary-100 font-sans min-h-[calc(100vh-64px)] text-brand-dark-500">
       <div className="max-w-7xl mx-auto px-10 flex flex-col py-6 gap-6">
-        {/* Top Wallet Overview & Impact Score Grid */}
+        {/* ROW 1: TOP OVERVIEW GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 bg-white p-8 rounded-[40px] shadow-sm border border-neutral-100 flex justify-between items-center relative overflow-hidden">
-            <div className="relative z-10">
-              <p className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-1">
-                <Wallet className="w-3.5 h-3.5 text-brand-primary-300" /> Wallet
-                Overview
-              </p>
-              <h2 className="text-5xl font-sans text-brand-dark-500 mb-6 leading-none">
-                Rp {walletBalance.toLocaleString("id-ID")}
-              </h2>
-              <div className="flex gap-3">
+          {/* Dompet Utama Wallet Card */}
+          <div className="lg:col-span-8 bg-white p-10 rounded-[40px] shadow-sm border border-neutral-100 flex justify-between items-center relative overflow-hidden group">
+            <div className="relative z-10 flex flex-col justify-between h-full">
+              <div>
+                {/* Label diperbesar ke text-xs, tracking diperlebar, warna lebih tegas */}
+                <p className="text-xs font-black text-brand-primary-300 uppercase tracking-[0.25em] mb-4 flex items-center gap-2">
+                  <Wallet className="w-4 h-4" /> Dompet Digital
+                </p>
+
+                {/* Angka saldo dibuat font-black dan dikasih tracking-tight agar padat */}
+                <h2 className="text-5xl font-sans font-black text-brand-dark-500 mb-8 leading-none tracking-tight">
+                  Rp {walletBalance.toLocaleString("id-ID")}
+                </h2>
+              </div>
+
+              <div>
+                {/* Tombol belanja diperbesar (padding, text-xs), ditambah efek hover transisi scale & shadow */}
                 <button
                   type="button"
-                  onClick={() => navigate("/produk")} // 🚀 SEKARANG SUDAH AKTIF BERFUNGSI: Berpindah rute ke halaman katalog produk
-                  className="bg-brand-primary-300 text-white px-6 py-2.5 rounded-full text-[10px] font-bold shadow-md hover:bg-brand-primary-500 transition-colors outline-none"
+                  onClick={() => navigate("/produk")}
+                  className="bg-brand-primary-300 text-white px-8 py-3.5 rounded-full text-xs font-black uppercase tracking-widest shadow-md hover:bg-brand-primary-500 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 outline-none"
                 >
-                  Belanja
+                  Belanja Sekarang
                 </button>
               </div>
             </div>
-            <Wallet className="w-44 h-44 opacity-[0.03] text-brand-primary-300 absolute right-4 top-1/2 -translate-y-1/2 rotate-12 select-none pointer-events-none" />
+
+            {/* Ikon dompet transparan di kanan diperbesar sedikit agar tidak terlalu sepi */}
+            <Wallet className="w-48 h-48 opacity-[0.04] text-brand-primary-300 absolute right-6 top-1/2 -translate-y-1/2 rotate-12 select-none pointer-events-none group-hover:rotate-6 transition-transform duration-500" />
           </div>
 
+          {/* 🚀 REFACTOR UTAMA: CARD GAMIFIKASI LEVEL BERAT SAMPAH SINKRON ASLI */}
           <div className="lg:col-span-4 bg-brand-primary-100/30 p-8 rounded-[40px] shadow-sm border border-brand-primary-100/20 text-brand-dark-500 flex flex-col justify-between">
             <div>
               <p className="text-[10px] font-black text-brand-primary-300 uppercase tracking-widest mb-4 flex items-center gap-1">
-                <Leaf className="w-3.5 h-3.5" /> Impact Score
+                <Trophy className="w-3.5 h-3.5" /> Level Kontribusi
               </p>
-              <div className="flex items-end gap-2 mb-4">
+              <div className="flex items-end gap-1.5 mb-4">
                 <span className="text-4xl font-sans font-black leading-none text-brand-primary-500">
-                  84
+                  {totalBeratLive}
                 </span>
-                <span className="text-sm font-bold opacity-60">/ 100</span>
+                <span className="text-xs font-bold opacity-60">
+                  / {targetBerikutnya} KG
+                </span>
               </div>
-              <div className="w-full bg-white shadow-inner h-1.5 rounded-full mb-4 overflow-hidden">
+
+              <p className="text-[10px] font-black text-brand-dark-500 uppercase tracking-wider mb-3">
+                {levelNama} •{" "}
+                <span className="text-brand-primary-300">{levelAngka}</span>
+              </p>
+
+              <div className="w-full bg-white shadow-inner h-2 rounded-full mb-4 overflow-hidden">
                 <div
-                  className="bg-brand-primary-300 h-full rounded-full transition-all duration-500"
-                  style={{ width: "84%" }}
+                  className="bg-brand-primary-300 h-full rounded-full transition-all duration-700 ease-out"
+                  style={{ width: `${persentaseProgress}%` }}
                 ></div>
               </div>
             </div>
-            <p className="text-[10px] leading-relaxed font-medium italic text-neutral-500">
-              "Kontribusi daur ulangmu bulan ini telah menyelamatkan 12.4kg
-              limbah plastik abadi dari ekosistem."
+
+            <p className="text-[10px] leading-relaxed font-medium italic text-neutral-500 border-t border-brand-primary-100/40 pt-3">
+              {targetBerikutnya - totalBeratLive > 0 ? (
+                <>
+                  "Kumpulkan{" "}
+                  <strong>
+                    {(targetBerikutnya - totalBeratLive).toFixed(1)} kg
+                  </strong>{" "}
+                  sampah skincare lagi untuk menaikkan level ke tier
+                  berikutnya."
+                </>
+              ) : (
+                `"Luar biasa! Setoran sampah daur ulangmu sebesar ${totalBeratLive} kg telah maksimal membantu ekosistem dari limbah kosmetik abadi."`
+              )}
             </p>
           </div>
         </div>
 
-        {/* Detailed History Log Table */}
+        {/* ROW 2: DETAILED HISTORY LOG TABLE */}
         <div className="bg-white rounded-[40px] shadow-sm border border-neutral-100">
           <div className="p-6 border-b border-neutral-50 flex flex-col sm:flex-row gap-4 justify-between items-center">
             <h3 className="font-bold text-brand-dark-500 text-sm uppercase tracking-widest">

@@ -24,9 +24,6 @@
 //   const navigate = useNavigate();
 //   const notifRef = useRef(null);
 
-//   const [showNavbar, setShowNavbar] = useState(true);
-//   const [lastScrollY, setLastScrollY] = useState(0);
-
 //   const formatTimeAgo = (dateString) => {
 //     if (!dateString) return "Baru saja";
 //     const now = new Date();
@@ -47,24 +44,7 @@
 //     return () => clearInterval(timer);
 //   }, []);
 
-//   useEffect(() => {
-//     const handleScroll = () => {
-//       const currentScrollY = window.scrollY;
-
-//       if (currentScrollY > lastScrollY && currentScrollY > 50) {
-//         setShowNavbar(false);
-//         setShowNotif(false);
-//       } else {
-//         setShowNavbar(true);
-//       }
-
-//       setLastScrollY(currentScrollY);
-//     };
-
-//     window.addEventListener("scroll", handleScroll);
-//     return () => window.removeEventListener("scroll", handleScroll);
-//   }, [lastScrollY]);
-
+//   // 🌟 FIX LOGIKA: Logika handleScroll & Event Listener window scroll dihapus total
 //   useEffect(() => {
 //     const handleClickOutside = (event) => {
 //       if (notifRef.current && !notifRef.current.contains(event.target)) {
@@ -138,11 +118,8 @@
 
 //   return (
 //     <>
-//       <nav
-//         className={`fixed top-0 left-0 w-full h-16 flex justify-between items-center px-10 bg-white/90 backdrop-blur-md shadow-sm border-b border-brand-primary-300/5 font-sans z-50 transition-transform duration-500 ease-in-out ${
-//           showNavbar ? "translate-y-0" : "-translate-y-full"
-//         }`}
-//       >
+//       {/* 🌟 FIX CLASSNAME: className dibersihkan dari conditional inline translate-y agar posisi stay mengunci di top-0 */}
+//       <nav className="fixed top-0 left-0 w-full h-16 flex justify-between items-center px-10 bg-white/90 backdrop-blur-md shadow-sm border-b border-brand-primary-300/5 font-sans z-50">
 //         <div className="flex items-center gap-12">
 //           <Link
 //             to="/"
@@ -557,7 +534,6 @@ const Navbar = ({ user, onLogout }) => {
     return () => clearInterval(timer);
   }, []);
 
-  // 🌟 FIX LOGIKA: Logika handleScroll & Event Listener window scroll dihapus total
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notifRef.current && !notifRef.current.contains(event.target)) {
@@ -631,7 +607,6 @@ const Navbar = ({ user, onLogout }) => {
 
   return (
     <>
-      {/* 🌟 FIX CLASSNAME: className dibersihkan dari conditional inline translate-y agar posisi stay mengunci di top-0 */}
       <nav className="fixed top-0 left-0 w-full h-16 flex justify-between items-center px-10 bg-white/90 backdrop-blur-md shadow-sm border-b border-brand-primary-300/5 font-sans z-50">
         <div className="flex items-center gap-12">
           <Link
@@ -730,7 +705,7 @@ const Navbar = ({ user, onLogout }) => {
                     className="w-full text-left px-4 py-2.5 text-[12px] font-bold text-neutral-600 hover:bg-neutral-50 rounded-xl flex items-center gap-2 transition-colors"
                   >
                     <History className="w-3.5 h-3.5 text-brand-primary-300" />{" "}
-                    Riwayat & Saldo
+                    Riwayat &amp; Saldo
                   </Link>
                 </div>
               </div>
@@ -855,6 +830,14 @@ const Navbar = ({ user, onLogout }) => {
                             return null;
                           }
 
+                          // 🚀 LOGIKA PARSER PECAH TEKS DINAMIS: Mengekstrak kata pertama (Username) agar bisa di-bold tebal terpisah
+                          const pesanDatabase = notif.pesan || "";
+                          const kataKunciSukuBiasa = pesanDatabase.split(" ");
+                          const namaUserPengirim = kataKunciSukuBiasa[0] || "";
+                          const sisaTeksKalimatAksi = kataKunciSukuBiasa
+                            .slice(1)
+                            .join(" ");
+
                           return (
                             <div
                               key={notif.id_notifikasi}
@@ -869,12 +852,25 @@ const Navbar = ({ user, onLogout }) => {
 
                               <div className="flex flex-col">
                                 <p className="text-[11px] text-neutral-700 leading-tight">
-                                  <span className="font-black text-brand-primary-300">
-                                    {user.role === "admin"
-                                      ? notif.pengirim?.username || "User"
-                                      : "Admin SkinCycle"}
-                                  </span>{" "}
-                                  {teksAksi}
+                                  {notif.pesan ? (
+                                    // 🟢 FIX MUTLAK UKURAN TEBAL: Memisahkan cetak nama pengirim agar font-black (tebal kustom) aktif kembali
+                                    <>
+                                      <span className="font-black text-brand-primary-300">
+                                        {namaUserPengirim}
+                                      </span>{" "}
+                                      <span>{sisaTeksKalimatAksi}</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span className="font-black text-brand-primary-300">
+                                        {user.role === "admin"
+                                          ? notif.pengirim?.username || "User"
+                                          : notif.pengirim?.username ||
+                                            "Seseorang"}
+                                      </span>{" "}
+                                      {teksAksi}
+                                    </>
+                                  )}
                                 </p>
                                 <span className="text-[9px] text-neutral-400 font-bold uppercase mt-1 tracking-tighter">
                                   {formatTimeAgo(notif.tanggal)}

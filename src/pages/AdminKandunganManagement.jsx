@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import SidebarAdmin from "../components/SidebarAdmin";
-import { Beaker, Eye, Plus, ShieldCheck, X, Edit2, Trash2 } from "lucide-react"; // Menggunakan lucide-react agar ikon seragam
+import Swal from "sweetalert2"; // 🚀 IMPOR: Menggunakan library SweetAlert2 asli
+import { Beaker, Eye, Plus, ShieldCheck, X, Edit2, Trash2 } from "lucide-react";
 
 const AdminKandunganManagement = () => {
   const [ingredients, setIngredients] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false); // Flag penanda operasi Edit
   const [currentId, setCurrentId] = useState(null); // Penyimpan ID kandungan saat di-edit
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     nama_kandungan: "",
@@ -46,46 +48,73 @@ const AdminKandunganManagement = () => {
       jenis_kulit_cocok: ing.jenis_kulit_cocok || "",
       kategori_bahan: ing.kategori_bahan || "Semua",
       status_publikasi: ing.status_publikasi || "Published",
-      gambar_bahan: null, // Berkas gambar baru bersifat opsional saat edit
+      gambar_bahan: null,
     });
     setShowModal(true);
   };
 
-  // --- 3. TRIGGER AKSI HAPUS (DELETE API) ---
+  // --- 3. TRIGGER AKSI HAPUS DENGAN KONFIRMASI SWEETALERT2 ---
   const handleDelete = async (id, nama) => {
-    if (
-      !window.confirm(
-        `Apakah Anda yakin ingin menghapus kandungan "${nama}" secara permanen dari database?`,
-      )
-    )
-      return;
+    Swal.fire({
+      title: "Hapus Bahan Kandungan?",
+      text: `Apakah Anda yakin ingin menghapus "${nama}" secara permanen dari database?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3D5532",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+      customClass: {
+        popup: "rounded-[30px]",
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(
+            `http://localhost:5000/api/kandungan/${id}`,
+            {
+              method: "DELETE",
+            },
+          );
 
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/kandungan/${id}`,
-        {
-          method: "DELETE",
-        },
-      );
-
-      if (response.ok) {
-        alert("Bahan kandungan berhasil dihapus!");
-        fetchIngredients();
-      } else {
-        alert("Gagal menghapus data dari server.");
+          if (response.ok) {
+            Swal.fire({
+              title: "Berhasil Dihapus!",
+              text: `Bahan kandungan "${nama}" telah dibersihkan dari katalog.`,
+              icon: "success",
+              confirmButtonColor: "#3D5532",
+              customClass: { popup: "rounded-[30px]" },
+            });
+            fetchIngredients();
+          } else {
+            Swal.fire({
+              title: "Gagal Menghapus",
+              text: "Server menolak permintaan penghapusan data.",
+              icon: "error",
+              confirmButtonColor: "#3D5532",
+            });
+          }
+        } catch (error) {
+          console.error("Error menghapus kandungan:", error);
+          Swal.fire({
+            title: "Koneksi Terputus",
+            text: "Terjadi kesalahan jaringan menuju server backend.",
+            icon: "error",
+            confirmButtonColor: "#3D5532",
+          });
+        }
       }
-    } catch (error) {
-      console.error("Error menghapus kandungan:", error);
-      alert("Terjadi kesalahan jaringan.");
-    }
+    });
   };
 
-  // --- 4. SUBMIT FORM (HANDLING MULTIPART FORMDATA TAMBAH / EDIT) ---
+  // --- 4. SUBMIT FORM (TAMBAH / EDIT BAHAN KANDUNGAN) ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     const data = new FormData();
 
-    // Masukkan data isian teks ke FormData
     Object.keys(formData).forEach((key) => {
       if (key === "gambar_bahan") {
         if (formData[key]) data.append(key, formData[key]);
@@ -94,7 +123,6 @@ const AdminKandunganManagement = () => {
       }
     });
 
-    // Menentukan URL endpoint dan metode HTTP berdasarkan status mode (POST / PUT)
     const url = isEditMode
       ? `http://localhost:5000/api/kandungan/${currentId}`
       : "http://localhost:5000/api/kandungan";
@@ -107,19 +135,38 @@ const AdminKandunganManagement = () => {
       });
 
       if (response.ok) {
-        alert(
-          isEditMode
-            ? "Bahan kandungan berhasil diperbarui!"
-            : "Bahan kandungan baru berhasil ditambahkan!",
-        );
+        Swal.fire({
+          title: isEditMode
+            ? "Kandungan Diperbarui!"
+            : "Kandungan Ditambahkan!",
+          text: isEditMode
+            ? "Detail data bahan aktif skincare berhasil disimpan."
+            : "Bahan aktif baru sukses dipublikasikan ke katalog.",
+          icon: "success",
+          confirmButtonColor: "#3D5532",
+          customClass: { popup: "rounded-[30px]" },
+        });
+
         handleCloseModal();
         fetchIngredients();
       } else {
-        alert("Gagal menyimpan data. Periksa kembali input Anda.");
+        Swal.fire({
+          title: "Gagal Menyimpan",
+          text: "Periksa kembali kelengkapan seluruh data inputan Anda.",
+          icon: "warning",
+          confirmButtonColor: "#3D5532",
+        });
       }
     } catch (error) {
       console.error("Error submit kandungan:", error);
-      alert("Terjadi kesalahan jaringan.");
+      Swal.fire({
+        title: "Koneksi Terputus",
+        text: "Gagal mengirimkan data, pastikan service server aktif.",
+        icon: "error",
+        confirmButtonColor: "#3D5532",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -141,7 +188,7 @@ const AdminKandunganManagement = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-neutral-50 font-sans text-brand-dark-500">
+    <div className="flex min-h-screen bg-[#f7f9f6] font-sans text-brand-dark-500">
       <SidebarAdmin />
 
       <main className="flex-1 ml-64 p-10">
@@ -161,15 +208,16 @@ const AdminKandunganManagement = () => {
               setIsEditMode(false);
               setShowModal(true);
             }}
-            className="bg-brand-primary-300 text-neutral-default px-6 py-3 rounded-xl font-bold text-xs hover:bg-brand-primary-500 transition-all flex items-center gap-1.5 outline-none shadow-sm"
+            className="bg-[#3D5532] text-white px-6 py-3 rounded-xl font-bold text-xs hover:bg-[#22351c] transition-all flex items-center gap-1.5 outline-none shadow-sm"
           >
             <Plus className="w-4 h-4" /> Tambah Bahan Baru
           </button>
         </header>
 
-        {/* STATS OVERVIEW CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-          <div className="bg-neutral-default p-6 rounded-2xl border border-neutral-100 shadow-sm flex items-center justify-between">
+        {/* STATS OVERVIEW CARDS: Dengan Aksen Desain Ikon Berwarna Semula */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 max-w-3xl">
+          {/* Card 1: Total Bahan */}
+          <div className="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm flex items-center justify-between min-h-[105px]">
             <div>
               <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
                 Total Bahan
@@ -178,13 +226,16 @@ const AdminKandunganManagement = () => {
                 {ingredients.length}
               </p>
             </div>
-            <Beaker className="w-8 h-8 text-brand-primary-300 opacity-40" />
+            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shrink-0 ml-4 shadow-sm">
+              <Beaker className="w-5 h-5" strokeWidth={2.5} />
+            </div>
           </div>
 
-          <div className="bg-neutral-default p-6 rounded-2xl border border-neutral-100 shadow-sm flex items-center justify-between">
+          {/* Card 2: Bahan Aktif Aman */}
+          <div className="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm flex items-center justify-between min-h-[105px]">
             <div>
               <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
-                Bahan Aktif Aman
+                Bahan Aktif
               </p>
               <p className="text-3xl font-sans font-black text-feedback-success-300 mt-1">
                 {
@@ -193,12 +244,14 @@ const AdminKandunganManagement = () => {
                 }
               </p>
             </div>
-            <ShieldCheck className="w-8 h-8 text-feedback-success-300 opacity-40" />
+            <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-[#3D5532] shrink-0 ml-4 shadow-sm">
+              <ShieldCheck className="w-5 h-5" strokeWidth={2.5} />
+            </div>
           </div>
         </div>
 
-        {/* TABEL DATA MANAGEMENT (DI-UPDATE: Penambahan Kolom Aksi) */}
-        <div className="bg-neutral-default rounded-[30px] shadow-sm border border-neutral-100 overflow-hidden">
+        {/* TABEL DATA MANAGEMENT */}
+        <div className="bg-white rounded-[30px] shadow-sm border border-neutral-100 overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead className="bg-neutral-50 text-[11px] text-neutral-400 font-bold uppercase border-b border-neutral-100">
               <tr>
@@ -206,8 +259,7 @@ const AdminKandunganManagement = () => {
                 <th className="px-8 py-5">Kategori Utama</th>
                 <th className="px-8 py-5">Cocok Untuk Kulit</th>
                 <th className="px-8 py-5">Status</th>
-                <th className="px-8 py-5 text-center">Aksi</th>{" "}
-                {/* Header Kolom Aksi */}
+                <th className="px-8 py-5 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="text-xs font-semibold text-neutral-600 divide-y divide-neutral-50">
@@ -234,7 +286,6 @@ const AdminKandunganManagement = () => {
                       ● {ing.status_publikasi}
                     </span>
                   </td>
-                  {/* KOLOM INTEGRASI TOMBOL EDIT & HAPUS */}
                   <td className="px-8 py-4 text-center">
                     <div className="flex items-center justify-center gap-3">
                       <button
@@ -264,10 +315,10 @@ const AdminKandunganManagement = () => {
         </div>
       </main>
 
-      {/* MODAL POPUP (MULTI-MODE TAMBAH & EDIT BAHAN KANDUNGAN) */}
+      {/* MODAL POPUP */}
       {showModal && (
         <div className="fixed inset-0 bg-brand-dark-500/40 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
-          <div className="bg-neutral-default w-full max-w-xl rounded-3xl p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto border border-neutral-100">
+          <div className="bg-white w-full max-w-xl rounded-3xl p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto border border-neutral-100">
             <div className="flex justify-between items-start">
               <div>
                 <h2 className="text-lg font-sans font-bold text-brand-dark-500">
@@ -299,9 +350,9 @@ const AdminKandunganManagement = () => {
                 <input
                   type="text"
                   required
-                  placeholder="Contioh: Hyaluronic Acid"
+                  placeholder="Contoh: Hyaluronic Acid"
                   value={formData.nama_kandungan}
-                  className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none font-medium border border-transparent focus:border-brand-primary-300 text-brand-dark-500"
+                  className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none font-medium border border-neutral-200 text-brand-dark-500 shadow-inner"
                   onChange={(e) =>
                     setFormData({ ...formData, nama_kandungan: e.target.value })
                   }
@@ -313,7 +364,7 @@ const AdminKandunganManagement = () => {
                   <label className="block mb-1">Kategori Utama</label>
                   <select
                     value={formData.kategori_bahan}
-                    className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none cursor-pointer text-brand-dark-500"
+                    className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none cursor-pointer text-brand-dark-500 border border-neutral-200"
                     onChange={(e) =>
                       setFormData({
                         ...formData,
@@ -333,7 +384,7 @@ const AdminKandunganManagement = () => {
                   <label className="block mb-1">Status Publikasi</label>
                   <select
                     value={formData.status_publikasi}
-                    className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none cursor-pointer text-brand-dark-500"
+                    className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none cursor-pointer text-brand-dark-500 border border-neutral-200"
                     onChange={(e) =>
                       setFormData({
                         ...formData,
@@ -355,7 +406,7 @@ const AdminKandunganManagement = () => {
                   type="text"
                   placeholder="Contoh: Berminyak, Kering, Sensitif"
                   value={formData.jenis_kulit_cocok}
-                  className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none font-medium border border-transparent text-brand-dark-500"
+                  className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none font-medium border border-neutral-200 text-brand-dark-500 shadow-inner"
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -371,7 +422,7 @@ const AdminKandunganManagement = () => {
                   rows="2"
                   placeholder="Deskripsikan fungsi bahan aktif ini..."
                   value={formData.fungsi}
-                  className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none font-medium border border-transparent resize-none text-brand-dark-500"
+                  className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none font-medium border border-neutral-200 resize-none text-brand-dark-500 shadow-inner"
                   onChange={(e) =>
                     setFormData({ ...formData, fungsi: e.target.value })
                   }
@@ -386,7 +437,7 @@ const AdminKandunganManagement = () => {
                   rows="2"
                   placeholder="Contoh: Melembabkan, Menyamarkan noda hitam"
                   value={formData.manfaat}
-                  className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none font-medium border border-transparent resize-none text-brand-dark-500"
+                  className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none font-medium border border-neutral-200 resize-none text-brand-dark-500 shadow-inner"
                   onChange={(e) =>
                     setFormData({ ...formData, manfaat: e.target.value })
                   }
@@ -404,7 +455,7 @@ const AdminKandunganManagement = () => {
                 </label>
                 <input
                   type="file"
-                  required={!isEditMode} // Bersifat opsional hanya saat mode Edit aktif
+                  required={!isEditMode}
                   className="w-full p-2 text-xs text-neutral-400 cursor-pointer"
                   onChange={(e) =>
                     setFormData({
@@ -418,9 +469,14 @@ const AdminKandunganManagement = () => {
               <div className="flex gap-3 pt-4 border-t border-neutral-50">
                 <button
                   type="submit"
-                  className="flex-1 py-4 bg-brand-primary-300 hover:bg-brand-primary-500 text-neutral-default rounded-xl font-bold uppercase tracking-wider outline-none"
+                  disabled={isSubmitting}
+                  className={`flex-1 py-4 text-white rounded-xl font-bold uppercase tracking-wider outline-none ${isSubmitting ? "bg-neutral-300 cursor-not-allowed" : "bg-[#3D5532] hover:bg-[#22351c]"}`}
                 >
-                  {isEditMode ? "Simpan Perubahan" : "Simpan Bahan"}
+                  {isSubmitting
+                    ? "Memproses..."
+                    : isEditMode
+                      ? "Simpan Perubahan"
+                      : "Simpan Bahan"}
                 </button>
               </div>
             </form>

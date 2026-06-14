@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SidebarAdmin from "../components/SidebarAdmin";
+import Swal from "sweetalert2"; // 🚀 IMPOR: Menggunakan library SweetAlert2 asli
 
 import {
   Plus,
@@ -94,7 +95,7 @@ const AdminArticleManagement = () => {
     setIsModalOpen(true);
   };
 
-  // HANDLER SUBMIT (BISA CREATE MAUPUN UPDATE)
+  // HANDLER SUBMIT (INTEGRASI SWEETALERT2 BERHASIL TAMBAH & EDIT)
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (
@@ -102,7 +103,12 @@ const AdminArticleManagement = () => {
       !newArticle.isi_artikel.trim() ||
       !newArticle.kategori
     ) {
-      alert("Mohon lengkapi judul, kategori, dan isi artikel Anda!");
+      Swal.fire({
+        title: "Data Tidak Lengkap",
+        text: "Mohon lengkapi judul, kategori, dan isi artikel Anda!",
+        icon: "warning",
+        confirmButtonColor: "#3D5532",
+      });
       return;
     }
 
@@ -131,11 +137,18 @@ const AdminArticleManagement = () => {
       const result = await response.json();
 
       if (response.ok || result.status === "success") {
-        alert(
-          isEditMode
-            ? "💾 Perubahan Artikel Berhasil Disimpan!"
-            : "🚀 Artikel Baru Berhasil Diterbitkan!",
-        );
+        // 🚀 SWEETALERT2 SUKSES SIMPAN/TERBIT
+        Swal.fire({
+          title: isEditMode ? "Perubahan Disimpan!" : "Artikel Diterbitkan!",
+          text: isEditMode
+            ? "💾 Detail perubahan konten ensiklopedia berhasil diperbarui."
+            : "🚀 Konten edukasi baru sukses ditambahkan ke basis data sirkular.",
+          icon: "success",
+          confirmButtonColor: "#3D5532",
+          confirmButtonText: "Selesai",
+          customClass: { popup: "rounded-[30px]" },
+        });
+
         fetchArticles();
         setIsModalOpen(false);
         setNewArticle({
@@ -146,44 +159,82 @@ const AdminArticleManagement = () => {
         });
         setSelectedFile(null);
       } else {
-        alert("Gagal memproses artikel: " + result.message);
+        Swal.fire({
+          title: "Gagal Memproses",
+          text: result.message || "Gagal memproses perubahan artikel.",
+          icon: "error",
+          confirmButtonColor: "#3D5532",
+        });
       }
     } catch (error) {
       console.error("Error saat memproses artikel:", error);
-      alert("Terjadi kesalahan sistem, pastikan server backend Anda aktif.");
+      Swal.fire({
+        title: "Gangguan Sistem",
+        text: "Terjadi kesalahan jaringan, pastikan server Node.js Anda aktif.",
+        icon: "error",
+        confirmButtonColor: "#3D5532",
+      });
     }
   };
 
-  // HANDLER DELETE ARTIKEL
+  // HANDLER DELETE ARTIKEL DENGAN KONFIRMASI SWEETALERT2
   const handleDelete = async (id_artikel) => {
-    if (
-      window.confirm(
-        "Apakah Anda yakin ingin menghapus artikel ini dari sistem?",
-      )
-    ) {
-      try {
-        const response = await fetch(
-          `http://localhost:5000/api/ensiklopedia/${id_artikel}`,
-          {
-            method: "DELETE",
-          },
-        );
-        const result = await response.json();
-        if (response.ok || result.status === "success") {
-          alert("🗑️ Artikel Berhasil Dihapus!");
-          setArticles(
-            articles.filter((art) => (art.id_artikel || art.id) !== id_artikel),
+    Swal.fire({
+      title: "Hapus Artikel Ini?",
+      text: "Apakah Anda yakin ingin menghapus artikel edukasi ini secara permanen?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3D5532",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+      customClass: { popup: "rounded-[30px]" },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(
+            `http://localhost:5000/api/ensiklopedia/${id_artikel}`,
+            { method: "DELETE" },
           );
-        } else {
-          alert("Gagal menghapus: " + result.message);
+          const resultData = await response.json();
+          if (response.ok || resultData.status === "success") {
+            Swal.fire({
+              title: "Berhasil Dihapus!",
+              text: "🗑️ Artikel edukasi konsumen berhasil dibersihkan dari sistem.",
+              icon: "success",
+              confirmButtonColor: "#3D5532",
+              customClass: { popup: "rounded-[30px]" },
+            });
+
+            setArticles(
+              articles.filter(
+                (art) => (art.id_artikel || art.id) !== id_artikel,
+              ),
+            );
+          } else {
+            Swal.fire({
+              title: "Gagal Menghapus",
+              text:
+                resultData.message ||
+                "Gagal membersihkan konten dari database.",
+              icon: "error",
+              confirmButtonColor: "#3D5532",
+            });
+          }
+        } catch (error) {
+          console.error("Error saat menghapus artikel:", error);
+          Swal.fire({
+            title: "Koneksi Gagal",
+            text: "Terjadi kesalahan koneksi jaringan menuju server.",
+            icon: "error",
+            confirmButtonColor: "#3D5532",
+          });
         }
-      } catch (error) {
-        console.error("Error saat menghapus artikel:", error);
       }
-    }
+    });
   };
 
-  // LOGIC FILTERING (MURNI BERDASARKAN SEARCH TERM)
+  // LOGIC FILTERING
   const filteredArticles = articles.filter((article) => {
     const judul = (article.judul_artikel || article.title || "").toLowerCase();
     const kategori = (article.kategori || article.category || "").toLowerCase();
@@ -201,12 +252,9 @@ const AdminArticleManagement = () => {
   ).length;
 
   return (
-    // 🌟 PERBAIKAN STRUKTUR LAYOUT: Menyelaraskan flex-row & margin kiri ml-64 agar sejajar rapi di bawah Fixed NavbarAdmin global
-    <div className="flex min-h-screen bg-neutral-50 font-sans text-brand-dark-500 relative">
-      {/* SIDEBAR PANEL KIRI (Mengunci di tempat) */}
+    <div className="flex min-h-screen bg-[#f7f9f6] font-sans text-brand-dark-500 relative">
       <SidebarAdmin />
 
-      {/* AREA UTAMA PANEL KANAN (Mengalir scroll normal secara independen) */}
       <div className="flex-1 ml-64 p-10">
         <div className="max-w-7xl mx-auto space-y-10">
           {/* HEADER SEKSI */}
@@ -215,7 +263,7 @@ const AdminArticleManagement = () => {
               <h1 className="text-3xl font-sans text-brand-dark-500 font-bold">
                 Manajemen Artikel
               </h1>
-              <p className="text-neutral-400 text-xs mt-1 font-medium">
+              <p className="text-xs text-neutral-400 mt-1 font-medium">
                 Kelola basis pengetahuan keberlanjutan dan edukasi konsumen.
                 Pastikan setiap konten memberikan transparansi bahan dan panduan
                 daur ulang yang akurat.
@@ -224,16 +272,16 @@ const AdminArticleManagement = () => {
 
             <button
               onClick={handleOpenCreateModal}
-              className="bg-[#3D5532] text-neutral-default px-6 py-3 rounded-xl font-bold text-xs hover:bg-brand-primary-500 transition-all flex items-center gap-1.5 outline-none shadow-sm shrink-0"
+              className="bg-[#3D5532] text-white px-6 py-3 rounded-xl font-bold text-xs hover:bg-[#2c3e24] transition-all flex items-center gap-1.5 outline-none shadow-sm shrink-0"
             >
               <Plus className="w-4 h-4" /> Tambah Artikel Baru
             </button>
           </div>
 
-          {/* DYNAMIC OVERVIEW CARDS COUNTER */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* 🚀 REFACTOR UTAMA: DYNAMIC OVERVIEW CARDS WITH VIBRANT WRAPPERS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl">
             {/* CARD 1: TOTAL ARTIKEL */}
-            <div className="bg-neutral-default p-6 rounded-2xl border border-neutral-100 shadow-sm flex items-center justify-between">
+            <div className="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm flex items-center justify-between min-h-[105px]">
               <div>
                 <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
                   Total Artikel
@@ -242,11 +290,13 @@ const AdminArticleManagement = () => {
                   {totalArticles}
                 </p>
               </div>
-              <FileText className="w-8 h-8 text-brand-primary-300 opacity-40" />
+              <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-[#3D5532] shrink-0 ml-4 shadow-sm">
+                <FileText className="w-5 h-5" strokeWidth={2.5} />
+              </div>
             </div>
 
             {/* CARD 2: TERBIT */}
-            <div className="bg-neutral-default p-6 rounded-2xl border border-neutral-100 shadow-sm flex items-center justify-between">
+            <div className="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm flex items-center justify-between min-h-[105px]">
               <div>
                 <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
                   Terbit
@@ -255,14 +305,15 @@ const AdminArticleManagement = () => {
                   {publishedCount}
                 </p>
               </div>
-              <CheckCircle className="w-8 h-8 text-feedback-success-300 opacity-40" />
+              <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0 ml-4 shadow-sm">
+                <CheckCircle className="w-5 h-5" strokeWidth={2.5} />
+              </div>
             </div>
           </div>
 
           {/* TABEL DATA CONTAINER */}
-          <div className="bg-neutral-default rounded-[30px] shadow-sm border border-neutral-100 overflow-hidden">
-            {/* BAR KONTROL INTERNAL ATAS TABEL */}
-            <div className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-50 bg-neutral-default">
+          <div className="bg-white rounded-[30px] shadow-sm border border-neutral-100 overflow-hidden">
+            <div className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-50 bg-white">
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-brand-dark-500 tracking-tight">
                   Daftar Konten
@@ -286,7 +337,6 @@ const AdminArticleManagement = () => {
               </div>
             </div>
 
-            {/* TABEL DATA STREAM UTUH */}
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-neutral-50 text-[11px] text-neutral-400 font-bold uppercase border-b border-neutral-100">
@@ -367,9 +417,7 @@ const AdminArticleManagement = () => {
                               className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
                                 statusArtikel === "Published"
                                   ? "bg-brand-primary-100/30 text-[#3D5532]"
-                                  : statusArtikel === "Draft"
-                                    ? "bg-neutral-100 text-neutral-400"
-                                    : "bg-amber-50 text-amber-600"
+                                  : "bg-neutral-100 text-neutral-400"
                               }`}
                             >
                               ● {statusArtikel}
@@ -413,8 +461,7 @@ const AdminArticleManagement = () => {
               </table>
             </div>
 
-            {/* FOOTER TOTAL DATA DETECTOR */}
-            <div className="px-8 py-4 border-t border-neutral-50 bg-neutral-default/20 flex justify-between items-center text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+            <div className="px-8 py-4 border-t border-neutral-50 bg-white flex justify-between items-center text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
               <span>
                 Menampilkan {filteredArticles.length} dari {totalArticles} total
                 artikel
@@ -464,7 +511,7 @@ const AdminArticleManagement = () => {
                       judul_artikel: e.target.value,
                     })
                   }
-                  className="w-full bg-white border border-gray-200 text-xs font-medium rounded-lg px-4 py-3 outline-none focus:border-[#3D5532] text-gray-800 transition-all placeholder-gray-300"
+                  className="w-full bg-white border border-gray-200 text-xs font-medium rounded-lg px-4 py-3 outline-none focus:border-[#3D5532] text-gray-800 transition-all placeholder-gray-300 shadow-inner"
                   required
                 />
               </div>
