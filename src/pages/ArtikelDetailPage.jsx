@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, BookOpen, Clock, Loader2, AlertCircle } from "lucide-react";
+import Swal from "sweetalert2";
 
 const ArtikelDetailPage = () => {
   const navigate = useNavigate();
@@ -55,13 +56,26 @@ Di pagi hari, jangan pernah melewatkan sunscreen sebagai pelindung utama dari ra
             setArticle(foundArticle);
           } else {
             setError("Artikel tidak ditemukan dalam database.");
+            Swal.fire({
+              title: "Artikel Tidak Ditemukan",
+              text: "Artikel yang Anda cari tidak tersedia dalam database.",
+              icon: "warning",
+              confirmButtonColor: "#3d5532",
+            });
           }
         } else {
           setError("Gagal memuat respons data dari server.");
         }
       } catch (err) {
         console.error("Error fetching article details:", err);
-        setError("Gagal terhubung ke server database SkinCycle.");
+        const msg = "Gagal terhubung ke server database SkinCycle.";
+        setError(msg);
+        Swal.fire({
+          title: "Koneksi Gagal",
+          text: msg,
+          icon: "error",
+          confirmButtonColor: "#3d5532",
+        });
       } finally {
         setIsLoading(false);
       }

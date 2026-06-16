@@ -289,7 +289,7 @@ const Home = () => {
       <section className="min-h-screen flex flex-col justify-center px-10 py-20 bg-neutral-default/30">
         <div className="max-w-7xl mx-auto w-full text-center mb-16">
           <h2 className="text-5xl font-sans text-brand-dark-500 mb-4">
-            Forum Diskusii
+            Forum Diskusi
           </h2>
           <p className="text-neutral-500 max-w-3xl mx-auto text-lg leading-relaxed">
             Terhubung, berbagi, dan tumbuh bersama komunitas yang memiliki visi

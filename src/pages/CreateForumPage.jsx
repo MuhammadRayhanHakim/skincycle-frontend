@@ -552,9 +552,10 @@ import {
   Bell,
   Loader2,
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 // 🌟 REVISI: Menangkap prop 'triggerToast' dari App.jsx
-const CreateForumPage = ({ user, triggerToast }) => {
+const CreateForumPage = ({ user }) => {
   const navigate = useNavigate();
 
   // Jalankan ekstraksi nama aman
@@ -587,15 +588,23 @@ const CreateForumPage = ({ user, triggerToast }) => {
   // --- FUNGSI PUBLISH DENGAN INTEGRASI TOAST ---
   const handlePublish = async () => {
     if (!forumData.judul_posting.trim() || !forumData.isi_posting.trim()) {
-      // 🌟 REVISI: Mengganti alert kaku menjadi kustom Toast peringatan
-      if (triggerToast)
-        triggerToast("Mohon lengkapi Judul dan Deskripsi diskusi Anda.");
+      Swal.fire({
+        title: "Data Tidak Lengkap",
+        text: "Mohon lengkapi Judul dan Deskripsi diskusi Anda.",
+        icon: "warning",
+        confirmButtonColor: "#3D5532",
+      });
       return;
     }
 
     const token = localStorage.getItem("token");
     if (!token) {
-      if (triggerToast) triggerToast("Sesi berakhir, silakan login kembali.");
+      Swal.fire({
+        title: "Sesi Berakhir",
+        text: "Silakan login kembali untuk melanjutkan.",
+        icon: "warning",
+        confirmButtonColor: "#3D5532",
+      });
       return;
     }
 
@@ -620,24 +629,33 @@ const CreateForumPage = ({ user, triggerToast }) => {
       const result = await response.json();
 
       if (response.ok || result.status === "success") {
-        // 🌟 REVISI: Mengganti alert kaku menjadi kustom Toast sukses
-        if (triggerToast) {
-          triggerToast("🚀 Diskusi Anda telah berhasil dipublikasikan!");
-        }
-        return navigate("/forum");
+        Swal.fire({
+          title: "Diskusi Diterbitkan!",
+          text: "🚀 Postingan Anda berhasil dipublikasikan ke komunitas.",
+          icon: "success",
+          confirmButtonColor: "#3D5532",
+          confirmButtonText: "Selesai",
+          customClass: { popup: "rounded-[30px]" },
+        }).then(() => {
+          navigate("/forum");
+        });
+        return;
       }
 
-      if (triggerToast) {
-        triggerToast(
-          "Gagal mempublikasikan: " +
-            (result.message || "Terjadi kesalahan internal"),
-        );
-      }
+      Swal.fire({
+        title: "Gagal Memproses",
+        text: result.message || "Terjadi kesalahan internal saat mempublikasikan.",
+        icon: "error",
+        confirmButtonColor: "#3D5532",
+      });
     } catch (error) {
       console.error("Error publishing forum:", error);
-      if (triggerToast) {
-        triggerToast("Gagal terhubung ke server. Pastikan backend menyala.");
-      }
+      Swal.fire({
+        title: "Gangguan Sistem",
+        text: "Gagal terhubung ke server. Pastikan backend Anda aktif.",
+        icon: "error",
+        confirmButtonColor: "#3D5532",
+      });
     } finally {
       setIsSubmitting(false);
     }

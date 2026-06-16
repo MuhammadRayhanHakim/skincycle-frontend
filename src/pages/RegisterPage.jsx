@@ -139,6 +139,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const RegisterPage = () => {
   const navigate = useNavigate(); // Hook untuk navigasi
@@ -166,13 +167,33 @@ const RegisterPage = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Registrasi Berhasil! Silakan Masuk.");
-        navigate("/masuk"); // Navigasi ke rute /masuk
+        Swal.fire({
+          title: "Registrasi Berhasil!",
+          text: "Akun Anda telah berhasil dibuat. Silakan masuk untuk melanjutkan.",
+          icon: "success",
+          confirmButtonColor: "#3D5532",
+          confirmButtonText: "Masuk Sekarang",
+          customClass: { popup: "rounded-[30px]" },
+        }).then(() => {
+          navigate("/masuk");
+        });
       } else {
-        alert(data.message || "Gagal mendaftar");
+        Swal.fire({
+          title: "Registrasi Gagal",
+          text: data.message || "Terjadi kesalahan saat mendaftar. Coba lagi.",
+          icon: "error",
+          confirmButtonColor: "#3D5532",
+          customClass: { popup: "rounded-[30px]" },
+        });
       }
     } catch (error) {
-      alert("Terjadi kesalahan koneksi ke server.");
+      Swal.fire({
+        title: "Koneksi Bermasalah",
+        text: "Terjadi kesalahan koneksi ke server. Pastikan server aktif.",
+        icon: "error",
+        confirmButtonColor: "#3D5532",
+        customClass: { popup: "rounded-[30px]" },
+      });
     }
   };
 
@@ -262,7 +283,7 @@ const RegisterPage = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => alert("OAuth Google segera hadir.")}
+                onClick={() => Swal.fire({ title: "Segera Hadir!", text: "Fitur daftar dengan Google sedang dalam pengembangan.", icon: "info", confirmButtonColor: "#3D5532", customClass: { popup: "rounded-[30px]" } })}
                 className="flex items-center justify-center gap-2 border border-gray-200 rounded-xl py-2 px-3 text-[11px] font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors outline-none"
               >
                 <img
@@ -275,7 +296,7 @@ const RegisterPage = () => {
 
               <button
                 type="button"
-                onClick={() => alert("OAuth Apple segera hadir.")}
+                onClick={() => Swal.fire({ title: "Segera Hadir!", text: "Fitur daftar dengan Apple sedang dalam pengembangan.", icon: "info", confirmButtonColor: "#3D5532", customClass: { popup: "rounded-[30px]" } })}
                 className="flex items-center justify-center gap-2 border border-gray-200 rounded-xl py-2 px-3 text-[11px] font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors outline-none"
               >
                 <img

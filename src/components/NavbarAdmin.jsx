@@ -15,12 +15,13 @@ import {
   Recycle,
   Package,
   History,
-} from "lucide-react"; // Memastikan semua ikon di-import dengan benar
+} from "lucide-react";
 
 const Navbar = ({ user, onLogout }) => {
   const [showNotif, setShowNotif] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
   const notifRef = useRef(null);
 
@@ -53,17 +54,14 @@ const Navbar = ({ user, onLogout }) => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
       if (currentScrollY > lastScrollY && currentScrollY > 50) {
         setShowNavbar(false);
         setShowNotif(false);
       } else {
         setShowNavbar(true);
       }
-
       setLastScrollY(currentScrollY);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
@@ -77,6 +75,24 @@ const Navbar = ({ user, onLogout }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const fetchCartCount = async () => {
+    if (!user) return;
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch("http://localhost:5000/api/keranjang", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        const total =
+          data.data?.reduce((sum, item) => sum + (item.kuantitas || 1), 0) || 0;
+        setCartCount(total);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil data keranjang:", error);
+    }
+  };
 
   const fetchNotifData = async () => {
     if (!user) return;
@@ -92,7 +108,7 @@ const Navbar = ({ user, onLogout }) => {
         "http://localhost:5000/api/notifikasi/unread",
         {
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
       const dataCount = await resCount.json();
       if (dataCount.status === "success") setNotifCount(dataCount.count);
@@ -101,10 +117,29 @@ const Navbar = ({ user, onLogout }) => {
     }
   };
 
+  // Polling setiap 30 detik (fallback)
   useEffect(() => {
     fetchNotifData();
-    const interval = setInterval(fetchNotifData, 30000);
+    fetchCartCount();
+    const interval = setInterval(() => {
+      fetchNotifData();
+      fetchCartCount();
+    }, 30000);
     return () => clearInterval(interval);
+  }, [user]);
+
+  // ✅ LISTENER INSTAN: Badge keranjang langsung update saat produk ditambahkan
+  useEffect(() => {
+    const handleCartUpdate = () => fetchCartCount();
+    window.addEventListener("cart-updated", handleCartUpdate);
+    return () => window.removeEventListener("cart-updated", handleCartUpdate);
+  }, [user]);
+
+  // ✅ LISTENER INSTAN: Badge notifikasi langsung update saat ada notif baru
+  useEffect(() => {
+    const handleNotifUpdate = () => fetchNotifData();
+    window.addEventListener("notif-updated", handleNotifUpdate);
+    return () => window.removeEventListener("notif-updated", handleNotifUpdate);
   }, [user]);
 
   const handleToggleNotif = async () => {
@@ -119,7 +154,6 @@ const Navbar = ({ user, onLogout }) => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const resData = await res.json();
-
         if (resData.status === "success") {
           setNotifCount(0);
         }
@@ -187,7 +221,6 @@ const Navbar = ({ user, onLogout }) => {
                 Ensiklopedia{" "}
                 <ChevronDown className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform duration-300" />
               </NavLink>
-
               <div className="absolute left-0 top-full pt-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all pointer-events-none group-hover:pointer-events-auto z-50">
                 <div className="bg-neutral-default shadow-2xl rounded-2xl p-2 border border-neutral-100 min-w-[200px]">
                   <Link
@@ -222,7 +255,6 @@ const Navbar = ({ user, onLogout }) => {
                 Daur Ulang{" "}
                 <ChevronDown className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition-transform duration-300" />
               </NavLink>
-
               <div className="absolute left-0 top-full pt-2 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all pointer-events-none group-hover:pointer-events-auto z-50">
                 <div className="bg-neutral-default shadow-2xl rounded-2xl p-2 border border-neutral-100 min-w-[200px]">
                   <Link
@@ -352,14 +384,12 @@ const Navbar = ({ user, onLogout }) => {
                                 teksAksi =
                                   "telah mengirimkan sampah ke pengepul dan saldo sudah dikirim ke anda";
                               } else {
-                                teksAksi =
-                                  "sampah anda sedang dalam penjemputan";
+                                teksAksi = "sampah anda sedang dalam penjemputan";
                               }
                             }
                           } else {
                             teksAksi =
-                              notif.pesan ||
-                              "melakukan interaksi pada akun anda";
+                              notif.pesan || "melakukan interaksi pada akun anda";
                           }
 
                           if (
@@ -380,7 +410,6 @@ const Navbar = ({ user, onLogout }) => {
                               <IconComponent
                                 className={`w-4 h-4 shrink-0 ${iconColor}`}
                               />
-
                               <div className="flex flex-col">
                                 <p className="text-[11px] text-neutral-700 leading-tight">
                                   <span className="font-black text-brand-primary-300">
@@ -414,6 +443,11 @@ const Navbar = ({ user, onLogout }) => {
                 className="relative hover:scale-110 transition-transform text-brand-primary-300 pt-1 block"
               >
                 <ShoppingCart className="w-5 h-5 text-brand-primary-300" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-feedback-warning-300 text-brand-dark-500 text-[8px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-neutral-default font-black">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
               </Link>
 
               <div className="flex items-center pl-5 border-l border-neutral-300">
@@ -451,9 +485,7 @@ const Navbar = ({ user, onLogout }) => {
                             <>
                               <Settings
                                 className={`w-3.5 h-3.5 ${
-                                  isActive
-                                    ? "text-white"
-                                    : "text-brand-primary-300"
+                                  isActive ? "text-white" : "text-brand-primary-300"
                                 }`}
                               />
                               <span>Admin Panel</span>
@@ -476,9 +508,7 @@ const Navbar = ({ user, onLogout }) => {
                           <>
                             <User
                               className={`w-3.5 h-3.5 ${
-                                isActive
-                                  ? "text-white"
-                                  : "text-brand-primary-300"
+                                isActive ? "text-white" : "text-brand-primary-300"
                               }`}
                             />
                             <span>Akun Saya</span>

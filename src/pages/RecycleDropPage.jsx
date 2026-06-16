@@ -394,6 +394,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import Swal from "sweetalert2";
 import {
   MapContainer,
   TileLayer,
@@ -496,8 +497,16 @@ const RecycleDropPage = () => {
   };
 
   const handleDetectLocation = () => {
-    if (!navigator.geolocation)
-      return alert("Geolocation tidak didukung browser ini.");
+    if (!navigator.geolocation) {
+      Swal.fire({
+        title: "Browser Tidak Didukung",
+        text: "Geolocation tidak didukung oleh browser ini. Silakan gunakan browser modern.",
+        icon: "warning",
+        confirmButtonColor: "#3D5532",
+        customClass: { popup: "rounded-[30px]" },
+      });
+      return;
+    }
     setIsDetecting(true);
     navigator.geolocation.getCurrentPosition((pos) => {
       const { latitude, longitude } = pos.coords;
@@ -512,7 +521,16 @@ const RecycleDropPage = () => {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    if (files.length + imageFiles.length > 3) return alert("Maksimal 3 foto.");
+    if (files.length + imageFiles.length > 3) {
+      Swal.fire({
+        title: "Batas Foto Tercapai",
+        text: "Maksimal 3 foto dokumentasi yang dapat diunggah.",
+        icon: "warning",
+        confirmButtonColor: "#3D5532",
+        customClass: { popup: "rounded-[30px]" },
+      });
+      return;
+    }
     setImageFiles([...imageFiles, ...files]);
     const newPreviews = files.map((file) => URL.createObjectURL(file));
     setPreviews([...previews, ...newPreviews]);
@@ -520,11 +538,38 @@ const RecycleDropPage = () => {
 
   // --- LOGIKA SETORAN SAMPAH DAUR ULANG DENGAN MODAL KUSTOM ---
   const handleConfirm = async () => {
-    if (!address.trim()) return alert("Mohon tentukan lokasi penjemputan.");
-    if (imageFiles.length === 0) return alert("Mohon unggah foto dokumentasi.");
+    if (!address.trim()) {
+      Swal.fire({
+        title: "Lokasi Belum Ditentukan",
+        text: "Mohon tentukan lokasi penjemputan terlebih dahulu.",
+        icon: "warning",
+        confirmButtonColor: "#3D5532",
+        customClass: { popup: "rounded-[30px]" },
+      });
+      return;
+    }
+    if (imageFiles.length === 0) {
+      Swal.fire({
+        title: "Foto Belum Diunggah",
+        text: "Mohon unggah minimal 1 foto dokumentasi paket sampah Anda.",
+        icon: "warning",
+        confirmButtonColor: "#3D5532",
+        customClass: { popup: "rounded-[30px]" },
+      });
+      return;
+    }
 
     const token = localStorage.getItem("token");
-    if (!token) return alert("Sesi habis, silakan login kembali.");
+    if (!token) {
+      Swal.fire({
+        title: "Sesi Berakhir",
+        text: "Sesi login Anda telah habis. Silakan masuk kembali.",
+        icon: "error",
+        confirmButtonColor: "#3D5532",
+        customClass: { popup: "rounded-[30px]" },
+      });
+      return;
+    }
 
     try {
       const formData = new FormData();
@@ -557,10 +602,22 @@ const RecycleDropPage = () => {
         localStorage.removeItem("sc_recycle_dropped_items");
         setShowSuccessModal(true);
       } else {
-        alert("Gagal: " + res.message);
+        Swal.fire({
+          title: "Pengiriman Gagal",
+          text: res.message || "Terjadi kesalahan saat memproses laporan Anda.",
+          icon: "error",
+          confirmButtonColor: "#3D5532",
+          customClass: { popup: "rounded-[30px]" },
+        });
       }
     } catch (error) {
-      alert("Gagal terhubung ke server. Pastikan backend menyala.");
+      Swal.fire({
+        title: "Koneksi Bermasalah",
+        text: "Gagal terhubung ke server. Pastikan backend menyala dan coba lagi.",
+        icon: "error",
+        confirmButtonColor: "#3D5532",
+        customClass: { popup: "rounded-[30px]" },
+      });
     }
   };
 

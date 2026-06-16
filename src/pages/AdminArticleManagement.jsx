@@ -141,8 +141,8 @@ const AdminArticleManagement = () => {
         Swal.fire({
           title: isEditMode ? "Perubahan Disimpan!" : "Artikel Diterbitkan!",
           text: isEditMode
-            ? "💾 Detail perubahan konten ensiklopedia berhasil diperbarui."
-            : "🚀 Konten edukasi baru sukses ditambahkan ke basis data sirkular.",
+            ? "Detail perubahan konten ensiklopedia berhasil diperbarui."
+            : "Konten edukasi baru sukses ditambahkan ke basis data sirkular.",
           icon: "success",
           confirmButtonColor: "#3D5532",
           confirmButtonText: "Selesai",
@@ -341,11 +341,11 @@ const AdminArticleManagement = () => {
               <table className="w-full text-left border-collapse">
                 <thead className="bg-neutral-50 text-[11px] text-neutral-400 font-bold uppercase border-b border-neutral-100">
                   <tr>
-                    <th className="px-8 py-5">Judul Artikel</th>
-                    <th className="px-8 py-5">Kategori</th>
-                    <th className="px-8 py-5">Status</th>
-                    <th className="px-8 py-5">Tanggal</th>
-                    <th className="px-8 py-5 text-center">Aksi</th>
+                    <th className="px-6 py-4">Judul Artikel</th>
+                    <th className="px-6 py-4">Kategori</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Tanggal</th>
+                    <th className="px-6 py-4 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="text-xs font-semibold text-neutral-600 divide-y divide-neutral-50">
@@ -382,54 +382,59 @@ const AdminArticleManagement = () => {
                           key={id_artikel}
                           className="hover:bg-neutral-50/40 transition-colors"
                         >
-                          <td className="px-8 py-4 flex items-center gap-4 font-bold text-brand-dark-500 tracking-tight">
+                          <td className="px-6 py-3 flex items-center gap-3 font-bold text-brand-dark-500 tracking-tight">
                             {gambar ? (
                               <img
                                 src={`http://localhost:5000/uploads/${gambar}`}
                                 alt={judul}
-                                className="w-10 h-10 rounded-xl object-cover border border-neutral-100 shadow-inner shrink-0"
+                                className="w-9 h-9 rounded-lg object-cover border border-neutral-100 shadow-inner shrink-0"
                                 onError={(e) => {
                                   e.target.onerror = null;
-                                  e.target.src =
-                                    "https://placehold.co/40x40/f5f5f5/a3a3a3?text=🖼️";
+                                  e.target.src = "https://placehold.co/36x36/f5f5f5/a3a3a3?text=🖼️";
                                 }}
                               />
                             ) : (
-                              <div className="w-10 h-10 rounded-xl bg-neutral-50 border border-neutral-100 shadow-inner flex items-center justify-center text-sm shrink-0 text-neutral-400">
+                              <div className="w-9 h-9 rounded-lg bg-neutral-50 border border-neutral-100 shadow-inner flex items-center justify-center text-sm shrink-0 text-neutral-400">
                                 🖼️
                               </div>
                             )}
-                            <div className="space-y-0.5 max-w-md">
-                              <p className="text-brand-dark-500 font-bold leading-snug line-clamp-2 uppercase tracking-tight">
+                            <div className="max-w-md">
+                              {/* Hapus uppercase & tracking-tight */}
+                              <p className="text-brand-dark-500 font-semibold leading-snug line-clamp-1 text-[11px]">
                                 {judul}
                               </p>
                             </div>
                           </td>
 
-                          <td className="px-8 py-4 text-neutral-400 font-medium">
-                            <span className="bg-neutral-100 border border-neutral-100 text-neutral-500 px-2.5 py-1 rounded text-[10px] font-bold uppercase">
+                          {/* Kategori — tambah whitespace-nowrap */}
+                          <td className="px-6 py-3 text-neutral-400 font-medium">
+                            <span className="bg-neutral-100 border border-neutral-100 text-neutral-500 px-2.5 py-1 rounded text-[10px] font-bold uppercase whitespace-nowrap">
                               {kategori}
                             </span>
                           </td>
 
-                          <td className="px-8 py-4">
+                          {/* Status — inline-flex agar dot & teks sejajar */}
+                          <td className="px-6 py-3">
                             <span
-                              className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
                                 statusArtikel === "Published"
                                   ? "bg-brand-primary-100/30 text-[#3D5532]"
                                   : "bg-neutral-100 text-neutral-400"
                               }`}
                             >
-                              ● {statusArtikel}
+                              <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
+                              {statusArtikel}
                             </span>
                           </td>
 
-                          <td className="px-8 py-4 text-neutral-400 font-medium">
+                          {/* Tanggal */}
+                          <td className="px-6 py-3 text-neutral-400 font-medium text-[11px] whitespace-nowrap">
                             {tanggal}
                           </td>
 
-                          <td className="px-8 py-4 text-center">
-                            <div className="flex items-center justify-center gap-3">
+                          {/* Aksi */}
+                          <td className="px-6 py-3 text-center">
+                            <div className="flex items-center justify-center gap-2">
                               <button
                                 onClick={() => handleOpenEditModal(article)}
                                 className="p-1.5 text-neutral-400 hover:text-brand-primary-300 transition-colors outline-none"

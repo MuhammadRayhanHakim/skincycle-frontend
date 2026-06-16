@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import {
   ArrowLeft,
   Scale,
@@ -9,13 +10,14 @@ import {
   RotateCcw,
   Info,
   ShieldCheck,
+  PillBottle,
+  GlassWater,
+  Cylinder,
 } from "lucide-react";
 
-// Batas kapasitas karung dalam kg (100% = karung penuh)
 const MAX_CAPACITY_KG = 30;
 
 const RecycleSavePage = () => {
-  // --- PERBAIKAN SINKRONISASI INITIAL STATE DARI LOCALSTORAGE ---
   const [counts, setCounts] = useState(() => {
     const savedCounts = localStorage.getItem("sc_recycle_counts");
     return savedCounts ? JSON.parse(savedCounts) : { 1: 0, 2: 0, 3: 0 };
@@ -41,7 +43,8 @@ const RecycleSavePage = () => {
       weight: 0.03,
       label: "30g",
       color: "bg-brand-secondary-300",
-      emoji: "🧴",
+      iconColor: "text-blue-400",
+      Icon: PillBottle,
     },
     {
       id: 2,
@@ -49,7 +52,8 @@ const RecycleSavePage = () => {
       weight: 0.05,
       label: "50g",
       color: "bg-brand-primary-100/30",
-      emoji: "🧪",
+      iconColor: "text-cyan-500",
+      Icon: GlassWater,
     },
     {
       id: 3,
@@ -57,7 +61,8 @@ const RecycleSavePage = () => {
       weight: 0.02,
       label: "20g",
       color: "bg-neutral-100",
-      emoji: "🥫",
+      iconColor: "text-slate-400",
+      Icon: Cylinder,
     },
   ];
 
@@ -76,39 +81,26 @@ const RecycleSavePage = () => {
       ? "bg-brand-primary-500"
       : "bg-brand-primary-300";
 
-  // --- EFFECT UNTUK MENJAGA DATA TIDAK HILANG SAAT REFRESH ---
   useEffect(() => {
     localStorage.setItem("sc_recycle_counts", JSON.stringify(counts));
   }, [counts]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "sc_recycle_dropped_items",
-      JSON.stringify(droppedItems),
-    );
+    localStorage.setItem("sc_recycle_dropped_items", JSON.stringify(droppedItems));
   }, [droppedItems]);
 
   const handleAdd = (trash) => {
     if (isFull) return;
-
     const uid = ++itemIdRef.current;
     const xPos = 20 + Math.random() * 60;
-
-    setFallingItem({ uid, emoji: trash.emoji, x: xPos });
-
+    setFallingItem({ uid, trashId: trash.id, x: xPos });
     setTimeout(() => {
       setFallingItem(null);
       setDroppedItems((prev) => [
         ...prev,
-        {
-          uid,
-          emoji: trash.emoji,
-          x: xPos,
-          rotate: Math.random() > 0.5 ? 12 : -12,
-        },
+        { uid, trashId: trash.id, x: xPos, rotate: Math.random() > 0.5 ? 12 : -12 },
       ]);
     }, 550);
-
     setCounts((prev) => ({ ...prev, [trash.id]: prev[trash.id] + 1 }));
   };
 
@@ -116,7 +108,7 @@ const RecycleSavePage = () => {
     if (counts[trash.id] === 0) return;
     setCounts((prev) => ({ ...prev, [trash.id]: prev[trash.id] - 1 }));
     setDroppedItems((prev) => {
-      const idx = [...prev].reverse().findIndex((i) => i.emoji === trash.emoji);
+      const idx = [...prev].reverse().findIndex((i) => i.trashId === trash.id);
       if (idx === -1) return prev;
       const realIdx = prev.length - 1 - idx;
       return prev.filter((_, i) => i !== realIdx);
@@ -124,13 +116,32 @@ const RecycleSavePage = () => {
   };
 
   const handleReset = () => {
-    if (window.confirm("Kosongkan isi seluruh karung virtual?")) {
-      setCounts({ 1: 0, 2: 0, 3: 0 });
-      setDroppedItems([]);
-      setFallingItem(null);
-      localStorage.removeItem("sc_recycle_counts");
-      localStorage.removeItem("sc_recycle_dropped_items");
-    }
+    Swal.fire({
+      title: "Kosongkan Karung?",
+      text: "Seluruh isi karung virtual akan dikosongkan dan tidak dapat dikembalikan.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3D5532",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, Kosongkan!",
+      cancelButtonText: "Batal",
+      customClass: { popup: "rounded-[30px]" },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setCounts({ 1: 0, 2: 0, 3: 0 });
+        setDroppedItems([]);
+        setFallingItem(null);
+        localStorage.removeItem("sc_recycle_counts");
+        localStorage.removeItem("sc_recycle_dropped_items");
+        Swal.fire({
+          title: "Karung Dikosongkan!",
+          text: "Karung virtual Anda telah berhasil dikosongkan.",
+          icon: "success",
+          confirmButtonColor: "#3D5532",
+          customClass: { popup: "rounded-[30px]" },
+        });
+      }
+    });
   };
 
   const handleTriggerSubmit = (e) => {
@@ -139,7 +150,6 @@ const RecycleSavePage = () => {
     setShowInfoModal(true);
   };
 
-  // --- PERBAIKAN: MENGIRIM BERAT ASLI KG SECARA OTOMATIS KE HALAMAN FORM ---
   const handleConfirmNavigate = () => {
     setShowInfoModal(false);
     navigate("/daur-ulang/drop", {
@@ -153,7 +163,6 @@ const RecycleSavePage = () => {
   return (
     <div className="bg-brand-secondary-100 font-sans min-h-[calc(100vh-64px)] py-12 px-6 lg:px-20 text-brand-dark-500 flex items-center">
       <div className="max-w-7xl mx-auto w-full flex flex-col justify-center">
-        {/* Tombol Kembali */}
         <div className="mb-6 pl-1 animate-in fade-in duration-300">
           <button
             type="button"
@@ -161,7 +170,7 @@ const RecycleSavePage = () => {
             className="text-brand-primary-300 font-bold text-xs md:text-sm uppercase tracking-widest hover:text-brand-primary-500 transition-all w-fit flex items-center gap-2 outline-none group"
           >
             <ArrowLeft className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform duration-300" />
-            <span>Kembali </span>
+            <span>Kembali</span>
           </button>
         </div>
 
@@ -169,9 +178,7 @@ const RecycleSavePage = () => {
           {/* ── SISI KIRI: Visual Karung ── */}
           <div className="lg:col-span-5 flex flex-col items-center gap-4">
             <div className="flex items-center gap-2">
-              <span
-                className={`text-[10px] font-black uppercase tracking-widest transition-colors ${isFull ? "text-feedback-error-200" : "text-brand-primary-300"}`}
-              >
+              <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${isFull ? "text-feedback-error-200" : "text-brand-primary-300"}`}>
                 {isFull ? "🚫 Karung Penuh!" : `${fillPercent}% terisi`}
               </span>
             </div>
@@ -184,48 +191,46 @@ const RecycleSavePage = () => {
                 ID: 021
               </div>
 
-              {fallingItem && (
-                <span
-                  key={fallingItem.uid}
-                  className="absolute z-30 text-2xl animate-fall pointer-events-none"
-                  style={{ left: `${fallingItem.x}%`, top: 0 }}
-                >
-                  {fallingItem.emoji}
-                </span>
-              )}
+              {fallingItem && (() => {
+                const trash = trashTypes.find((t) => t.id === fallingItem.trashId);
+                if (!trash) return null;
+                const { Icon, iconColor } = trash;
+                return (
+                  <span
+                    key={fallingItem.uid}
+                    className="absolute z-30 animate-fall pointer-events-none"
+                    style={{ left: `${fallingItem.x}%`, top: 0 }}
+                  >
+                    <Icon className={`w-6 h-6 ${iconColor}`} />
+                  </span>
+                );
+              })()}
 
               <div
                 className={`${bagColor} w-full transition-all duration-700 ease-out relative overflow-hidden`}
                 style={{ height: `${fillLevel}%` }}
               >
-                <div
-                  className="absolute top-0 left-0 w-full overflow-hidden leading-none"
-                  style={{ height: "20px" }}
-                >
-                  <svg
-                    viewBox="0 0 400 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-full"
-                    preserveAspectRatio="none"
-                  >
-                    <path
-                      d="M0,10 C100,0 300,20 400,10 L400,0 L0,0 Z"
-                      fill="white"
-                      fillOpacity="0.15"
-                    />
+                <div className="absolute top-0 left-0 w-full overflow-hidden leading-none" style={{ height: "20px" }}>
+                  <svg viewBox="0 0 400 20" xmlns="http://www.w3.org/2000/svg" className="w-full" preserveAspectRatio="none">
+                    <path d="M0,10 C100,0 300,20 400,10 L400,0 L0,0 Z" fill="white" fillOpacity="0.15" />
                   </svg>
                 </div>
 
                 <div className="absolute inset-0 pt-6 px-4 flex flex-wrap content-end gap-1 pb-2">
-                  {droppedItems.map((item) => (
-                    <span
-                      key={item.uid}
-                      className="text-xl opacity-70"
-                      style={{ transform: `rotate(${item.rotate}deg)` }}
-                    >
-                      {item.emoji}
-                    </span>
-                  ))}
+                  {droppedItems.map((item) => {
+                    const trash = trashTypes.find((t) => t.id === item.trashId);
+                    if (!trash) return null;
+                    const { Icon, iconColor } = trash;
+                    return (
+                      <span
+                        key={item.uid}
+                        className="opacity-70 inline-flex"
+                        style={{ transform: `rotate(${item.rotate}deg)` }}
+                      >
+                        <Icon className={`w-5 h-5 ${iconColor}`} />
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -239,9 +244,7 @@ const RecycleSavePage = () => {
               </div>
               <div className="flex justify-between text-[9px] font-bold text-neutral-400 mt-1 uppercase tracking-wider">
                 <span>Kosong</span>
-                <span>
-                  {totalWeight.toFixed(2)} kg / {MAX_CAPACITY_KG} kg
-                </span>
+                <span>{totalWeight.toFixed(2)} kg / {MAX_CAPACITY_KG} kg</span>
                 <span>Penuh</span>
               </div>
             </div>
@@ -251,20 +254,14 @@ const RecycleSavePage = () => {
           <div className="lg:col-span-7">
             <div className="bg-neutral-default/60 backdrop-blur-md p-8 rounded-[40px] shadow-sm border border-neutral-default">
               <div className="bg-neutral-default p-5 rounded-2xl shadow-sm border border-neutral-50 mb-6 flex items-center gap-5">
-                <div
-                  className={`w-14 h-14 rounded-full border-[3px] flex items-center justify-center font-black text-sm shrink-0 transition-colors duration-500 ${isFull ? "border-feedback-error-200 text-feedback-error-200" : "border-brand-primary-300 text-brand-primary-300"}`}
-                >
+                <div className={`w-14 h-14 rounded-full border-[3px] flex items-center justify-center font-black text-sm shrink-0 transition-colors duration-500 ${isFull ? "border-feedback-error-200 text-feedback-error-200" : "border-brand-primary-300 text-brand-primary-300"}`}>
                   {totalWeight.toFixed(2)}
                 </div>
                 <div className="flex items-center gap-2">
                   <Scale className="w-5 h-5 text-brand-primary-300 opacity-60" />
                   <div>
-                    <h4 className="font-bold text-sm text-brand-dark-500">
-                      Total Massa Sampah
-                    </h4>
-                    <p className="text-[10px] text-brand-primary-300 uppercase tracking-wider font-bold">
-                      Satuan Kilogram (kg)
-                    </p>
+                    <h4 className="font-bold text-sm text-brand-dark-500">Total Massa Sampah</h4>
+                    <p className="text-[10px] text-brand-primary-300 uppercase tracking-wider font-bold">Satuan Kilogram (kg)</p>
                   </div>
                 </div>
                 <button
@@ -277,50 +274,47 @@ const RecycleSavePage = () => {
               </div>
 
               <div className="space-y-3 mb-8">
-                {trashTypes.map((trash) => (
-                  <div
-                    key={trash.id}
-                    className="flex items-center justify-between p-4 bg-neutral-default rounded-2xl border border-neutral-50/50"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-10 h-10 rounded-xl ${trash.color} flex items-center justify-center text-lg`}
-                      >
-                        {trash.emoji}
+                {trashTypes.map((trash) => {
+                  const { Icon, iconColor } = trash;
+                  return (
+                    <div
+                      key={trash.id}
+                      className="flex items-center justify-between p-4 bg-neutral-default rounded-2xl border border-neutral-50/50"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-xl ${trash.color} flex items-center justify-center`}>
+                          <Icon className={`w-5 h-5 ${iconColor}`} />
+                        </div>
+                        <div>
+                          <h5 className="font-bold text-xs text-brand-dark-500">{trash.name}</h5>
+                          <p className="text-[9px] text-neutral-400 font-bold uppercase tracking-wider">{trash.label} / unit</p>
+                        </div>
                       </div>
-                      <div>
-                        <h5 className="font-bold text-xs text-brand-dark-500">
-                          {trash.name}
-                        </h5>
-                        <p className="text-[9px] text-neutral-400 font-bold uppercase tracking-wider">
-                          {trash.label} / unit
-                        </p>
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(trash)}
-                        disabled={counts[trash.id] === 0}
-                        className="w-8 h-8 rounded-full border border-neutral-100 flex items-center justify-center text-neutral-400 hover:bg-feedback-error-100/20 hover:text-feedback-error-200 disabled:opacity-30 transition-colors outline-none"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="w-7 text-center font-black text-sm text-brand-dark-500 tabular-nums">
-                        {counts[trash.id]}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleAdd(trash)}
-                        disabled={isFull}
-                        className="w-8 h-8 rounded-full border border-neutral-100 flex items-center justify-center hover:bg-brand-primary-300 hover:text-neutral-default text-brand-primary-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors outline-none"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleRemove(trash)}
+                          disabled={counts[trash.id] === 0}
+                          className="w-8 h-8 rounded-full border border-neutral-100 flex items-center justify-center text-neutral-400 hover:bg-feedback-error-100/20 hover:text-feedback-error-200 disabled:opacity-30 transition-colors outline-none"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="w-7 text-center font-black text-sm text-brand-dark-500 tabular-nums">
+                          {counts[trash.id]}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleAdd(trash)}
+                          disabled={isFull}
+                          className="w-8 h-8 rounded-full border border-neutral-100 flex items-center justify-center hover:bg-brand-primary-300 hover:text-neutral-default text-brand-primary-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors outline-none"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <button
@@ -336,13 +330,9 @@ const RecycleSavePage = () => {
         </div>
       </div>
 
-      {/* POPUP MODAL INFORMASI */}
       {showInfoModal && (
         <div className="fixed inset-0 bg-brand-dark-500/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 cursor-pointer"
-            onClick={() => setShowInfoModal(false)}
-          ></div>
+          <div className="absolute inset-0 cursor-pointer" onClick={() => setShowInfoModal(false)}></div>
           <div className="relative bg-[#F2EDE4] w-full max-w-2xl rounded-[35px] py-8 px-10 shadow-2xl border border-neutral-100/40 flex flex-col justify-between space-y-6 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] my-auto">
             <div className="w-14 h-14 bg-brand-primary-300/10 text-brand-primary-300 rounded-full flex items-center justify-center mx-auto shadow-inner shrink-0">
               <Info className="w-6 h-6" />
@@ -350,48 +340,30 @@ const RecycleSavePage = () => {
 
             <div className="space-y-5 text-left bg-neutral-default/40 py-6 px-6 rounded-2xl border border-neutral-100/60 shadow-inner overflow-y-auto w-full scrollbar-thin">
               <div className="text-center space-y-1.5 mb-2">
-                <h3 className="text-xl font-marcellus text-brand-dark-500 font-bold tracking-tight">
-                  Ketentuan Saldo Eco-Points
-                </h3>
-                <p className="text-[11px] text-neutral-400 font-medium font-sans uppercase tracking-wider">
-                  Mekanisme Dompet Sirkular SkinCycle
-                </p>
+                <h3 className="text-xl font-marcellus text-brand-dark-500 font-bold tracking-tight">Ketentuan Saldo Eco-Points</h3>
+                <p className="text-[11px] text-neutral-400 font-medium font-sans uppercase tracking-wider">Mekanisme Dompet Sirkular SkinCycle</p>
               </div>
               <div className="h-[1px] bg-neutral-200/60 w-full"></div>
               <div className="space-y-4 font-sans pt-2">
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-feedback-error-100/20 text-feedback-error-200 flex items-center justify-center text-xs shrink-0 mt-0.5 font-bold">
-                    ✕
-                  </div>
+                  <div className="w-5 h-5 rounded-full bg-feedback-error-100/20 text-feedback-error-200 flex items-center justify-center text-xs shrink-0 mt-0.5 font-bold">✕</div>
                   <div className="space-y-0.5">
-                    <h4 className="text-xs font-black uppercase tracking-wide text-brand-dark-500">
-                      Tidak Dapat Diuangkan
-                    </h4>
+                    <h4 className="text-xs font-black uppercase tracking-wide text-brand-dark-500">Tidak Dapat Diuangkan</h4>
                     <p className="text-[11px] text-neutral-500 leading-relaxed font-medium">
                       Saldo <em>reward</em> hasil akumulasi massa daur ulang ini{" "}
-                      <span className="text-feedback-error-200 font-bold">
-                        tidak dapat dicairkan ke dalam bentuk uang tunai
-                      </span>{" "}
+                      <span className="text-feedback-error-200 font-bold">tidak dapat dicairkan ke dalam bentuk uang tunai</span>{" "}
                       (<em>non-withdrawable</em>).
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-brand-primary-300/10 text-brand-primary-300 flex items-center justify-center text-xs shrink-0 mt-0.5 font-bold">
-                    ✓
-                  </div>
+                  <div className="w-5 h-5 rounded-full bg-brand-primary-300/10 text-brand-primary-300 flex items-center justify-center text-xs shrink-0 mt-0.5 font-bold">✓</div>
                   <div className="space-y-0.5">
-                    <h4 className="text-xs font-black uppercase tracking-wide text-brand-dark-500">
-                      Metode Pembayaran Katalog
-                    </h4>
+                    <h4 className="text-xs font-black uppercase tracking-wide text-brand-dark-500">Metode Pembayaran Katalog</h4>
                     <p className="text-[11px] text-neutral-500 leading-relaxed font-medium">
                       Saldo sepenuhnya bersifat sirkular dan{" "}
-                      <span className="text-brand-primary-300 font-bold">
-                        hanya dapat digunakan kembali sebagai metode potongan
-                        harga atau alat pembayaran sah
-                      </span>{" "}
-                      untuk membeli produk skincare pilihan Anda di platform
-                      SkinCycle.
+                      <span className="text-brand-primary-300 font-bold">hanya dapat digunakan kembali sebagai metode potongan harga atau alat pembayaran sah</span>{" "}
+                      untuk membeli produk skincare pilihan Anda di platform SkinCycle.
                     </p>
                   </div>
                 </div>
@@ -401,8 +373,7 @@ const RecycleSavePage = () => {
             <div className="bg-neutral-default/60 border border-neutral-100/50 p-4 rounded-2xl text-left flex items-start gap-3 shadow-inner shrink-0">
               <ShieldCheck className="w-4 h-4 text-brand-primary-300 shrink-0 mt-0.5" />
               <p className="text-[10px] text-neutral-400 font-bold leading-normal uppercase tracking-wide">
-                Misi berkelanjutan ini mendukung pembatasan emisi & nol sampah
-                kosmetik ke alam.
+                Misi berkelanjutan ini mendukung pembatasan emisi & nol sampah kosmetik ke alam.
               </p>
             </div>
 
@@ -410,7 +381,7 @@ const RecycleSavePage = () => {
               <button
                 type="button"
                 onClick={() => setShowInfoModal(false)}
-                className="px-8 py-4 bg-neutral-default text-neutral-400 border border-neutral-100 rounded-2xl text-[10px] font-bold uppercase tracking-widest  hover:bg-brand-dark-500 hover:text-white transition-all outline-none"
+                className="px-8 py-4 bg-neutral-default text-neutral-400 border border-neutral-100 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-brand-dark-500 hover:text-white transition-all outline-none"
               >
                 Batal
               </button>

@@ -439,6 +439,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import {
   ShoppingCart,
   Trash2,
@@ -493,6 +494,12 @@ const CartPage = () => {
       }
     } catch (error) {
       console.error("Gagal sinkronisasi daftar keranjang database:", error);
+      Swal.fire({
+        title: "Koneksi Gagal",
+        text: "Tidak dapat memuat keranjang belanja. Pastikan server aktif.",
+        icon: "error",
+        confirmButtonColor: "#3d5532",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -632,7 +639,12 @@ const CartPage = () => {
       });
 
     if (checkedProducts.length === 0) {
-      alert("Silakan pilih minimal satu produk yang ingin Anda checkout.");
+      Swal.fire({
+        title: "Belum Ada Produk Dipilih",
+        text: "Silakan pilih minimal satu produk yang ingin Anda checkout.",
+        icon: "warning",
+        confirmButtonColor: "#3d5532",
+      });
       return;
     }
 

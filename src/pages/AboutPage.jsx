@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2"; // 🚀 IMPOR SWEETALERT2
 import {
   Leaf,
   Mountain,
@@ -13,6 +14,13 @@ import {
 
 const AboutPage = () => {
   const navigate = useNavigate();
+
+  // 🚀 STATE FORM KONTAK
+  const [contactForm, setContactForm] = useState({
+    nama: "",
+    email: "",
+    pesan: "",
+  });
 
   // 🚀 DATA TIM LENGKAP (Membaca langsung dari folder /public sesuai berkas Anda)
   const teamMembers = [
@@ -60,14 +68,76 @@ const AboutPage = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prevIndex) => {
-        // Karena menampilkan 3 item sekaligus di desktop, batas maksimal geser adalah (panjang data - 3)
         const maxIndex = teamMembers.length - 3;
         return prevIndex >= maxIndex ? 0 : prevIndex + 1;
       });
-    }, 3000); // Bergeser otomatis setiap 3 detik
+    }, 3000);
 
     return () => clearInterval(timer);
   }, [teamMembers.length]);
+
+  // 🚀 HANDLER SUBMIT FORM KONTAK DENGAN SWEETALERT2
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+
+    // Validasi field kosong
+    if (!contactForm.nama.trim() || !contactForm.email.trim() || !contactForm.pesan.trim()) {
+      Swal.fire({
+        title: "Data Tidak Lengkap",
+        text: "Mohon lengkapi nama, email, dan pesan Anda sebelum mengirim.",
+        icon: "warning",
+        confirmButtonColor: "#3D5532",
+        confirmButtonText: "Oke, Mengerti",
+        customClass: { popup: "rounded-[30px]" },
+      });
+      return;
+    }
+
+    // Validasi format email sederhana
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(contactForm.email)) {
+      Swal.fire({
+        title: "Format Email Salah",
+        text: "Pastikan alamat email yang Anda masukkan sudah benar.",
+        icon: "error",
+        confirmButtonColor: "#3D5532",
+        confirmButtonText: "Perbaiki",
+        customClass: { popup: "rounded-[30px]" },
+      });
+      return;
+    }
+
+    // 🚀 SWEETALERT2 SUKSES KIRIM PESAN
+    Swal.fire({
+      title: "Pesan Terkirim!",
+      text: `Terima kasih, ${contactForm.nama}! Kami akan segera menghubungi Anda melalui ${contactForm.email}.`,
+      icon: "success",
+      confirmButtonColor: "#3D5532",
+      confirmButtonText: "Tutup",
+      customClass: { popup: "rounded-[30px]" },
+    }).then(() => {
+      // Reset form setelah konfirmasi ditutup
+      setContactForm({ nama: "", email: "", pesan: "" });
+    });
+  };
+
+  // 🚀 HANDLER NAVIGASI PILAR DENGAN SWEETALERT2 TOAST
+  const handlePilarNavigate = (pilar) => {
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "bottom-end",
+      showConfirmButton: false,
+      timer: 1800,
+      timerProgressBar: true,
+    });
+
+    Toast.fire({
+      icon: "info",
+      title: `Membuka halaman ${pilar.title}...`,
+    });
+
+    setTimeout(() => navigate(pilar.path), 400);
+  };
 
   return (
     <div className="bg-brand-secondary-100 font-sans text-brand-dark-500 min-h-screen">
@@ -190,7 +260,6 @@ const AboutPage = () => {
             {[
               {
                 title: "Ensiklopedia",
-                // 🎯 FIX MUTLAK: Mengubah <Microsheet /> menjadi <Microscope /> yang valid dari lucide-react
                 icon: <Microscope className="w-8 h-8 text-brand-primary-300" />,
                 desc: "Lupakan istilah kimia yang rumit. Kami bedah setiap kandungan skincare dengan bahasa manusia.",
                 path: "/ensiklopedia",
@@ -211,7 +280,8 @@ const AboutPage = () => {
               <div
                 key={pilar.title}
                 className="bg-white border border-neutral-100 rounded-[40px] p-10 flex flex-col items-center text-center cursor-pointer group hover:shadow-2xl hover:border-brand-primary-100/60 hover:-translate-y-2 hover:bg-brand-secondary-100/60 transition-all duration-500 ease-out shadow-sm"
-                onClick={() => navigate(pilar.path)}
+                // 🚀 GANTI: onClick pakai handler dengan SweetAlert toast
+                onClick={() => handlePilarNavigate(pilar)}
               >
                 <div className="w-14 h-14 bg-brand-secondary-100 rounded-2xl border border-neutral-100 flex items-center justify-center mb-6 transition-all duration-500 group-hover:bg-brand-primary-100/30 group-hover:border-brand-primary-100 group-hover:scale-110 shadow-sm">
                   {pilar.icon}
@@ -333,13 +403,18 @@ const AboutPage = () => {
           </div>
 
           <div className="bg-white p-8 md:p-12 rounded-[50px] shadow-2xl border border-neutral-100 w-full">
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            {/* 🚀 GANTI: onSubmit pakai handler baru, input pakai controlled state */}
+            <form className="space-y-6" onSubmit={handleContactSubmit}>
               <div>
                 <label className="text-[10px] font-black text-neutral-400 uppercase mb-2 block tracking-widest">
                   Nama Lengkap
                 </label>
                 <input
                   type="text"
+                  value={contactForm.nama}
+                  onChange={(e) =>
+                    setContactForm({ ...contactForm, nama: e.target.value })
+                  }
                   className="w-full bg-neutral-50 border border-neutral-100 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-primary-300 text-brand-dark-500 outline-none font-medium placeholder-neutral-300 transition-all"
                   placeholder="Masukkan namamu..."
                 />
@@ -350,6 +425,10 @@ const AboutPage = () => {
                 </label>
                 <input
                   type="email"
+                  value={contactForm.email}
+                  onChange={(e) =>
+                    setContactForm({ ...contactForm, email: e.target.value })
+                  }
                   className="w-full bg-neutral-50 border border-neutral-100 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-primary-300 text-brand-dark-500 outline-none font-medium placeholder-neutral-300 transition-all"
                   placeholder="email@contoh.com"
                 />
@@ -360,13 +439,16 @@ const AboutPage = () => {
                 </label>
                 <textarea
                   rows="4"
+                  value={contactForm.pesan}
+                  onChange={(e) =>
+                    setContactForm({ ...contactForm, pesan: e.target.value })
+                  }
                   className="w-full bg-neutral-50 border border-neutral-100 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-brand-primary-300 text-brand-dark-500 outline-none font-medium placeholder-neutral-300 resize-none leading-relaxed transition-all"
                   placeholder="Apa yang bisa kami bantu?"
                 ></textarea>
               </div>
               <button
                 type="submit"
-                onClick={() => alert("Pesan berhasil dikirim!")}
                 className="w-full bg-brand-primary-300 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-brand-primary-500 transition-all flex items-center justify-center gap-2 outline-none active:scale-98"
               >
                 <Send className="w-4 h-4" /> Kirim Pesan

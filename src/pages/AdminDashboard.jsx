@@ -21,6 +21,7 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
+import Swal from "sweetalert2"; 
 
 ChartJS.register(
   CategoryScale,
@@ -52,16 +53,55 @@ const AdminDashboard = () => {
             },
           },
         );
+
+        if (!response.ok) {
+          const errResult = await response.json().catch(() => ({}));
+          Swal.fire({
+            title: "Gagal Memuat Dashboard",
+            text:
+              errResult.message ||
+              `Server merespons dengan status ${response.status}. Silakan refresh halaman.`,
+            icon: "error",
+            confirmButtonColor: "#3d5532",
+            confirmButtonText: "Coba Lagi",
+          }).then((res) => {
+            if (res.isConfirmed) fetchDashboardData();
+          });
+          return;
+        }
+
         const result = await response.json();
         if (result.status === "success") {
           setStats(result.data);
+        } else {
+          Swal.fire({
+            title: "Data Tidak Tersedia",
+            text:
+              result.message ||
+              "Server merespons tetapi data statistik tidak dapat dimuat.",
+            icon: "warning",
+            confirmButtonColor: "#3d5532",
+          });
         }
       } catch (error) {
         console.error("Gagal memuat data statistik dashboard:", error);
+        Swal.fire({
+          title: "Koneksi ke Server Gagal",
+          text: "Tidak dapat terhubung ke backend. Pastikan server aktif, lalu coba lagi.",
+          icon: "error",
+          confirmButtonColor: "#3d5532",
+          showCancelButton: true,
+          confirmButtonText: "Coba Lagi",
+          cancelButtonText: "Tutup",
+          customClass: { popup: "rounded-[30px]" },
+        }).then((res) => {
+          if (res.isConfirmed) fetchDashboardData();
+        });
       } finally {
         setLoading(false);
       }
     };
+
     fetchDashboardData();
   }, []);
 

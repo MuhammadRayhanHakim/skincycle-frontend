@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import SidebarAdmin from "../components/SidebarAdmin";
-import Swal from "sweetalert2"; // 🚀 IMPOR: Menggunakan library SweetAlert2 asli
-import { Beaker, Eye, Plus, ShieldCheck, X, Edit2, Trash2 } from "lucide-react";
+import Swal from "sweetalert2";
+import { Beaker, Plus, ShieldCheck, X, Edit2, Trash2 } from "lucide-react";
 
 const AdminKandunganManagement = () => {
   const [ingredients, setIngredients] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false); // Flag penanda operasi Edit
-  const [currentId, setCurrentId] = useState(null); // Penyimpan ID kandungan saat di-edit
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentId, setCurrentId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -64,19 +64,14 @@ const AdminKandunganManagement = () => {
       cancelButtonColor: "#d33",
       confirmButtonText: "Ya, Hapus!",
       cancelButtonText: "Batal",
-      customClass: {
-        popup: "rounded-[30px]",
-      },
+      customClass: { popup: "rounded-[30px]" },
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           const response = await fetch(
             `http://localhost:5000/api/kandungan/${id}`,
-            {
-              method: "DELETE",
-            },
+            { method: "DELETE" },
           );
-
           if (response.ok) {
             Swal.fire({
               title: "Berhasil Dihapus!",
@@ -129,12 +124,11 @@ const AdminKandunganManagement = () => {
     const method = isEditMode ? "PUT" : "POST";
 
     try {
-      const response = await fetch(url, {
-        method: method,
-        body: data,
-      });
+      const response = await fetch(url, { method, body: data });
 
       if (response.ok) {
+        // ✅ FIX: Tambah .then() agar handleCloseModal & fetchIngredients
+        // baru dijalankan SETELAH user klik OK — konsisten dengan halaman lain
         Swal.fire({
           title: isEditMode
             ? "Kandungan Diperbarui!"
@@ -145,10 +139,10 @@ const AdminKandunganManagement = () => {
           icon: "success",
           confirmButtonColor: "#3D5532",
           customClass: { popup: "rounded-[30px]" },
+        }).then(() => {
+          handleCloseModal();
+          fetchIngredients();
         });
-
-        handleCloseModal();
-        fetchIngredients();
       } else {
         Swal.fire({
           title: "Gagal Menyimpan",
@@ -214,9 +208,8 @@ const AdminKandunganManagement = () => {
           </button>
         </header>
 
-        {/* STATS OVERVIEW CARDS: Dengan Aksen Desain Ikon Berwarna Semula */}
+        {/* STATS OVERVIEW CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 max-w-3xl">
-          {/* Card 1: Total Bahan */}
           <div className="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm flex items-center justify-between min-h-[105px]">
             <div>
               <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
@@ -231,7 +224,6 @@ const AdminKandunganManagement = () => {
             </div>
           </div>
 
-          {/* Card 2: Bahan Aktif Aman */}
           <div className="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm flex items-center justify-between min-h-[105px]">
             <div>
               <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
@@ -317,7 +309,7 @@ const AdminKandunganManagement = () => {
 
       {/* MODAL POPUP */}
       {showModal && (
-        <div className="fixed inset-0 bg-brand-dark-500/40 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-250 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-xl rounded-3xl p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto border border-neutral-100">
             <div className="flex justify-between items-start">
               <div>
@@ -366,18 +358,18 @@ const AdminKandunganManagement = () => {
                     value={formData.kategori_bahan}
                     className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none cursor-pointer text-brand-dark-500 border border-neutral-200"
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        kategori_bahan: e.target.value,
-                      })
+                      setFormData({ ...formData, kategori_bahan: e.target.value })
                     }
                   >
                     <option>Semua</option>
                     <option>Anti-Aging</option>
                     <option>Hydrating</option>
                     <option>Brightening</option>
-                    <option>Menenangkan</option>
                     <option>Eksfoliasi</option>
+                    <option>Acne Care</option>
+                    <option>Soothing</option>
+                    <option>Barrier Repair</option>
+                    <option>Moisturizing</option>
                   </select>
                 </div>
                 <div>
@@ -386,10 +378,7 @@ const AdminKandunganManagement = () => {
                     value={formData.status_publikasi}
                     className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none cursor-pointer text-brand-dark-500 border border-neutral-200"
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        status_publikasi: e.target.value,
-                      })
+                      setFormData({ ...formData, status_publikasi: e.target.value })
                     }
                   >
                     <option>Published</option>
@@ -408,10 +397,7 @@ const AdminKandunganManagement = () => {
                   value={formData.jenis_kulit_cocok}
                   className="w-full p-3.5 bg-neutral-50 rounded-xl outline-none font-medium border border-neutral-200 text-brand-dark-500 shadow-inner"
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      jenis_kulit_cocok: e.target.value,
-                    })
+                    setFormData({ ...formData, jenis_kulit_cocok: e.target.value })
                   }
                 />
               </div>
@@ -456,12 +442,9 @@ const AdminKandunganManagement = () => {
                 <input
                   type="file"
                   required={!isEditMode}
-                  className="w-full p-2 text-xs text-neutral-400 cursor-pointer"
+                  className="w-full text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 p-3 rounded-2xl cursor-pointer file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-green-50 file:text-[#3D5532] hover:file:bg-green-100"
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      gambar_bahan: e.target.files[0],
-                    })
+                    setFormData({ ...formData, gambar_bahan: e.target.files[0] })
                   }
                 />
               </div>

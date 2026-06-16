@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Swal from "sweetalert2";
 import {
   ArrowLeft,
   ShoppingCart,
@@ -7,7 +8,7 @@ import {
   Sparkles,
   Heart,
   Activity,
-} from "lucide-react"; // Menggunakan lucide-react untuk konsistensi design system
+} from "lucide-react";
 
 const ProductDetailPage = ({ user }) => {
   const [selectedImg, setSelectedImg] = useState(0);
@@ -51,7 +52,6 @@ const ProductDetailPage = ({ user }) => {
     ? product.gambar_produk.split(",")
     : ["default.jpg"];
 
-  // 🌟 FIX DINAMIS 1: Membaca kolom 'manfaat_utama' hasil split koma dari DB secara dinamis
   const listManfaat =
     product.manfaat_utama && product.manfaat_utama.trim() !== ""
       ? product.manfaat_utama.split(",")
@@ -61,7 +61,6 @@ const ProductDetailPage = ({ user }) => {
           "Menenangkan Kulit (Calming)",
         ];
 
-  // 🌟 FIX DINAMIS 2: Membaca array 'komposisi_analisis' hasil join database dari backend secara dinamis
   let listKandunganCards = [];
 
   if (product.komposisi_analisis && product.komposisi_analisis.length > 0) {
@@ -73,7 +72,6 @@ const ProductDetailPage = ({ user }) => {
       bgBadge: "bg-feedback-success-100/20",
     }));
   } else {
-    // Fallback cadangan aman jika deskripsi bahan pada tabel kandungan belum diisi admin
     const rawIngredients = product.bahan_kandungan
       ? product.bahan_kandungan.split(",")
       : [];
@@ -117,53 +115,100 @@ const ProductDetailPage = ({ user }) => {
     <Heart key="so" className="w-4 h-4 text-neutral-default" />,
   ];
 
-  const handleAddToCart = () => {
+  // ✅ FIX: Ganti dari localStorage ke API database + dispatch event instan
+  const handleAddToCart = async () => {
     if (!user) {
-      alert(
-        "⚠️ Akses Ditolak! Silakan masuk (login) ke akun Anda terlebih dahulu untuk menggunakan fitur keranjang belanja.",
-      );
-      navigate("/masuk");
+      Swal.fire({
+        title: "Akses Ditolak",
+        text: "Silakan masuk ke akun Anda terlebih dahulu untuk menggunakan fitur keranjang belanja.",
+        icon: "warning",
+        confirmButtonColor: "#3D5532",
+        confirmButtonText: "Masuk Sekarang",
+        showCancelButton: true,
+        cancelButtonText: "Batal",
+        customClass: { popup: "rounded-[30px]" },
+      }).then((result) => {
+        if (result.isConfirmed) navigate("/masuk");
+      });
       return;
     }
 
-    const currentCart = JSON.parse(localStorage.getItem("cart")) || [];
-    const existingProduct = currentCart.find(
-      (item) => item.id_produk === product.id_produk,
-    );
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch("http://localhost:5000/api/keranjang", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id_produk: product.id_produk, quantity: 1 }),
+      });
+      const result = await response.json();
 
-    if (existingProduct) {
-      existingProduct.quantity += 1;
-    } else {
-      currentCart.push({ ...product, quantity: 1 });
+      if (response.ok || result.status === "success") {
+        // ✅ Trigger badge Navbar update INSTAN tanpa tunggu polling 30 detik
+        window.dispatchEvent(new Event("cart-updated"));
+
+        Swal.fire({
+          title: "Ditambahkan ke Keranjang!",
+          text: `${product.nama_produk} berhasil dimasukkan ke keranjang belanja Anda.`,
+          icon: "success",
+          confirmButtonColor: "#3D5532",
+          confirmButtonText: "Lanjut Belanja",
+          showCancelButton: true,
+          cancelButtonText: "Lihat Keranjang",
+          customClass: { popup: "rounded-[30px]" },
+        }).then((res) => {
+          if (!res.isConfirmed) navigate("/keranjang");
+        });
+      } else {
+        Swal.fire({
+          title: "Gagal Menambahkan",
+          text: result.message || "Terjadi kesalahan saat menambahkan ke keranjang.",
+          icon: "error",
+          confirmButtonColor: "#3D5532",
+          customClass: { popup: "rounded-[30px]" },
+        });
+      }
+    } catch {
+      Swal.fire({
+        title: "Koneksi Bermasalah",
+        text: "Terjadi kesalahan jaringan saat menghubungi server.",
+        icon: "error",
+        confirmButtonColor: "#3D5532",
+        customClass: { popup: "rounded-[30px]" },
+      });
     }
-
-    localStorage.setItem("cart", JSON.stringify(currentCart));
-    alert(
-      `📦 ${product.nama_produk} berhasil dimasukkan ke keranjang belanja!`,
-    );
   };
 
   const handleBuyNow = () => {
     if (!user) {
-      alert(
-        "⚠️ Akses Ditolak! Silakan masuk (login) terlebih dahulu untuk melanjutkan proses transaksi pembayaran.",
-      );
-      navigate("/masuk");
+      Swal.fire({
+        title: "Akses Ditolak",
+        text: "Silakan masuk terlebih dahulu untuk melanjutkan proses transaksi pembayaran.",
+        icon: "warning",
+        confirmButtonColor: "#3D5532",
+        confirmButtonText: "Masuk Sekarang",
+        showCancelButton: true,
+        cancelButtonText: "Batal",
+        customClass: { popup: "rounded-[30px]" },
+      }).then((result) => {
+        if (result.isConfirmed) navigate("/masuk");
+      });
       return;
     }
 
-    const currentCart = JSON.parse(localStorage.getItem("cart")) || [];
-    const existingProduct = currentCart.find(
-      (item) => item.id_produk === product.id_produk,
-    );
-
-    if (!existingProduct) {
-      currentCart.push({ ...product, quantity: 1 });
-      localStorage.setItem("cart", JSON.stringify(currentCart));
-    }
-
-    const targetProduct = existingProduct || { ...product, quantity: 1 };
-    localStorage.setItem("checkout_items", JSON.stringify([targetProduct]));
+    const checkoutItem = [
+      {
+        id_produk: product.id_produk,
+        nama_produk: product.nama_produk,
+        brand: product.brand || "SkinCycle",
+        harga_asli: product.harga_asli,
+        gambar_produk: product.gambar_produk,
+        quantity: 1,
+      },
+    ];
+    localStorage.setItem("checkout_items", JSON.stringify(checkoutItem));
     navigate("/checkout");
   };
 
